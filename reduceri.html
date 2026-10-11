@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reduceri · Atelier PC</title>
+<meta name="description" content="Reduceri reale la componente PC, cu note de la S la F și verificare de compatibilitate.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="Reduceri · Atelier PC">
+<meta property="og:description" content="Reduceri reale la componente PC, cu note de la S la F și verificare de compatibilitate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Vitrină de oferte: antet cu file, bară de filtre, grilă de carduri colorate după notă; fila „Build-ul meu” e un bon de cumpărături. */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a; --info:#2c6aa8;
+  --t-S:#d9a41c; --t-A:#3a9a64; --t-B:#28899a; --t-C:#4570b8; --t-D:#7360b2; --t-E:#a7622d; --t-F:#b4423e; --t-N:#8a939e;
+  --t-ink:#ffffff; --t-ink-S:#1d1503;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --info:#7fb2e8; --t-N:#5d6772; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --info:#7fb2e8; --t-N:#5d6772; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+a{color:inherit}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+
+/* antet */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;line-height:1}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{text-decoration:none;padding:6px 12px;border-radius:8px;font-weight:500;color:var(--muted)}
+nav a:hover{color:var(--fg);background:var(--surface-2)}
+nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.meta{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+@media (max-width:640px){.meta{margin-left:0;width:100%}}
+
+.notice{margin-top:14px;border:1px dashed var(--warn);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:14px}
+.hero{padding-block:22px 6px;display:grid;gap:6px}
+.hero h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.4vw,38px);line-height:1.08;margin:0;text-wrap:balance}
+.hero p{margin:0;color:var(--muted);max-width:68ch}
+
+/* filtre */
+.filters{display:grid;gap:10px;padding-block:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:4;background:var(--bg)}
+@media (max-width:640px){.filters{position:static}}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px;white-space:nowrap}
+.chip span{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:4px}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip[aria-pressed="true"] span{color:inherit;opacity:.7}
+.row{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;font-size:14px}
+.row label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.row select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 8px}
+.tiers{display:flex;gap:3px;align-items:center}
+.tiers button{width:28px;height:28px;border-radius:6px;border:0;cursor:pointer;font-family:var(--display);font-weight:700;opacity:.35}
+.tiers button.on{opacity:1}
+.count{margin-left:auto;color:var(--muted);font-size:13px}
+.seg{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:2px}
+.seg .sub{padding:0 6px 0 6px}
+.seg button{border:0;background:none;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+
+/* carduri */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{--t:var(--t-N);position:relative;display:grid;grid-template-rows:auto auto 1fr auto;align-content:start;gap:10px;padding:14px;border-radius:12px;
+  background:color-mix(in srgb,var(--t) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--t) 45%,var(--line));min-width:0}
+.card.out{opacity:.62}
+.card .head{display:flex;align-items:center;gap:8px;min-width:0}
+.tier{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:7px;font-family:var(--display);font-weight:700;font-size:19px;color:var(--t-ink);background:var(--t);flex:none}
+.tier.S{color:var(--t-ink-S)}
+.head .what{display:grid;min-width:0;line-height:1.25;flex:1}
+.head .gl{width:30px;height:30px;color:color-mix(in srgb,var(--t) 75%,var(--muted));flex:none}
+.head .gl svg{width:100%;height:100%}
+.head .what b{font-size:13px;font-weight:600}
+.head .what span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pic{aspect-ratio:16/9;max-height:150px;width:100%;border-radius:8px;background:var(--surface);display:grid;place-items:center;overflow:hidden;color:color-mix(in srgb,var(--t) 70%,var(--muted))}
+.pic img{width:100%;height:100%;object-fit:contain;background:#fff}
+.pic svg{width:64px;height:64px}
+.name{font-weight:600;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.body{display:grid;gap:8px;align-content:start}
+.price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price strong{font-family:var(--display);font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.price s{color:var(--muted);font-size:14px}
+.price .drop{font-weight:600;color:var(--ok);font-size:14px}
+.price .up{font-weight:600;color:var(--warn);font-size:14px}
+.sub{font-size:13px;color:var(--muted)}
+.label{justify-self:start;font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+.label.minim,.label.sub-p{color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.label.fals{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.label.peste{color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.label.normal,.label.nou{color:var(--muted)}
+.label.cautare{color:var(--info);background:color-mix(in srgb,var(--info) 9%,transparent)}
+.spark{width:100%;height:34px;display:block}
+.seller{font-size:13px}
+.seller.warn{color:var(--warn)}
+.why{font-size:13px}
+.why summary{cursor:pointer;color:var(--muted);list-style:none}
+.why summary::-webkit-details-marker{display:none}
+.why summary::before{content:"▸ ";font-size:11px}
+.why[open] summary::before{content:"▾ "}
+.why ul{margin:6px 0 0;padding-left:18px}
+.cta{display:flex;justify-content:center;align-items:center;gap:6px;text-decoration:none;font-weight:600;padding:10px 12px;border-radius:9px;background:var(--fg);color:var(--bg)}
+.cta:hover{background:var(--accent);color:var(--accent-ink)}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+
+/* build */
+.receipt{max-width:780px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.total{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.total .lbl{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.total strong{display:block;font-family:var(--display);font-weight:700;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.total .vs{font-weight:600}
+.lines{display:grid}
+.line{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:0}
+.line .info{min-width:0}
+.line .info b{display:block;font-size:12px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.line .info a{font-weight:600;text-decoration:none}
+.line .info a:hover{color:var(--accent)}
+.line .info span{display:block;font-size:12.5px;color:var(--muted)}
+.line .amt{font-family:var(--display);font-weight:700;font-size:19px;text-align:right;font-variant-numeric:tabular-nums}
+.missing{font-size:14px;display:grid;gap:4px}
+.missing b{color:var(--warn)}
+.next{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:600;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.foot{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:grid;gap:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html">Atelier <b>PC</b></a>
+  <nav aria-label="Pagini">
+    <a href="index.html">Configurator</a>
+    <a href="pc-uri.html">PC-uri pe buget</a>
+    <a href="pc-ul-meu.html">PC-ul meu</a>
+    <a href="reduceri.html#reduceri" data-tab="reduceri">Reduceri</a>
+    <a href="reduceri.html#build" data-tab="build">Build-ul meu</a>
+    <a href="montaj.html">Montaj 3D</a>
+  </nav>
+  <span class="meta" id="meta"></span>
+</div></header>
+
+<div class="wrap">
+  <div class="notice" id="exemplu" hidden>Date de exemplu, ca să vezi cum arată site-ul. Pe laptop, botul le înlocuiește cu prețurile reale pe care le urmărește.</div>
+
+  <section id="tab-reduceri">
+    <div class="hero">
+      <h1>Reduceri reale la componente PC</h1>
+      <p>Fiecare produs are o notă de la <b>S</b> la <b>F</b> și o etichetă care îți spune dacă reducerea e reală, comparat cu prețul din ultimele 30 de zile.</p>
+    </div>
+    <div class="filters">
+      <div class="chips" id="cats" role="group" aria-label="Componente"></div>
+      <div class="row">
+        <label for="sort">Ordine
+          <select id="sort">
+            <option value="oferte">Cele mai bune oferte</option>
+            <option value="pret">Preț crescător</option>
+            <option value="nota">Nota cea mai bună</option>
+            <option value="scadere">Scădere în 24h</option>
+          </select>
+        </label>
+        <span class="seg" id="profil" role="group" aria-label="Notă pentru"><span class="sub">Notă pentru:</span><button data-p="gaming">Gaming</button><button data-p="creatie">Editare video și 3D</button></span>
+        <label><input type="checkbox" id="stoc" checked> Doar în stoc</label>
+        <span class="tiers" id="tiers" role="group" aria-label="Note afișate"></span>
+        <span class="count" id="count"></span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="tab-build" hidden>
+    <div class="hero">
+      <h1>Build-ul meu, azi</h1>
+      <p>Cea mai ieftină ofertă în stoc pentru fiecare componentă urmărită de bot, din toate magazinele. În <a href="index.html">Configurator</a> îți alegi singur piesele pe modelul 3D. Notele sunt pentru profilul ales la Reduceri. Prețurile în euro sunt trecute în lei la cursul BNR, cu transportul inclus.</p>
+    </div>
+    <div class="receipt" id="receipt"></div>
+  </section>
+
+  <footer class="foot">
+    <span>Prețurile se actualizează automat, dar se pot schimba între timp. Verifică prețul și vânzătorul pe site-ul magazinului înainte să cumperi.</span>
+    <span>Notele S–F se calculează din specificațiile produsului. Apasă „De ce nota…” pe un card ca să vezi motivul.</span>
+  </footer>
+</div>
+
+<script src="date.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.ATELIER || {produse:[], build:{piese:[]}};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const NOTE = ["S","A","B","C","D","E","F"];
+const CATS = ["PC complet","Placă video","Procesor","Placă de bază","RAM","SSD","Sursă","Cooler","Carcasă"];
+const PLURAL = {"PC complet":"PC-uri complete","Placă video":"Plăci video","Procesor":"Procesoare","Placă de bază":"Plăci de bază","RAM":"Memorii RAM","SSD":"SSD-uri","Sursă":"Surse","Cooler":"Coolere","Carcasă":"Carcase"};
+const nf = new Intl.NumberFormat("ro-RO", {maximumFractionDigits:2, minimumFractionDigits:0});
+const money = (v, cur) => v == null ? "?" : nf.format(v) + (cur === "EUR" ? " €" : " lei");
+const lei = v => v == null ? "?" : new Intl.NumberFormat("ro-RO", {maximumFractionDigits:0}).format(v) + " lei";
+
+const store = {get(k, d){ try { const v = localStorage.getItem("atelier-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+               set(k, v){ try { localStorage.setItem("atelier-" + k, JSON.stringify(v)); } catch (e) {} }};
+
+// ---------------------------------------------------------------- antet
+if (D.exemplu) $("exemplu").hidden = false;
+if (D.public || !(D.build && D.build.piese && D.build.piese.length)) { document.querySelectorAll('nav [data-tab="build"]').forEach(x => x.remove()); if (location.hash === "#build") location.hash = "#reduceri"; }
+$("meta").textContent = D.generat ? `Actualizat ${fmtWhen(D.generat)} · 1 € = ${new Intl.NumberFormat("ro-RO", {maximumFractionDigits:4}).format(D.curs_eur)} lei` : "Încă nu există date de la bot";
+if ($("disclosure")) $("disclosure").textContent = D.afiliere
+  ? "Unele linkuri sunt linkuri de afiliere: dacă cumperi prin ele, Atelier PC primește un mic comision, fără niciun cost în plus pentru tine."
+  : "Linkurile duc direct la magazin.";
+function fmtWhen(s){
+  const d = new Date(s.replace(" ", "T")), now = new Date();
+  const hm = d.toLocaleTimeString("ro-RO", {hour:"2-digit", minute:"2-digit"});
+  if (d.toDateString() === now.toDateString()) return `azi la ${hm}`;
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return `ieri la ${hm}`;
+  return d.toLocaleDateString("ro-RO", {day:"numeric", month:"long"}) + ` la ${hm}`;
+}
+
+// ---------------------------------------------------------------- iconițe pe categorii
+const GLYPH = {
+  "PC complet":'<rect x="8" y="10" width="34" height="26" rx="2"/><path d="M18 44h14M25 36v8"/><rect x="46" y="10" width="10" height="34" rx="2"/><circle cx="51" cy="18" r="2"/>',
+  "Placă video":'<rect x="6" y="18" width="52" height="26" rx="3"/><circle cx="22" cy="31" r="8"/><circle cx="42" cy="31" r="8"/><path d="M10 44v6M20 44v4M30 44v4"/>',
+  "Procesor":'<rect x="18" y="18" width="28" height="28" rx="3"/><rect x="25" y="25" width="14" height="14" rx="1"/><path d="M24 10v8M32 10v8M40 10v8M24 46v8M32 46v8M40 46v8M10 24h8M10 32h8M10 40h8M46 24h8M46 32h8M46 40h8"/>',
+  "Placă de bază":'<rect x="10" y="8" width="44" height="48" rx="3"/><rect x="18" y="16" width="14" height="14"/><path d="M38 14v20M42 14v20M18 40h28M18 46h20"/>',
+  "RAM":'<rect x="6" y="22" width="52" height="16" rx="2"/><path d="M12 38v6M18 38v6M24 38v6M30 38v6M36 38v6M42 38v6M48 38v6M14 27h8M26 27h8M38 27h8"/>',
+  "SSD":'<rect x="6" y="24" width="52" height="16" rx="2"/><rect x="14" y="28" width="12" height="8"/><rect x="30" y="28" width="12" height="8"/><path d="M50 28v8"/>',
+  "Sursă":'<rect x="8" y="14" width="48" height="36" rx="3"/><circle cx="28" cy="32" r="11"/><path d="M28 21v22M17 32h22M46 22v4"/>',
+  "Cooler":'<circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="5"/><path d="M32 27c-2-8 2-13 8-14M37 32c8-2 13 2 14 8M32 37c2 8-2 13-8 14M27 32c-8 2-13-2-14-8"/>',
+  "Carcasă":'<rect x="16" y="6" width="32" height="52" rx="3"/><circle cx="32" cy="20" r="6"/><circle cx="32" cy="38" r="6"/><path d="M22 52h20"/>',
+};
+const glyph = p => `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPH[p] || '<rect x="10" y="10" width="44" height="44" rx="6"/><path d="M24 26a8 8 0 1 1 10 8v4M32 46v1"/>'}</svg>`;
+
+// ---------------------------------------------------------------- reduceri
+const P = (D.produse || []).filter(p => p.pret);
+const state = {profil: store.get("profil", "gaming"), cat: store.get("cat", "toate"), sort: store.get("sort", "oferte"), stoc: store.get("stoc", true), note: new Set(store.get("note", [...NOTE, "?"]))};
+if (state.cat !== "toate" && !P.some(p => p.piesa === state.cat)) state.cat = "toate";
+$("sort").value = state.sort; $("stoc").checked = state.stoc;
+const N = p => (p.note && p.note[state.profil]) ? p.note[state.profil].n : p.nota;
+const W = p => (p.note && p.note[state.profil]) ? p.note[state.profil].why : (p.motive || []);
+function renderProfil(){ document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === state.profil)); }
+$("profil").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; state.profil = b.dataset.p; store.set("profil", state.profil); renderProfil(); renderGrid(); renderBuild(); });
+
+function renderCats(){
+  const present = CATS.filter(c => P.some(p => p.piesa === c));
+  const other = P.filter(p => !CATS.includes(p.piesa)).length;
+  const chip = (id, label, n) => `<button class="chip" aria-pressed="${state.cat === id}" data-cat="${esc(id)}">${esc(label)}<span>${n}</span></button>`;
+  $("cats").innerHTML = chip("toate", "Toate", P.length) + present.map(c => chip(c, PLURAL[c] || c, P.filter(p => p.piesa === c).length)).join("") + (other ? chip("alte", "Altele", other) : "");
+  $("tiers").innerHTML = `<span class="sub" style="margin-right:4px">Note:</span>` + [...NOTE, "?"].map(n => `<button class="tier ${n === "?" ? "" : n} ${state.note.has(n) ? "on" : ""}" style="--t:var(--t-${n === "?" ? "N" : n});width:28px;height:28px;font-size:15px" aria-pressed="${state.note.has(n)}" data-nota="${n}" title="${n === "?" ? "Fără notă" : "Nota " + n}">${n}</button>`).join("");
+}
+const RANK = {fals:5, peste:4, normal:3, nou:3, cautare:2, sub:1, minim:0};
+function score(p){ // ofertele bune primele: etichetă, apoi cât a scăzut, apoi notă
+  const r = RANK[p.eticheta?.tip] ?? 3, pct = p.eticheta?.procent ?? 0, n = N(p) ? NOTE.indexOf(N(p)) : 7;
+  return r * 1000 + pct * 10 + n;
+}
+function list(){
+  let xs = P.filter(p => state.cat === "toate" || (state.cat === "alte" ? !CATS.includes(p.piesa) : p.piesa === state.cat));
+  if (state.stoc) xs = xs.filter(p => p.stoc !== false);
+  xs = xs.filter(p => state.note.has(N(p) || "?"));
+  const drop = p => p.pret_ieri ? (p.pret - p.pret_ieri) / p.pret_ieri : 0;
+  const sorters = {
+    oferte: (a, b) => score(a) - score(b),
+    pret: (a, b) => (a.pret_lei ?? 1e9) - (b.pret_lei ?? 1e9),
+    nota: (a, b) => ((N(a) ? NOTE.indexOf(N(a)) : 9) - (N(b) ? NOTE.indexOf(N(b)) : 9)) || (a.pret_lei - b.pret_lei),
+    scadere: (a, b) => drop(a) - drop(b),
+  };
+  return xs.sort(sorters[state.sort] || sorters.oferte);
+}
+function spark(h){
+  if (!h || h.length < 2) return "";
+  const v = h.map(x => x[1]), lo = Math.min(...v), hi = Math.max(...v), W = 240, H = 34, pad = 3;
+  const x = i => pad + i * (W - 2 * pad) / (v.length - 1), y = p => hi === lo ? H / 2 : pad + (hi - p) * (H - 2 * pad) / (hi - lo);
+  let d = `M${x(0)},${y(v[0])}`; for (let i = 1; i < v.length; i++) d += `H${x(i)}V${y(v[i])}`;
+  const last = v[v.length - 1], col = last <= lo ? "var(--ok)" : last >= hi ? "var(--warn)" : "var(--muted)";
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Evoluția prețului: între ${money(lo)} și ${money(hi)}">
+    <path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity=".7"/>
+    <circle cx="${x(v.length - 1)}" cy="${y(last)}" r="3" fill="${col}"/></svg>`;
+}
+function card(p){
+  const nota = N(p), n = nota || "?", t = nota ? `var(--t-${nota})` : "var(--t-N)";
+  const et = p.eticheta || {}, cls = et.tip === "sub" ? "sub-p" : et.tip;
+  let change = "";
+  if (p.pret_ieri && Math.abs(p.pret - p.pret_ieri) >= 0.5) {
+    const pct = (p.pret - p.pret_ieri) / p.pret_ieri * 100;
+    change = pct < 0 ? `<s>${money(p.pret_ieri, p.moneda)}</s><span class="drop">−${Math.abs(pct).toFixed(0)}% în 24h</span>` : `<span class="up">+${pct.toFixed(0)}% în 24h</span>`;
+  }
+  const eur = p.moneda === "EUR" ? `<div class="sub">≈ ${lei(p.pret_lei)}${D.taxa_eur_lei ? ", cu transport" : ""}</div>` : "";
+  const seller = p.oficial === false ? `<div class="seller warn">⚠ Vândut de ${esc(p.vanzator || "alt vânzător")}, nu de ${esc(p.magazin)}</div>`
+               : p.oficial === true ? `<div class="seller sub">✓ Vândut de ${esc(p.magazin)}</div>` : "";
+  const prof = (D.profile || {})[state.profil] || "";
+  const why = nota ? `<details class="why"><summary>De ce nota ${nota}${prof ? " la " + esc(prof.charAt(0).toLowerCase() + prof.slice(1)) : ""}?</summary><ul>${W(p).map(m => `<li>${esc(m)}</li>`).join("")}</ul></details>`
+                     : `<details class="why"><summary>De ce fără notă?</summary><ul><li>Încă nu recunoaștem modelul ăsta, așa că nu-i dăm o notă inventată.</li></ul></details>`;
+  const pic = p.imagine ? `<div class="pic"><img src="${esc(p.imagine)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>` : "";
+  return `<article class="card ${p.stoc === false ? "out" : ""}" style="--t:${t}">
+    <div class="head"><span class="tier ${nota || ""}" title="${nota ? "Nota " + nota : "Fără notă"}">${n}</span>
+      <span class="what"><b>${esc(p.piesa || "Componentă")}</b><span>${esc(p.magazin)}${p.stoc === false ? " · stoc epuizat" : ""}</span></span><span class="gl">${glyph(p.piesa)}</span></div>
+    ${pic}
+    <div class="body">
+      <h2 class="name" title="${esc(p.titlu || p.nume)}">${esc(p.nume)}</h2>
+      <div class="price"><strong>${money(p.pret, p.moneda)}</strong>${change}</div>${eur}
+      ${et.text ? `<span class="label ${cls}">${esc(et.text)}</span>` : ""}
+      ${spark(p.istoric)}${seller}${why}
+    </div>
+    <a class="cta" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a>
+  </article>`;
+}
+function renderGrid(){
+  const xs = list();
+  $("count").textContent = `${xs.length} ${xs.length === 1 ? "produs" : "produse"}`;
+  $("grid").innerHTML = xs.length ? xs.map(card).join("")
+    : `<div class="empty">${P.length ? "Niciun produs nu se potrivește filtrelor. Încearcă „Toate” sau bifează toate notele." : "Încă nu sunt prețuri. Pornește botul sau rulează <b>site.bat</b> din folderul botului."}</div>`;
+}
+$("cats").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; state.cat = b.dataset.cat; store.set("cat", state.cat); renderCats(); renderGrid(); });
+$("tiers").addEventListener("click", e => { const b = e.target.closest("[data-nota]"); if (!b) return; const n = b.dataset.nota;
+  state.note.has(n) ? state.note.delete(n) : state.note.add(n); if (!state.note.size) NOTE.concat("?").forEach(x => state.note.add(x));
+  store.set("note", [...state.note]); renderCats(); renderGrid(); });
+$("sort").addEventListener("change", e => { state.sort = e.target.value; store.set("sort", state.sort); renderGrid(); });
+$("stoc").addEventListener("change", e => { state.stoc = e.target.checked; store.set("stoc", state.stoc); renderGrid(); });
+
+// ---------------------------------------------------------------- build
+function renderBuild(){
+  const B = D.build || {piese:[]};
+  if (!B.piese || !B.piese.length) { $("receipt").innerHTML = `<div class="empty">Încă nu ai componente urmărite cu preț. Trimite-i botului linkuri de produse pe Telegram.</div>`; return; }
+  let vs = "";
+  if (B.total_ieri) { const d = B.total - B.total_ieri;
+    if (Math.abs(d) >= 1) vs = `<span class="vs" style="color:${d < 0 ? "var(--ok)" : "var(--warn)"}">${d < 0 ? "−" : "+"}${lei(Math.abs(d))} față de ieri</span>`;
+    else vs = `<span class="sub">la fel ca ieri</span>`; }
+  const hist = (B.istoric || []).map(([d, v]) => [d, v]);
+  $("receipt").innerHTML = `
+    <div class="total"><div><span class="lbl">Tot PC-ul acum</span><strong>${lei(B.total)}</strong></div>${vs}</div>
+    ${hist.length > 1 ? `<div><span class="sub">Ultimele ${hist.length} zile</span>${spark(hist)}</div>` : ""}
+    <div class="lines">${B.piese.map(r => `<div class="line" style="--t:var(--t-${N(r) || "N"})">
+        <span class="tier ${N(r) || ""}" style="width:30px;height:30px;font-size:16px" title="Nota pentru ${esc((D.profile || {})[state.profil] || "")}">${N(r) || "?"}</span>
+        <span class="info"><b>${esc(r.piesa)}</b><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nume)}</a>
+          <span>${esc(r.magazin)}${r.moneda === "EUR" ? ` · ${money(r.pret, "EUR")}` : ""}${r.oferte > 1 ? ` · cea mai ieftină din ${r.oferte} oferte` : ""}</span></span>
+        <span class="amt">${lei(r.pret_lei)}</span></div>`).join("")}</div>
+    ${(B.neurmarite || []).length || (B.fara_stoc || []).length ? `<div class="missing">
+      ${(B.neurmarite || []).length ? `<div><b>Lipsesc din build:</b> ${B.neurmarite.map(esc).join(", ")}. Adaugă-le pe Telegram cu un link sau cu /urmareste.</div>` : ""}
+      ${(B.fara_stoc || []).length ? `<div><b>Fără stoc acum:</b> ${B.fara_stoc.map(esc).join(", ")}. Nu intră în total.</div>` : ""}</div>` : ""}
+    <div class="next"><a class="btn primary" href="index.html">Deschide configuratorul 3D →</a><a class="btn" href="montaj.html">Ghidul de montaj</a></div>`;
+}
+
+// ---------------------------------------------------------------- file
+function route(){
+  const tab = location.hash === "#build" ? "build" : "reduceri";
+  $("tab-reduceri").hidden = tab !== "reduceri"; $("tab-build").hidden = tab !== "build";
+  document.querySelectorAll("nav [data-tab]").forEach(a => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+}
+window.addEventListener("hashchange", route);
+renderProfil(); renderCats(); renderGrid(); renderBuild(); route();
+})();
+</script>
+<script src="comun.js"></script>
+</body>
+</html>
