@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}html,body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Montaj 3D · Atelier PC</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta name="description" content="Ghid de montaj PC pas cu pas, în 3D, cu alternative pe note S–F și verificare de compatibilitate.">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="Montaj 3D · Atelier PC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Banc de lucru: vizor 3D lipit în stânga, lista de piese cu tier-uri S–F în dreapta; pe telefon, unul sub altul. */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a;
+  --stage:#dbe2ea;
+  --t-S:#d9a41c; --t-A:#3a9a64; --t-B:#28899a; --t-C:#4570b8; --t-D:#7360b2; --t-E:#a7622d; --t-F:#b4423e;
+  --t-ink:#ffffff; --t-ink-S:#1d1503;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --stage:#0b0e12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --stage:#0b0e12; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:14px 48px;display:grid;gap:18px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* antet */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.04em;text-transform:uppercase;margin:0;line-height:1}
+.brand h1 b{color:var(--accent);font-weight:700}
+.brand .sub{color:var(--muted);font-size:13px}
+.brand .sub a{color:inherit}
+.proto{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:var(--muted)}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;padding:6px 12px;border-radius:999px;border:1px solid currentColor}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px}
+.ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+
+/* vizor */
+.bench{display:grid;gap:12px;min-width:0}
+@media (min-width:921px){.bench{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.stage{position:relative;width:100%;aspect-ratio:4/3;max-height:64vh;background:var(--stage);border-radius:12px;overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+@media (max-width:600px){.stage{aspect-ratio:1/1}}
+.stage.drag{cursor:grabbing}
+.stage canvas{display:block;width:100%!important;height:100%!important}
+.labels{position:absolute;inset:0;pointer-events:none}
+.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font-family:var(--mono);font-size:12px;white-space:nowrap;padding:3px 7px;border-radius:5px;background:var(--surface);color:var(--fg);border:1px solid var(--line);box-shadow:0 2px 8px rgb(0 0 0 / .18)}
+.lbl::after{content:"";position:absolute;left:50%;bottom:-7px;width:1px;height:6px;background:var(--fg);opacity:.5}
+.lbl.hot{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lbl.dim{opacity:.55}
+.hint{position:absolute;left:10px;bottom:10px;font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);padding:3px 8px;border-radius:6px;pointer-events:none}
+.zoom{position:absolute;right:10px;bottom:10px;display:flex;gap:6px}
+.zoom button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
+.no3d .zoom,.no3d .hint{display:none}
+.fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+
+/* pași */
+.steps{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px;display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.bar button{height:8px;border-radius:3px;border:0;background:var(--surface-2);cursor:pointer;padding:0}
+.bar button.done{background:color-mix(in srgb,var(--accent) 45%,var(--surface-2))}
+.bar button.cur{background:var(--accent)}
+.bar button.err{background:var(--bad)}
+.stepmeta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.steps h2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.15;margin:0;text-wrap:balance}
+.steps p{margin:0;max-width:65ch}
+.tip{display:grid;grid-template-columns:auto 1fr;gap:10px;background:var(--accent-soft);border-radius:8px;padding:9px 12px;font-size:14px}
+.tip span:first-child{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding-top:2px}
+.stepwarn{font-size:14px;color:var(--bad);font-weight:500}
+.stepwarn.warn{color:var(--warn)}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border-radius:8px;padding:9px 16px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.nav .spacer{flex:1}
+
+/* piese */
+.parts{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.parts-head{padding:16px 16px 12px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
+.parts-head h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0}
+.parts-head p{margin:0;color:var(--muted);font-size:14px;max-width:62ch}
+.legend{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.legend .tier{width:22px;height:22px;font-size:13px}
+.legend .gap{width:8px}
+.part{padding:14px 16px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.part:last-child{border-bottom:0}
+.part-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cat{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.tag{font-size:12px;color:var(--accent);font-weight:500}
+.part-main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
+.pname{font-weight:600;font-size:16px;line-height:1.3}
+.tier{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:6px;font-family:var(--display);font-weight:700;font-size:17px;color:var(--t-ink);flex:none}
+.t-S{background:var(--t-S);color:var(--t-ink-S)} .t-A{background:var(--t-A)} .t-B{background:var(--t-B)} .t-C{background:var(--t-C)}
+.t-D{background:var(--t-D)} .t-E{background:var(--t-E)} .t-F{background:var(--t-F)}
+.st{font-size:13px;font-weight:500;display:flex;gap:6px;align-items:flex-start}
+.st.ok{color:var(--ok)} .st.warn{color:var(--warn)} .st.bad{color:var(--bad)}
+.part-actions{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:13px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.small[aria-expanded="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.small:hover{border-color:var(--accent)}
+
+.tierlist{display:grid;gap:6px;margin-top:4px}
+.trow{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;align-items:stretch}
+.trow .tier{width:38px;height:auto;min-height:38px;font-size:20px;border-radius:7px}
+.titems{display:grid;gap:6px;min-width:0}
+.alt{border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:grid;gap:4px;background:var(--bg);min-width:0}
+.alt.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.alt.bad .aname{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 70%,transparent)}
+.aname{font-weight:600;font-size:14px}
+.anote{font-size:13px;color:var(--muted)}
+.aact{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.aact a{font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+.aact a:hover{color:var(--accent);border-color:var(--accent)}
+.chosen{font-size:12px;font-weight:600;color:var(--accent)}
+.pick{font-size:13px;padding:4px 12px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-weight:600}
+.pick:hover{background:var(--accent);color:var(--accent-ink)}
+
+.foot{color:var(--muted);font-size:13px;max-width:80ch}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1><a href="index.html" style="color:inherit;text-decoration:none">Atelier <b>PC</b></a></h1>
+      <span class="proto">montaj 3D</span>
+      <span class="sub"><a href="index.html">← Configurator</a> · <a href="pc-uri.html">PC-uri pe buget</a> · <a href="pc-ul-meu.html">PC-ul meu</a> · <a href="reduceri.html">Reduceri</a></span>
+    </div>
+    <div class="status">
+      <span id="pill" class="pill ok">✓ Toate piesele sunt compatibile</span>
+      <button id="reset" class="ghost" hidden>Revino la build-ul meu</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="bench" aria-label="Montaj 3D">
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="Model 3D al PC-ului"></canvas>
+        <div class="labels" id="labels"></div>
+        <span class="hint">Trage ca să rotești</span>
+        <div class="zoom"><button id="zin" aria-label="Apropie">+</button><button id="zout" aria-label="Depărtează">−</button></div>
+      </div>
+      <div class="steps" id="steps">
+        <div class="bar" id="bar"></div>
+        <div class="stepmeta"><span id="stepno">Pasul 1 din 10</span><span id="stepcat"></span></div>
+        <h2 id="stitle"></h2>
+        <p id="sbody"></p>
+        <div id="swarn"></div>
+        <div class="tip"><span>Sfat</span><span id="stip"></span></div>
+        <div class="nav">
+          <button class="btn" id="prev">← Înapoi</button>
+          <button class="btn" id="replay">↻ Reia</button>
+          <span class="spacer"></span>
+          <button class="btn primary" id="next">Înainte →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="parts" aria-label="Piese">
+      <div class="parts-head">
+        <h2>Piesele tale</h2>
+        <p>Deschide „Alternative” ca să vezi variante de la <b>S</b> (cele mai bune) la <b>F</b> (de evitat). Clasamentul e pentru jocuri și Unreal Engine. La fiecare scrie dacă merge cu restul pieselor alese.</p>
+        <div class="legend"><span class="tier t-S">S</span><span class="tier t-A">A</span><span class="tier t-B">B</span><span class="tier t-C">C</span><span class="tier t-D">D</span><span class="tier t-E">E</span><span class="tier t-F">F</span><span class="gap"></span>plăcile MSI sunt scoase din listă, cum ai vrut</div>
+      </div>
+      <div id="plist"></div>
+    </section>
+  </main>
+
+  <p class="foot">Dimensiunile, wații recomandați și clasamentele sunt aproximative și trebuie verificate pe site-ul producătorului. În versiunea finală, prețurile vin live din botul de Telegram, iar butoanele duc direct la ofertă.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+// ------------------------------------------------------------------ date
+const TIERS = ["S","A","B","C","D","E","F"];
+const CATS = [
+  {id:"cpu",    name:"Procesor",        step:1},
+  {id:"board",  name:"Placă de bază",   step:0},
+  {id:"ram",    name:"Memorie RAM",     step:3},
+  {id:"ssd",    name:"SSD",             step:2},
+  {id:"gpu",    name:"Placă video",     step:7},
+  {id:"cooler", name:"Cooler procesor", step:6},
+  {id:"case",   name:"Carcasă",         step:4},
+  {id:"psu",    name:"Sursă",           step:5},
+];
+const DATA = {
+cpu:[
+ {id:"9800x3d",n:"AMD Ryzen 7 9800X3D",s:"9800X3D",t:"S",socket:"AM5",tdp:120,igpu:true,note:"Cel mai rapid procesor pentru jocuri. 8 nuclee, cu 3D V-Cache.",tag:"în build-ul tău"},
+ {id:"9950x3d",n:"AMD Ryzen 9 9950X3D",s:"9950X3D",t:"S",socket:"AM5",tdp:170,igpu:true,note:"La fel de bun în jocuri, plus 16 nuclee pentru Unreal Engine (compilare, shadere). Mult mai scump."},
+ {id:"7800x3d",n:"AMD Ryzen 7 7800X3D",s:"7800X3D",t:"A",socket:"AM5",tdp:120,igpu:true,note:"Generația trecută. Puțin mai lent în jocuri, de obicei mai ieftin."},
+ {id:"285k",n:"Intel Core Ultra 9 285K",s:"Core Ultra 9 285K",t:"A",socket:"LGA1851",tdp:125,igpu:true,note:"Foarte bun la lucru, mai slab decât X3D în jocuri."},
+ {id:"9900x",n:"AMD Ryzen 9 9900X",s:"9900X",t:"B",socket:"AM5",tdp:120,igpu:true,note:"12 nuclee, bun pentru Unreal. În jocuri rămâne sub variantele X3D."},
+ {id:"9700x",n:"AMD Ryzen 7 9700X",s:"9700X",t:"B",socket:"AM5",tdp:65,igpu:true,note:"Eficient și răcoros, dar fără 3D V-Cache."},
+ {id:"14700k",n:"Intel Core i7-14700K",s:"i7-14700K",t:"B",socket:"LGA1700",tdp:125,igpu:true,note:"Platformă veche, fără upgrade-uri pe viitor."},
+ {id:"9600x",n:"AMD Ryzen 5 9600X",s:"9600X",t:"C",socket:"AM5",tdp:65,igpu:true,note:"6 nuclee. Ar ține pe loc o placă video de top."},
+ {id:"5800x3d",n:"AMD Ryzen 7 5800X3D",s:"5800X3D",t:"C",socket:"AM4",tdp:105,igpu:false,note:"Bun pe vremea lui, dar platforma AM4 nu mai primește procesoare noi."},
+ {id:"8500g",n:"AMD Ryzen 5 8500G",s:"8500G",t:"D",socket:"AM5",tdp:65,igpu:true,note:"Procesor de buget cu cache mic. Nepotrivit pentru un PC de gaming de top."},
+],
+board:[
+ {id:"x870e-e",n:"ASUS ROG Strix X870E-E Gaming WiFi",s:"ROG Strix X870E-E",t:"S",socket:"AM5",ram:"DDR5",form:"ATX",slots:4,m2g5:true,io:true,note:"VRM puternic, multe porturi, PCIe 5.0 pentru SSD și placa video.",tag:"în build-ul tău"},
+ {id:"proart",n:"ASUS ProArt X870E-Creator WiFi",s:"ProArt X870E-Creator",t:"S",socket:"AM5",ram:"DDR5",form:"ATX",slots:4,m2g5:true,io:true,note:"Gândită pentru creatori: rețea de 10 Gb și USB4. Bună pentru Unreal."},
+ {id:"aorus-elite",n:"Gigabyte X870 Aorus Elite WiFi7",s:"X870 Aorus Elite",t:"A",socket:"AM5",ram:"DDR5",form:"ATX",slots:4,m2g5:true,note:"Fără „E” are mai puține linii PCIe, dar ajunge pentru o placă video și 2–3 SSD-uri."},
+ {id:"z890",n:"ASUS ROG Strix Z890-E Gaming WiFi",s:"ROG Strix Z890-E",t:"A",socket:"LGA1851",ram:"DDR5",form:"ATX",slots:4,m2g5:true,io:true,note:"Placă de top, dar pentru procesoare Intel."},
+ {id:"tuf-b850",n:"ASUS TUF Gaming B850-Plus WiFi",s:"TUF B850-Plus",t:"B",socket:"AM5",ram:"DDR5",form:"ATX",slots:4,m2g5:true,note:"Solidă și mai ieftină. Ajunge dacă nu ai nevoie de porturi în plus."},
+ {id:"b850i",n:"ASUS ROG Strix B850-I Gaming WiFi",s:"ROG Strix B850-I",t:"B",socket:"AM5",ram:"DDR5",form:"Mini-ITX",slots:2,m2g5:true,note:"Pentru PC-uri mici. Doar 2 sloturi RAM și se montează mai greu."},
+ {id:"b650-eagle",n:"Gigabyte B650 Eagle AX",s:"B650 Eagle AX",t:"C",socket:"AM5",ram:"DDR5",form:"ATX",slots:4,m2g5:false,note:"Ieftină, dar SSD-urile merg doar la viteză PCIe 4.0."},
+ {id:"a620",n:"ASUS Prime A620M-K",s:"Prime A620M-K",t:"D",socket:"AM5",ram:"DDR5",form:"Micro-ATX",slots:2,m2g5:false,weakVrm:true,note:"Chipset de buget, alimentare slabă pentru procesor."},
+],
+ram:[
+ {id:"viper-2x16",n:"Patriot Viper Venom 32GB (2×16) DDR5-6000",s:"Viper Venom 32GB",t:"S",type:"DDR5",sticks:2,note:"6000 MT/s e viteza ideală pentru Ryzen 9000. Caută varianta CL30.",tag:"aleasă de tine"},
+ {id:"z5-2x32",n:"G.Skill Trident Z5 Neo RGB 64GB (2×32) DDR5-6000 CL30",s:"Trident Z5 Neo 64GB",t:"S",type:"DDR5",sticks:2,note:"Dublul memoriei pentru Unreal și jocuri pe mulți ani. Are RGB."},
+ {id:"fury-6400",n:"Kingston Fury Beast 32GB (2×16) DDR5-6400 CL32",s:"Fury Beast 6400",t:"A",type:"DDR5",sticks:2,note:"Mai rapidă pe hârtie, în jocuri aproape la fel."},
+ {id:"veng-5600",n:"Corsair Vengeance 32GB (2×16) DDR5-5600 CL36",s:"Vengeance 5600",t:"B",type:"DDR5",sticks:2,note:"Merge bine, cu câteva procente mai lent."},
+ {id:"4x16",n:"64GB (4×16) DDR5-6000",s:"4×16GB",t:"C",type:"DDR5",sticks:4,note:"Multă memorie, dar 4 plăcuțe merg mai greu la viteză mare."},
+ {id:"ddr4",n:"Corsair Vengeance LPX 32GB (2×16) DDR4-3200",s:"DDR4-3200",t:"C",type:"DDR4",sticks:2,note:"Memorie pentru platforme mai vechi."},
+ {id:"2x8",n:"16GB (2×8) DDR5-5600",s:"16GB",t:"D",type:"DDR5",sticks:2,note:"16 GB e prea puțin pentru Unreal și jocurile noi."},
+],
+ssd:[
+ {id:"9100pro",n:"Samsung 9100 PRO 2TB (PCIe 5.0)",s:"9100 PRO",t:"S",gen:5,hs:false,note:"Cel mai rapid. Nu are radiator, folosește-l pe al plăcii.",tag:"cumpărat"},
+ {id:"990pro",n:"Samsung 990 PRO 2TB (PCIe 4.0)",s:"990 PRO",t:"A",gen:4,note:"Foarte rapid și fiabil. În jocuri, diferența față de PCIe 5.0 e mică."},
+ {id:"sn850x",n:"WD Black SN850X 2TB (PCIe 4.0)",s:"SN850X",t:"A",gen:4,note:"La fel de bun ca 990 PRO, des la reducere."},
+ {id:"kc3000",n:"Kingston KC3000 2TB (PCIe 4.0)",s:"KC3000",t:"B",gen:4,note:"Raport bun calitate-preț."},
+ {id:"p3plus",n:"Crucial P3 Plus 2TB (PCIe 4.0, QLC)",s:"P3 Plus",t:"C",gen:4,note:"Ieftin, dar încetinește la copieri mari."},
+ {id:"870evo",n:"Samsung 870 EVO 2TB (SATA)",s:"870 EVO",t:"D",gen:"SATA",note:"De circa 10 ori mai lent decât un NVMe. Bun ca al doilea disc."},
+ {id:"hdd",n:"HDD 2TB 7200 rpm",s:"HDD",t:"F",gen:"HDD",note:"Doar pentru arhivă. Jocurile de pe HDD se încarcă greu."},
+],
+gpu:[
+ {id:"5090",n:"NVIDIA GeForce RTX 5090 32GB",s:"RTX 5090",t:"S",len:340,psu:1000,conn:"12v2x6",note:"Cea mai puternică. Foarte scumpă și consumă mult."},
+ {id:"5080",n:"NVIDIA GeForce RTX 5080 16GB",s:"RTX 5080",t:"A",len:330,psu:850,conn:"12v2x6",note:"Foarte bună pentru 1440p/4K și pentru Unreal.",tag:"în build-ul tău"},
+ {id:"5070ti",n:"NVIDIA GeForce RTX 5070 Ti 16GB",s:"RTX 5070 Ti",t:"B",len:305,psu:750,conn:"12v2x6",note:"Cu 15–20% mai lentă decât 5080, aceeași memorie de 16 GB."},
+ {id:"9070xt",n:"AMD Radeon RX 9070 XT 16GB",s:"RX 9070 XT",t:"B",len:320,psu:750,conn:"8pin",note:"Cam cât un 5070 Ti, de obicei mai ieftină. Fără DLSS."},
+ {id:"5070",n:"NVIDIA GeForce RTX 5070 12GB",s:"RTX 5070",t:"C",len:290,psu:650,conn:"12v2x6",note:"12 GB de memorie, la limită pentru 4K."},
+ {id:"5060ti",n:"NVIDIA GeForce RTX 5060 Ti 16GB",s:"RTX 5060 Ti",t:"D",len:240,psu:550,conn:"8pin",note:"Bună pentru 1080p, slabă pentru restul build-ului."},
+ {id:"5060",n:"NVIDIA GeForce RTX 5060 8GB",s:"RTX 5060",t:"E",len:230,psu:550,conn:"8pin",note:"8 GB de memorie e prea puțin pentru jocurile din 2026."},
+ {id:"igpu",n:"Fără placă video (grafica din procesor)",s:"grafica integrată",t:"F",len:0,psu:0,conn:"",note:"Merge pentru imagine pe ecran și depanare, nu pentru jocuri."},
+],
+cooler:[
+ {id:"lf3-360",n:"Arctic Liquid Freezer III 360 A-RGB",s:"Liquid Freezer III 360",t:"S",type:"aio",rad:360,cap:300,note:"Răcire pe lichid, silențioasă. Ventilatoarele ARGB se pot seta pe cupru.",tag:"sugestie, lipsea din listă"},
+ {id:"nhd15g2",n:"Noctua NH-D15 G2",s:"NH-D15 G2",t:"S",type:"air",h:168,cap:250,note:"Cel mai bun cooler pe aer, foarte silențios. E înalt, verifică carcasa."},
+ {id:"pa120",n:"Thermalright Peerless Assassin 120 SE ARGB",s:"Peerless Assassin 120 SE",t:"A",type:"air",h:155,cap:220,note:"Cel mai bun raport calitate-preț."},
+ {id:"drp5",n:"be quiet! Dark Rock Pro 5",s:"Dark Rock Pro 5",t:"A",type:"air",h:168,cap:250,note:"Silențios, complet negru."},
+ {id:"ak400",n:"DeepCool AK400",s:"AK400",t:"B",type:"air",h:155,cap:180,note:"Simplu și ieftin. Ajunge pentru 9800X3D."},
+ {id:"l9a",n:"Noctua NH-L9a-AM5",s:"NH-L9a",t:"D",type:"low",h:37,cap:95,note:"Pentru carcase foarte mici."},
+ {id:"wraith",n:"AMD Wraith Prism (cooler de stoc)",s:"Wraith Prism",t:"E",type:"low",h:71,cap:105,note:"Nu vine în cutie cu 9800X3D. Zgomotos și slab."},
+],
+"case":[
+ {id:"lancool3",n:"Lian Li Lancool III RGB (negru)",s:"Lancool III",t:"S",forms:["E-ATX","ATX","Micro-ATX","Mini-ITX"],gpu:435,cool:187,rad:360,note:"Flux de aer excelent și loc pentru orice. Ventilatoarele ARGB se pot pune pe cupru.",tag:"sugestie, lipsea din listă"},
+ {id:"torrent",n:"Fractal Design Torrent (negru)",s:"Torrent",t:"S",forms:["E-ATX","ATX","Micro-ATX","Mini-ITX"],gpu:461,cool:188,rad:360,note:"Cel mai bun flux de aer. Mare și grea."},
+ {id:"o11evo",n:"Lian Li O11 Dynamic EVO",s:"O11 Dynamic EVO",t:"A",forms:["E-ATX","ATX","Micro-ATX","Mini-ITX"],gpu:426,cool:167,rad:360,note:"Stil acvariu, arată excelent cu ARGB. Ventilatoarele se cumpără separat."},
+ {id:"north",n:"Fractal Design North",s:"North",t:"A",forms:["ATX","Micro-ATX","Mini-ITX"],gpu:355,cool:170,rad:360,note:"Lemn și plasă metalică, arată deosebit."},
+ {id:"4000d",n:"Corsair 4000D Airflow",s:"4000D Airflow",t:"B",forms:["ATX","Micro-ATX","Mini-ITX"],gpu:360,cool:170,rad:360,note:"Clasică, ușor de montat în ea."},
+ {id:"h5flow",n:"NZXT H5 Flow",s:"H5 Flow",t:"B",forms:["ATX","Micro-ATX","Mini-ITX"],gpu:365,cool:165,rad:360,note:"Compactă și curată."},
+ {id:"nr200p",n:"Cooler Master NR200P",s:"NR200P",t:"A",forms:["Mini-ITX"],gpu:336,cool:155,rad:280,note:"Cea mai populară carcasă mică."},
+ {id:"noname",n:"Carcasă no-name cu sursă inclusă",s:"carcasa no-name",t:"F",forms:["ATX","Micro-ATX","Mini-ITX"],gpu:320,cool:160,rad:240,note:"Flux de aer slab, iar sursa din ea trebuie evitată."},
+],
+psu:[
+ {id:"hx1200i",n:"Corsair HX1200i (Platinum)",s:"HX1200i",t:"S",w:1200,native:true,note:"1200 W, rezervă pentru orice upgrade. Foarte silențioasă."},
+ {id:"primetx",n:"Seasonic Prime TX-1000 (Titanium)",s:"Prime TX-1000",t:"S",w:1000,native:true,note:"Calitate de top, garanție 12 ani."},
+ {id:"gx1000",n:"Seasonic Focus GX-1000 ATX 3",s:"Focus GX-1000",t:"A",w:1000,native:true,note:"80+ Gold, 10 ani garanție, cablu direct pentru placa video.",tag:"în build-ul tău"},
+ {id:"rm1000x",n:"Corsair RM1000x",s:"RM1000x",t:"A",w:1000,native:true,note:"Silențioasă, garanție 10 ani."},
+ {id:"pp12m",n:"be quiet! Pure Power 12 M 1000W",s:"Pure Power 12 M",t:"B",w:1000,native:true,note:"Bună și mai ieftină."},
+ {id:"rm850x",n:"Corsair RM850x",s:"RM850x",t:"C",w:850,native:true,note:"Ajunge pentru 5080, dar nu lasă loc de upgrade."},
+ {id:"bronze750",n:"Sursă 750 W Bronze",s:"750 W Bronze",t:"D",w:750,native:false,note:"Eficiență mică, fără cablu pentru plăcile video noi."},
+ {id:"w650",n:"Sursă 650 W",s:"650 W",t:"E",w:650,native:false,note:"Pentru PC-uri de birou sau gaming ușor."},
+ {id:"noname1000",n:"Sursă no-name „1000 W”",s:"sursa no-name",t:"F",w:1000,native:false,junk:true,note:"Wații de pe etichetă nu sunt wați reali."},
+]};
+const BY = {}; for (const c of CATS) BY[c.id] = Object.fromEntries(DATA[c.id].map(p => [p.id, p]));
+const DEFAULT = {cpu:"9800x3d",board:"x870e-e",ram:"viper-2x16",ssd:"9100pro",gpu:"5080",cooler:"lf3-360","case":"lancool3",psu:"gx1000"};
+const KEY = "atelier-pc-build";
+let build = {...DEFAULT};
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && CATS.every(c => BY[c.id][s[c.id]])) build = s; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(build)); } catch (e) {} };
+const P = b => Object.fromEntries(CATS.map(c => [c.id, BY[c.id][b[c.id]]]));
+
+// ------------------------------------------------------------------ compatibilitate
+function issues(b){
+  const {cpu, board, ram, ssd, gpu, cooler, case:cs, psu} = P(b);
+  const out = [], add = (s, cats, msg) => out.push({s, cats, msg});
+  if (cpu.socket !== board.socket) add("bad",["cpu","board"],`Socket diferit: procesorul e ${cpu.socket}, placa de bază e ${board.socket}. Nu intră fizic.`);
+  if (ram.type !== board.ram) add("bad",["ram","board"],`Memoria ${ram.type} nu intră în sloturile ${board.ram} ale plăcii.`);
+  else if (ram.sticks > board.slots) add("bad",["ram","board"],`Kitul are ${ram.sticks} plăcuțe, iar placa are doar ${board.slots} sloturi.`);
+  else if (ram.sticks === 4) add("warn",["ram"],"Cu 4 plăcuțe DDR5, Ryzen 9000 coboară de obicei viteza sub 6000 MT/s.");
+  if (!cs.forms.includes(board.form)) add("bad",["case","board"],`Placa e ${board.form}, iar carcasa ia doar ${cs.forms.join(", ")}.`);
+  if (gpu.len && gpu.len > cs.gpu) add("bad",["gpu","case"],`Placa video are ~${gpu.len} mm, iar în carcasă încap maxim ${cs.gpu} mm.`);
+  if (gpu.id === "igpu" && !cpu.igpu) add("bad",["gpu","cpu"],`${cpu.s} nu are grafică integrată. Fără placă video nu ai imagine.`);
+  if (cooler.type === "aio") { if (cooler.rad > cs.rad) add("bad",["cooler","case"],`Radiatorul are ${cooler.rad} mm, iar carcasa ia maxim ${cs.rad} mm.`); }
+  else if (cooler.h > cs.cool) add("bad",["cooler","case"],`Coolerul are ${cooler.h} mm înălțime, iar carcasa permite maxim ${cs.cool} mm.`);
+  else if (cooler.h > cs.cool - 4) add("warn",["cooler","case"],`Încape la milimetru: ${cooler.h} mm din ${cs.cool} mm.`);
+  if (cooler.cap < cpu.tdp) add("warn",["cooler","cpu"],`Răcire la limită pentru ${cpu.s} (${cpu.tdp} W). Va merge mai cald și mai zgomotos.`);
+  if (gpu.psu && psu.w < gpu.psu - 100) add("bad",["psu","gpu"],`Sursă prea slabă: pentru ${gpu.s} se recomandă minim ${gpu.psu} W.`);
+  else if (gpu.psu && psu.w < gpu.psu) add("warn",["psu","gpu"],`La limită: pentru ${gpu.s} se recomandă ${gpu.psu} W.`);
+  if (psu.junk) add("warn",["psu"],"Sursă de calitate slabă. Dacă cedează, poate strica și alte piese.");
+  if (gpu.conn === "12v2x6" && !psu.native) add("warn",["psu","gpu"],"Sursa nu are cablu 12V-2x6. Vei folosi adaptorul din cutia plăcii video.");
+  if (ssd.gen === 5 && !board.m2g5) add("warn",["ssd","board"],"Placa nu are slot M.2 PCIe 5.0, așa că SSD-ul merge la viteză PCIe 4.0 (cam jumătate).");
+  if ((cpu.t === "C" || cpu.t === "D") && (gpu.t === "S" || gpu.t === "A")) add("warn",["cpu","gpu"],`${cpu.s} o să țină pe loc ${gpu.s} în multe jocuri.`);
+  if (board.weakVrm && cpu.tdp >= 120) add("warn",["board","cpu"],`Alimentarea plăcii e la limită pentru ${cpu.s}.`);
+  return out;
+}
+const worst = list => list.some(i => i.s === "bad") ? "bad" : list.some(i => i.s === "warn") ? "warn" : "ok";
+function statusFor(cat, id){
+  const list = issues({...build, [cat]: id}).filter(i => i.cats.includes(cat));
+  return {s: worst(list), list};
+}
+
+// ------------------------------------------------------------------ pași de montaj
+function stepsFor(b){
+  const p = P(b), {cpu, board, ram, ssd, gpu, cooler, case:cs, psu} = p;
+  const iss = issues(b);
+  const about = (...cats) => iss.filter(i => cats.some(c => i.cats.includes(c)));
+  const used = board.slots === 2 ? "ambele sloturi" : ram.sticks === 4 ? "toate cele patru sloturi" : "sloturile A2 și B2, adică al doilea și al patrulea de lângă procesor";
+  const m2 = ssd.gen === 5 || ssd.gen === 4;
+  return [
+   {t:"Placa de bază, pe cutia ei", cat:"board", d:`Scoate ${board.s} din punga antistatică și pune-o pe cutia ei, nu pe covor sau pe pat. Înainte, atinge o parte metalică a carcasei ca să te descarci de electricitate statică.`, tip:"Procesorul, SSD-ul și memoria se montează mai ușor pe masă, înainte ca placa să intre în carcasă.", w:about("board").filter(i=>i.cats.includes("cpu")||i.cats.includes("ram"))},
+   {t:"Procesorul în socket", cat:"cpu", d:`Ridică brațul metalic al socketului ${board.socket}. Ține ${cpu.s} de margini, aliniază triunghiul auriu din colț cu triunghiul de pe socket și lasă-l să cadă singur în loc. Coboară brațul la loc; capacul de plastic sare singur.`, tip:"Nu apăsa pe procesor și nu atinge pinii din socket. Dacă simți că trebuie să forțezi, ceva e greșit.", w:about("cpu").filter(i=>i.cats.includes("board"))},
+   {t: m2 ? "SSD-ul în slotul M.2_1" : "SSD-ul se montează în carcasă", cat:"ssd",
+    d: m2 ? `Deșurubează radiatorul de pe slotul M.2_1, cel de sub procesor, și scoate folia de pe padul termic. Bagă ${ssd.s} în slot la un unghi de circa 30°, apasă-l în jos și prinde-l cu clema. Pune radiatorul la loc.${ssd.gen===5&&ssd.hs===false?" SSD-ul tău nu are radiator propriu, deci cel al plăcii e obligatoriu: un PCIe 5.0 se încălzește mult.":""}`
+          : `${ssd.s} nu intră în slotul M.2. Se pune în suportul de disc din carcasă și se leagă cu un cablu SATA la placă și cu unul de alimentare la sursă. Pe placă nu ai nimic de făcut acum.`,
+    tip:"M.2_1 e legat direct la procesor și e cel mai rapid slot. Pune acolo discul cu Windows.", w:about("ssd")},
+   {t:"Memoria RAM", cat:"ram", d: ram.type!==board.ram ? `${ram.s} e ${ram.type}, iar placa are sloturi ${board.ram}. Crestătura e în alt loc, deci nu intră.` : `Pune plăcuțele în ${used}. Deschide clemele, aliniază crestătura de pe plăcuță cu cea din slot și apasă pe ambele capete până auzi click.`, tip:"La prima pornire ecranul poate rămâne negru 1–3 minute, cât placa testează și calibrează memoria. E normal, nu opri PC-ul. Apoi activează EXPO din BIOS ca memoria să meargă la viteza de pe etichetă.", w:about("ram")},
+   {t:"Placa de bază intră în carcasă", cat:"case", d:`Verifică dacă distanțierele (standoff-urile) sunt puse în ${cs.s} pentru o placă ${board.form}. Coboară placa în carcasă cu porturile din spate prin decupaj și prinde-o cu șuruburi, fără să strângi tare.`, tip: board.io ? `${board.s} are scutul pentru porturi deja montat, deci nu ai ce uita.` : "Dacă placa are scut separat pentru porturile din spate, pune-l în carcasă înaintea plăcii. E cea mai uitată piesă.", w:about("case").filter(i=>i.cats.includes("board"))},
+   {t:"Sursa", cat:"psu", d:`Glisează ${psu.s} jos, în spatele carcasei, cu ventilatorul în jos dacă dedesubt e un filtru de praf. Prinde-o cu 4 șuruburi în spate.`, tip:"La o sursă modulară, conectează la ea cablurile de care ai nevoie înainte s-o împingi la locul ei.", w:about("psu")},
+   {t: cooler.type==="aio" ? "Răcirea pe lichid" : "Coolerul procesorului", cat:"cooler",
+    d: cooler.type==="aio" ? `Montează radiatorul de ${cooler.rad} mm sus în carcasă, cu ventilatoarele suflând aerul afară. Apoi pune pompa pe procesor: dacă pasta nu e deja aplicată, pune în centru un bob cât un bob de mazăre. Strânge șuruburile în cruce, câte puțin. Cablul pompei merge în AIO_PUMP, cel al ventilatoarelor în CPU_FAN.`
+          : `Montează suportul pentru AM5 și pune pasta: un bob cât un bob de mazăre, în centrul procesorului. Așază coolerul și strânge șuruburile în cruce, câte puțin. Ventilatorul trebuie să sufle spre spatele carcasei. Cablul lui merge în CPU_FAN.${cooler.type==="air"&&cooler.h>150?" Un cooler mare pe aer e mai ușor de pus cât placa e încă pe masă, după pasul 4.":""}`,
+    tip:"Nu uita să scoți folia de protecție de pe baza coolerului. Se uită des și procesorul se încălzește imediat.", w:about("cooler")},
+   {t: gpu.id==="igpu" ? "Fără placă video" : "Placa video", cat:"gpu",
+    d: gpu.id==="igpu" ? `Nu ai placă video separată. Monitorul se leagă la portul HDMI sau DisplayPort de pe placa de bază.` : `Scoate din spatele carcasei capacele metalice din dreptul slotului (2–3, după cât de groasă e placa). Împinge ${gpu.s} în slotul PCIe x16 de sus până face click și prinde-o cu șuruburi de carcasă.`,
+    tip: gpu.conn==="12v2x6" ? "Cablul 12V-2x6 se împinge până la capăt, fără niciun spațiu. Un conector băgat pe jumătate se poate topi. Pune și suportul din cutie ca placa să nu se lase." : "Pune suportul din cutie, dacă există, ca placa să nu se lase în timp.", w:about("gpu")},
+   {t:"Cablurile", cat:"psu", d:`De la sursă duci trei cabluri: cel mare de 24 de pini în dreapta plăcii, cel de 8 pini (EPS) sus în stânga, lângă procesor${gpu.id==="igpu"?"":", și cablul plăcii video"}. Apoi conectezi firele mici de la carcasă: butonul de pornire, USB-ul și audio din față.`, tip:"Trage cablurile prin spatele plăcii de bază. Arată mai curat și aerul circulă mai bine.", w:[]},
+   {t:"Prima pornire", cat:null, d:`Leagă monitorul la ${gpu.id==="igpu"?"placa de bază":"placa video, nu la placa de bază"}. Pornește și apasă Delete ca să intri în BIOS. Verifică dacă apar procesorul, memoria și SSD-ul, activează EXPO, apoi instalează Windows de pe un stick USB.`, tip:"După Windows instalezi driverul plăcii video de pe site-ul producătorului și driverul de chipset de pe site-ul AMD. Restul le ia Windows singur.", w:iss},
+  ];
+}
+
+// ------------------------------------------------------------------ interfață
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ICON = {ok:"✓", warn:"⚠", bad:"✗"};
+let step = 0, open = new Set();
+try { open = new Set(JSON.parse(sessionStorage.getItem("atelier-open") || "[]")); } catch (e) {}
+
+function links(p){
+  const q = encodeURIComponent(p.n.replace(/\(.*?\)/g,"").replace(/„|”/g,"").trim());
+  return `<a href="https://www.emag.ro/search/${q}" target="_blank" rel="noopener">eMAG</a>
+          <a href="https://www.pcgarage.ro/cauta/${q}/" target="_blank" rel="noopener">PC Garage</a>
+          <a href="https://www.amazon.de/s?k=${q}" target="_blank" rel="noopener">Amazon.de</a>`;
+}
+function renderParts(){
+  const all = issues(build);
+  let html = "";
+  for (const c of CATS) {
+    const p = BY[c.id][build[c.id]];
+    const mine = all.filter(i => i.cats.includes(c.id)), s = worst(mine);
+    const isOpen = open.has(c.id);
+    html += `<article class="part" data-cat="${c.id}">
+      <div class="part-top"><span class="cat">${c.name}</span>${p.tag && build[c.id]===DEFAULT[c.id] ? `<span class="tag">${esc(p.tag)}</span>` : (build[c.id]!==DEFAULT[c.id] ? `<span class="tag">schimbat de tine</span>` : "")}</div>
+      <div class="part-main"><span class="tier t-${p.t}" title="Nivel ${p.t}">${p.t}</span><div class="pname">${esc(p.n)}</div></div>
+      ${s === "ok" ? `<div class="st ok">✓ Merge cu restul pieselor</div>` : mine.map(i => `<div class="st ${i.s}"><span>${ICON[i.s]}</span><span>${esc(i.msg)}</span></div>`).join("")}
+      <div class="part-actions">
+        <button class="small" data-toggle="${c.id}" aria-expanded="${isOpen}">Alternative (${DATA[c.id].length - 1})</button>
+        <button class="small" data-show="${c.step}">Arată în 3D</button>
+      </div>
+      <div class="tierlist" ${isOpen ? "" : "hidden"}>${isOpen ? tierlist(c.id) : ""}</div>
+    </article>`;
+  }
+  $("plist").innerHTML = html;
+  const nb = all.filter(i => i.s === "bad").length, nw = all.filter(i => i.s === "warn").length;
+  const pill = $("pill");
+  pill.className = "pill " + (nb ? "bad" : nw ? "warn" : "ok");
+  pill.textContent = nb ? `✗ ${nb} ${nb===1?"problemă de compatibilitate":"probleme de compatibilitate"}${nw?` · ⚠ ${nw}`:""}` : nw ? `⚠ Compatibil, cu ${nw} ${nw===1?"atenționare":"atenționări"}` : "✓ Toate piesele sunt compatibile";
+  $("reset").hidden = CATS.every(c => build[c.id] === DEFAULT[c.id]);
+}
+function tierlist(cat){
+  let out = "";
+  for (const t of TIERS) {
+    const items = DATA[cat].filter(p => p.t === t);
+    if (!items.length) continue;
+    out += `<div class="trow"><div class="tier t-${t}">${t}</div><div class="titems">` + items.map(p => {
+      const sel = build[cat] === p.id, st = statusFor(cat, p.id);
+      const stHtml = st.s === "ok" ? `<div class="st ok">✓ Merge cu restul pieselor</div>`
+        : st.list.map(i => `<div class="st ${i.s}"><span>${ICON[i.s]}</span><span>${i.s==="bad"?"Nu e compatibil. ":""}${esc(i.msg)}</span></div>`).join("");
+      return `<div class="alt ${sel?"sel":""} ${st.s==="bad"?"bad":""}">
+        <div class="aname">${esc(p.n)}</div><div class="anote">${esc(p.note)}</div>${stHtml}
+        <div class="aact">${sel ? `<span class="chosen">● Aleasă acum</span>` : `<button class="pick" data-pick="${cat}:${p.id}">Alege</button>`}${links(p)}</div></div>`;
+    }).join("") + `</div></div>`;
+  }
+  return out;
+}
+$("plist").addEventListener("click", e => {
+  const tg = e.target.closest("[data-toggle]"), pk = e.target.closest("[data-pick]"), sh = e.target.closest("[data-show]");
+  if (tg) {
+    const c = tg.dataset.toggle; open.has(c) ? open.delete(c) : open.add(c);
+    try { sessionStorage.setItem("atelier-open", JSON.stringify([...open])); } catch (e) {}
+    renderParts();
+  } else if (pk) {
+    const [c, id] = pk.dataset.pick.split(":");
+    build[c] = id; save(); changed(c);
+  } else if (sh) {
+    go(+sh.dataset.show);
+    if (window.matchMedia("(max-width:920px)").matches) $("stage").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+});
+$("reset").addEventListener("click", () => { build = {...DEFAULT}; save(); changed(null); });
+
+let STEPS = stepsFor(build);
+function renderStep(){
+  const s = STEPS[step];
+  $("stepno").textContent = `Pasul ${step + 1} din ${STEPS.length}`;
+  $("stepcat").textContent = s.cat ? CATS.find(c => c.id === s.cat).name : "";
+  $("stitle").textContent = s.t;
+  $("sbody").textContent = s.d;
+  $("stip").textContent = s.tip;
+  const w = s.w || [];
+  $("swarn").innerHTML = w.map(i => `<div class="stepwarn ${i.s}">${ICON[i.s]} ${esc(i.msg)}</div>`).join("");
+  $("prev").disabled = step === 0;
+  $("next").disabled = step === STEPS.length - 1;
+  $("bar").innerHTML = STEPS.map((x, i) => `<button aria-label="Pasul ${i+1}: ${esc(x.t)}" class="${i<step?"done":""} ${i===step?"cur":""} ${(x.w||[]).some(k=>k.s==="bad")&&i!==9?"err":""}" data-go="${i}"></button>`).join("");
+}
+$("bar").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
+$("prev").addEventListener("click", () => go(step - 1));
+$("next").addEventListener("click", () => go(step + 1));
+$("replay").addEventListener("click", () => go(step, true));
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input,textarea,select")) return;
+  if (e.key === "ArrowRight") go(step + 1); else if (e.key === "ArrowLeft") go(step - 1);
+});
+function go(i){
+  step = Math.max(0, Math.min(STEPS.length - 1, i));
+  renderStep(); if (G) G.setStep(step);
+}
+function changed(cat){
+  STEPS = stepsFor(build);
+  renderParts(); renderStep();
+  if (G) G.rebuild(cat);
+}
+
+// ------------------------------------------------------------------ 3D
+let G = null;
+try { if (window.THREE) G = make3D(); } catch (err) { console.error(err); G = null; }
+if (!G) {
+  $("stage").classList.add("no3d");
+  $("stage").insertAdjacentHTML("beforeend", `<div class="fallback">Modelul 3D nu s-a putut încărca pe acest dispozitiv. Pașii de montaj și lista de piese merg în continuare.</div>`);
+}
+renderParts(); renderStep(); if (G) G.setStep(0, true);
+
+function make3D(){
+  const T = THREE, V = (x, y, z) => new T.Vector3(x, y, z);
+  const stage = $("stage"), canvas = $("cv"), labelsEl = $("labels");
+  const renderer = new T.WebGLRenderer({canvas, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(38, 4/3, 0.5, 800);
+  scene.add(new T.HemisphereLight(0xffffff, 0x3a4552, 0.7));
+  const d1 = new T.DirectionalLight(0xffffff, 0.9); d1.position.set(40, 90, 70); scene.add(d1);
+  const d2 = new T.DirectionalLight(0xffe0c2, 0.35); d2.position.set(-70, 20, -30); scene.add(d2);
+  const glow = new T.PointLight(0xe08a4a, 0.5, 70); glow.position.set(4, 4, 4); scene.add(glow);
+
+  const COPPER = 0xd27a3c;
+  const M = (color, o = {}) => {
+    const m = new T.MeshStandardMaterial({color, metalness:o.metal ?? .35, roughness:o.rough ?? .6,
+      emissive:o.em ?? 0x000000, emissiveIntensity:o.emI ?? 0, transparent:(o.op ?? 1) < 1, opacity:o.op ?? 1});
+    if (o.op !== undefined && o.op < 1) m.depthWrite = false;
+    m.userData.base = {em:o.em ?? 0x000000, emI:o.emI ?? 0};
+    return m;
+  };
+  const box = (w, h, d, mat, x = 0, y = 0, z = 0) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+  const rotors = [];
+  function fan(r, axis){ // axis: "x" | "y" | "z"
+    const g = new T.Group();
+    const ring = new T.Mesh(new T.TorusGeometry(r, .32, 10, 40), M(0x7a3f18, {em:COPPER, emI:.9, metal:.2, rough:.5}));
+    const frame = new T.Mesh(new T.TorusGeometry(r + .25, .18, 6, 4), M(0x16181c));
+    frame.rotation.z = Math.PI / 4; frame.scale.set(1.35, 1.35, 1);
+    const rotor = new T.Group();
+    rotor.add(new T.Mesh(new T.CylinderGeometry(r * .3, r * .3, .9, 20).rotateX(Math.PI / 2), M(0x1d2026)));
+    for (let i = 0; i < 7; i++) { const b = box(r * .62, r * .2, .1, M(0x2a2e35, {op:.92})); b.position.x = r * .55; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 7; b.rotation.x = .5; rotor.add(h); }
+    g.add(ring, frame, rotor); rotors.push(rotor);
+    if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
+    return g;
+  }
+
+  // sol + carcasă
+  const grid = new T.GridHelper(400, 80, 0x8a96a3, 0x8a96a3);
+  grid.material.transparent = true; grid.material.opacity = .25; grid.position.y = -25.6; scene.add(grid);
+  const caseG = new T.Group(); scene.add(caseG);
+  const dark = M(0x15181c, {metal:.5, rough:.55}), panel = M(0x1d2127, {metal:.5, rough:.6});
+  caseG.add(box(48, 50, .4, dark, 0, 0, -11.7), box(48.8, .4, 23.8, panel, 0, 25.2, 0), box(48.8, .4, 23.8, panel, 0, -25.2, 0),
+            box(.4, 50, 23, dark, -24.2, 0, 0), box(.4, 50, 23, M(0x23272e, {metal:.3, rough:.8, op:.45}), 24.2, 0, 0));
+  caseG.add(box(48.8, 50.8, .2, M(0x9fb4c8, {op:.07, metal:.1, rough:.05}), 0, 0, 11.9));
+  const edges = new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(48.8, 50.8, 23.8)), new T.LineBasicMaterial({color:0x4a5563}));
+  caseG.add(edges);
+  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.4, y, 0); caseG.add(f); }
+  const rearFan = fan(5.6, "x"); rearFan.position.set(-22.4, 15, 0); caseG.add(rearFan);
+  // cutia plăcii de bază (masa de lucru)
+  scene.add(box(28, 5, 34, M(0x2b3440, {metal:.1, rough:.9}), 45, -23.1, 4));
+  scene.add(box(10, .05, 8, M(0xb34a2a, {metal:0, rough:.9}), 45, -20.55, 16));
+
+  // poziții placă de bază
+  const tableQ = new T.Quaternion().setFromAxisAngle(V(1, 0, 0), -Math.PI / 2), tableP = V(45, -20.45, 4);
+  const caseQ = new T.Quaternion(), caseP = V(-9.8, 7.25, -10.6);
+  const tableM = new T.Matrix4().compose(tableP, tableQ, V(1, 1, 1)), caseM = new T.Matrix4().compose(caseP, caseQ, V(1, 1, 1));
+  const inTable = v => v.clone().applyMatrix4(tableM), inCase = v => v.clone().applyMatrix4(caseM);
+
+  const boardG = new T.Group(); scene.add(boardG);
+  const HL = new Map(); // pas -> obiecte evidențiate
+  const hl = (s, ...objs) => { if (!HL.has(s)) HL.set(s, []); HL.get(s).push(...objs); };
+  const pcbMat = M(0x1a1e24, {metal:.2, rough:.75});
+  const pcb = box(24.4, 30.5, .16, pcbMat); pcb.userData.hs = .3; boardG.add(pcb); hl(0, pcb); hl(4, pcb);
+  const metal = M(0x4a5059, {metal:.7, rough:.35});
+  const socket = box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.8, rough:.3}), -3, 7, .25); boardG.add(socket); hl(1, socket);
+  boardG.add(box(.25, 5, .25, metal, -6, 7, .45));
+  boardG.add(box(11, 2.6, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -4, 13, 1.2), box(2.4, 9, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -8.6, 6.5, 1.2));
+  boardG.add(box(2.3, 9, 3, M(0x2a2f36, {metal:.5, rough:.5}), -11, 8, 1.6));
+  boardG.add(box(7, 6, 1, M(0x343a43, {metal:.6, rough:.4}), 5, -9.5, .6), box(9, 2.6, .5, M(0x343a43, {metal:.6, rough:.4}), -6, -12, .35));
+  const conn24 = box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7), eps = box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7);
+  boardG.add(conn24, eps); hl(8, conn24, eps);
+  const pcie = box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.8, rough:.3}), -7.05, -3.5, .6); boardG.add(pcie); hl(7, pcie);
+  boardG.add(box(8.9, .8, 1.1, M(0x22262c), -7.05, -8.5, .6));
+  const m2slot = box(8.2, 2.4, .1, M(0x2b3038, {metal:.3, rough:.6}), -2, .5, .13); boardG.add(m2slot); hl(2, m2slot);
+  boardG.add(box(.6, 2.4, .5, M(0x111316), -6.2, .5, .3));
+
+  const psu = new T.Group();
+  const psuBody = box(15, 8.6, 16, M(0x202329, {metal:.5, rough:.5})); psu.add(psuBody);
+  psu.add(box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.25, metal:.3}), 1.5, .6, 8.03));
+  psuBody.userData.hs = .4; psu.position.set(-15.5, -20.6, -1.5); scene.add(psu); hl(5, psuBody);
+
+  // piese montate pe rând: {obj, step, final, dir}
+  let items = [], dyn = [];
+  const addItem = (obj, s, dir, parent) => { (parent || scene).add(obj); items.push({obj, step:s, final:obj.position.clone(), dir}); return obj; };
+  addItem(psu, 5, V(0, 0, 26));
+
+  let L = {}; // puncte pentru etichete, în coordonatele plăcii
+  function buildDynamic(){
+    for (const o of dyn) o.parent && o.parent.remove(o);
+    items = items.filter(i => !dyn.includes(i.obj)); dyn = [];
+    for (const s of [1,2,3,6,7,8]) HL.set(s, (HL.get(s) || []).filter(o => o.userData.static));
+    const p = P(build);
+    const D = (obj, s, dir, parent) => { dyn.push(obj); return addItem(obj, s, dir, parent || boardG); };
+    const DH = (s, ...o) => hl(s, ...o);
+    // sloturi RAM
+    const xs = p.board.slots === 2 ? [3.6, 4.7] : [3.5, 4.4, 5.3, 6.2];
+    const names = p.board.slots === 2 ? ["A1","B1"] : ["A1","A2","B1","B2"];
+    const usedIdx = p.board.slots === 2 ? [0,1] : p.ram.sticks === 4 ? [0,1,2,3] : [1,3];
+    L.ram = [];
+    xs.forEach((x, i) => {
+      const used = usedIdx.includes(i);
+      const sl = box(.62, 13.3, .7, M(used ? 0x3a4048 : 0x23272d), x, 6.5, .4); boardG.add(sl); dyn.push(sl);
+      if (used) DH(3, sl);
+      L.ram.push({t:names[i], v:V(x, 13.9, used ? 4.6 : 1.2), hot:used});
+    });
+    // procesor
+    const cpuG = new T.Group();
+    const ihs = box(4, 4, .35, M(0xbfc4cb, {metal:.85, rough:.28})); cpuG.add(ihs);
+    const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0,0), new T.Vector2(.8,0), new T.Vector2(0,.8)])), M(0xd9a41c, {metal:.7, rough:.3, em:0x5a3f00, emI:.4}));
+    tri.position.set(-1.85, -1.85, .18); cpuG.add(tri);
+    cpuG.position.set(-3, 7, .6); D(cpuG, 1, V(0, 0, 7)); DH(1, ihs);
+    // SSD
+    if (p.ssd.gen === 5 || p.ssd.gen === 4) {
+      const g = new T.Group();
+      const b = box(8, 2.2, .16, M(0x15181c, {metal:.3, rough:.5})); g.add(b);
+      g.add(box(2, 1.6, .1, M(0x3b4049, {metal:.6}), -1.5, 0, .12), box(2.2, 1.6, .1, M(0x3b4049, {metal:.6}), 1.4, 0, .12));
+      g.add(box(1.2, .6, .02, M(0x8c4a1f, {em:COPPER, emI:.2}), 3.2, .5, .17));
+      g.position.set(-2, .5, .3); D(g, 2, V(0, 0, 5)); DH(2, b);
+    }
+    // RAM
+    if (p.ram.type === p.board.ram) usedIdx.forEach(i => {
+      const g = new T.Group();
+      const body = box(.7, 13.3, 3.2, M(0x17191d, {metal:.55, rough:.4})); g.add(body);
+      g.add(box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1, metal:.1, rough:.4}), 0, 0, 1.75));
+      g.position.set(xs[i], 6.5, .75 + 1.6); D(g, 3, V(0, 0, 7)); DH(3, body);
+    });
+    // cooler
+    const c = p.cooler;
+    if (c.type === "aio") {
+      const pump = new T.Group();
+      const cyl = new T.Mesh(new T.CylinderGeometry(3.5, 3.6, 2.6, 36).rotateX(Math.PI / 2), M(0x1a1d22, {metal:.5, rough:.4}));
+      const top = new T.Mesh(new T.TorusGeometry(2.6, .22, 8, 36), M(0x7a3f18, {em:COPPER, emI:1}));
+      top.position.z = 1.35; pump.add(cyl, top);
+      pump.position.set(-3, 7, 2.15); D(pump, 6, V(0, 0, 8)); DH(6, cyl);
+      const rad = new T.Group();
+      const core = box(39.4, 2.7, 12, M(0x1a1d22, {metal:.5, rough:.5})); rad.add(core);
+      for (const x of [-12.6, 0, 12.6]) { const f = fan(5.4, "y"); f.position.set(x, -2.4, 0); rad.add(f); }
+      core.userData.hs = .4; rad.position.set(2, 23.3, 1.5); D(rad, 6, V(0, 12, 0), scene); DH(6, core);
+      const pw = inCase(V(-3, 7, 3.2)), pts1 = [pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], pts2 = [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)];
+      for (const pts of [pts1, pts2]) {
+        const tube = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, .55, 8, false), M(0x111316, {rough:.8}));
+        D(tube, 6, V(0, 0, 0), scene); DH(6, tube);
+      }
+      L.cool = V(-3, 7, 4);
+    } else {
+      const H = c.h / 10, g = new T.Group();
+      if (c.type === "air") {
+        const base = box(4.5, 4.5, 1, M(0xb87333, {metal:.8, rough:.3})); base.position.z = .5; g.add(base);
+        const fins = box(5.2, 12.5, H - 2, M(0xaab1b9, {metal:.75, rough:.35})); fins.position.z = 1 + (H - 2) / 2; g.add(fins);
+        g.add(box(5.4, 12.7, .4, M(0x16181c), 0, 0, H - .2));
+        const f = fan(5, "x"); f.position.set(3.6, 0, 1 + (H - 2) / 2); g.add(f);
+        DH(6, fins);
+      } else {
+        const sink = box(9, 9, H * .6, M(c.id === "wraith" ? 0x22252b : 0x9da4ac, {metal:.6, rough:.4})); sink.position.z = H * .3; g.add(sink);
+        const f = fan(4, "z"); f.position.z = H * .6 + .3; g.add(f); DH(6, sink);
+      }
+      g.position.set(-3, 7, .75); D(g, 6, V(0, 0, 10));
+      L.cool = V(-3, 7, H + 1.5);
+    }
+    // placa video
+    if (p.gpu.len) {
+      const Lc = p.gpu.len / 10, g = new T.Group();
+      const shroud = box(Lc, 6, 14, M(0x1d2026, {metal:.55, rough:.45})); g.add(shroud);
+      g.add(box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1}), -Lc * .08, 1.6, 7.03));
+      g.add(box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -1.6, 7.03));
+      const n = Lc > 27 ? 3 : 2, r = Math.min(4.3, Lc / (n * 2.35));
+      for (let i = 0; i < n; i++) { const f = fan(r, "y"); f.position.set(-Lc / 2 + Lc * (i + .5) / n, -3.1, 0); g.add(f); }
+      const pc = box(1.8, 1.4, .9, M(0x111316), Lc * .12, 1.2, 7.4); g.add(pc);
+      shroud.userData.hs = .35; g.position.set(-12.2 + Lc / 2, -6.7, 7.3); D(g, 7, V(0, 0, 11)); DH(7, shroud);
+      L.gpuConn = V(-12.2 + Lc / 2 + Lc * .12, -5.5, 15); L.gpuMid = V(-12.2 + Lc / 2, -6.7, 14.5);
+      DH(8, pc);
+    } else { L.gpuConn = null; L.gpuMid = null; }
+    // cabluri
+    const cab = (pts, r) => { const m = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 8, false), M(0x24272c, {rough:.85})); D(m, 8, V(0, 0, 0), scene); DH(8, m); };
+    cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.3, 2, 1.4)).add(V(0, -2, .6))], .6);
+    cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-10.5, 14.6, 1.4))], .38);
+    if (L.gpuConn) cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(L.gpuConn).add(V(0, 0, -.6))], .45);
+    for (const o of dyn) o.traverse(x => { if (x.material) x.userData.dyn = true; });
+  }
+  [pcb, socket, conn24, eps, pcie, m2slot, psuBody].forEach(o => o.userData.static = true);
+  buildDynamic();
+
+  // ---- cameră
+  const cam = {t:V(0,0,0), d:120, th:.5, ph:1.1}, from = {}, to = {};
+  let tw = 1, twStart = 0, stepStart = 0, cur = 0, dragging = false, autoRot = false;
+  const isNarrow = () => camera.aspect < 1.05;
+  function camFor(i){
+    const p = P(build);
+    const k = (t, d, th, ph) => ({t, d:d * (isNarrow() ? 1.28 : 1), th, ph});
+    switch (i) {
+      case 0: return k(V(45, -20.4, 4), 62, .25, .85);
+      case 1: return k(inTable(V(-3, 7, .5)), 26, .2, .55);
+      case 2: return k(inTable(V(-2, .5, .5)), 25, .1, .5);
+      case 3: return k(inTable(V(4.8, 6.5, 2)), 30, .05, .48);
+      case 4: return k(V(12, -6, 2), 118, .5, 1.12);
+      case 5: return k(V(-15.5, -20, -1.5), 56, .35, 1.25);
+      case 6: return p.cooler.type === "aio" ? k(V(-2, 12, 0), 82, .35, 1.12) : k(inCase(V(-3, 7, 4)), 48, .32, 1.2);
+      case 7: return p.gpu.len ? k(inCase(L.gpuMid), 68, .3, 1.28) : k(V(-6, 2, 0), 80, .3, 1.2);
+      case 8: return k(V(-3, -3, 0), 98, .42, 1.25);
+      default: return k(V(0, 0, 0), 122, .6, 1.2);
+    }
+  }
+  function setStep(i, instant){
+    cur = i; stepStart = performance.now();
+    Object.assign(from, {t:cam.t.clone(), d:cam.d, th:cam.th, ph:cam.ph});
+    Object.assign(to, camFor(i));
+    let dth = to.th - from.th; dth = ((dth + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; to.th = from.th + dth;
+    tw = instant ? 1 : 0; twStart = performance.now();
+    if (instant) { cam.t.copy(to.t); cam.d = to.d; cam.th = to.th; cam.ph = to.ph; }
+    autoRot = i === 9;
+    buildLabels();
+  }
+  // ---- etichete
+  let lbls = [];
+  function buildLabels(){
+    const p = P(build), B = (t, v, hot = true) => ({t, v, sp:"b", hot}), W = (t, v, hot = true) => ({t, v, sp:"w", hot});
+    const s = {
+      1:[B(p.board.socket, V(-3, 7, 1.6)), B("▲ triunghiul auriu", V(-4.6, 5.2, 1.2), false)],
+      2:[B("M.2_1", V(-2, .5, 1.3))],
+      3:L.ram.map(r => B(r.t, r.v, r.hot)),
+      4:[B("porturile din spate", V(-11, 12.5, 3.5), false)],
+      5:[W("sursa", V(-15.5, -16, -1.5))],
+      6:[B(p.cooler.type === "aio" ? "pompa → AIO_PUMP" : "→ CPU_FAN", L.cool)],
+      7:p.gpu.len ? [B("PCIe x16 de sus", V(-7, -3.5, 1.6), false), B(p.gpu.s, L.gpuMid)] : [],
+      8:[B("24 de pini", V(11.3, 4.7, 1.4)), B("EPS 8 pini", V(-10.5, 15.2, 1.4))].concat(L.gpuConn ? [B("12V-2x6", L.gpuConn)] : []),
+    }[cur] || [];
+    labelsEl.innerHTML = s.map(l => `<span class="lbl ${l.hot ? "hot" : "dim"}">${esc(l.t)}</span>`).join("");
+    lbls = s.map((l, i) => ({...l, el:labelsEl.children[i]}));
+  }
+  // ---- control
+  let px = 0, py = 0;
+  canvas.addEventListener("pointerdown", e => { dragging = true; px = e.clientX; py = e.clientY; stage.classList.add("drag"); autoRot = false; tw = 1; });
+  window.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    cam.th -= (e.clientX - px) * .006; cam.ph = Math.max(.12, Math.min(1.52, cam.ph - (e.clientY - py) * .006));
+    px = e.clientX; py = e.clientY;
+  });
+  const end = () => { dragging = false; stage.classList.remove("drag"); };
+  window.addEventListener("pointerup", end); window.addEventListener("pointercancel", end);
+  canvas.addEventListener("wheel", e => { e.preventDefault(); tw = 1; cam.d = Math.max(12, Math.min(240, cam.d * (1 + Math.sign(e.deltaY) * .1))); }, {passive:false});
+  $("zin").addEventListener("click", () => { tw = 1; cam.d = Math.max(12, cam.d * .82); });
+  $("zout").addEventListener("click", () => { tw = 1; cam.d = Math.min(240, cam.d / .82); });
+
+  // ---- temă
+  function theme(){
+    const v = getComputedStyle(document.documentElement).getPropertyValue("--stage").trim() || "#dbe2ea";
+    renderer.setClearColor(new T.Color(v));
+    const darkMode = new T.Color(v).getHSL({}).l < .3;
+    grid.material.opacity = darkMode ? .35 : .3;
+    grid.material.color.set(darkMode ? 0x3a4654 : 0x9aa6b3);
+    edges.material.color.set(darkMode ? 0x4a5563 : 0x5c6775);
+  }
+  theme();
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", theme);
+  new MutationObserver(theme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+
+  function resize(){
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(() => { const wasNarrow = isNarrow(); resize(); if (wasNarrow !== isNarrow()) setStep(cur, true); }).observe(stage); resize();
+
+  // ---- buclă
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const tmpQ = new T.Quaternion(), tmpV = new T.Vector3();
+  let last = performance.now();
+  function frame(now){
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const e = reduce ? 1 : ease(Math.min(1, (now - stepStart) / 1100));
+    // placa: pe masă / intră în carcasă
+    if (cur < 4) { boardG.position.copy(tableP); boardG.quaternion.copy(tableQ); if (cur === 0) boardG.position.y += 14 * (1 - e); }
+    else if (cur === 4) { boardG.position.lerpVectors(tableP, caseP, e); boardG.position.y += Math.sin(e * Math.PI) * 14; tmpQ.copy(tableQ).slerp(caseQ, e); boardG.quaternion.copy(tmpQ); }
+    else { boardG.position.copy(caseP); boardG.quaternion.copy(caseQ); }
+    for (const it of items) {
+      if (it.step < cur) { it.obj.visible = true; it.obj.position.copy(it.final); }
+      else if (it.step === cur) { it.obj.visible = true; it.obj.position.copy(it.final).addScaledVector(it.dir, 1 - e); }
+      else it.obj.visible = false;
+    }
+    // evidențiere
+    const pulse = .45 + .35 * Math.sin(now / 260);
+    scene.traverse(o => { if (o.isMesh && o.material && o.material.userData.base && o.material.userData.hot) { const b = o.material.userData.base; o.material.emissive.setHex(b.em); o.material.emissiveIntensity = b.emI; o.material.userData.hot = false; } });
+    for (const o of HL.get(cur) || []) { if (!o.visible && !o.parent?.visible) continue; o.material.emissive.setHex(COPPER); o.material.emissiveIntensity = pulse * (o.userData.hs ?? .7); o.material.userData.hot = true; }
+    for (const r of rotors) r.rotation.z += dt * 5;
+    // cameră
+    if (tw < 1 && !dragging) {
+      tw = Math.min(1, (now - twStart) / 900); const k = reduce ? 1 : ease(tw);
+      cam.t.lerpVectors(from.t, to.t, k); cam.d = from.d + (to.d - from.d) * k; cam.th = from.th + (to.th - from.th) * k; cam.ph = from.ph + (to.ph - from.ph) * k;
+    }
+    if (autoRot && !dragging && tw >= 1 && !reduce) cam.th += dt * .18;
+    camera.position.set(cam.t.x + cam.d * Math.sin(cam.ph) * Math.sin(cam.th), cam.t.y + cam.d * Math.cos(cam.ph), cam.t.z + cam.d * Math.sin(cam.ph) * Math.cos(cam.th));
+    camera.lookAt(cam.t);
+    renderer.render(scene, camera);
+    // etichete
+    if (lbls.length) {
+      boardG.updateMatrixWorld();
+      const w = stage.clientWidth, h = stage.clientHeight;
+      for (const l of lbls) {
+        tmpV.copy(l.v); if (l.sp === "b") boardG.localToWorld(tmpV);
+        tmpV.project(camera);
+        const vis = tmpV.z < 1 && e > .6;
+        l.el.style.display = vis ? "" : "none";
+        if (vis) l.el.style.transform = `translate(${(tmpV.x * .5 + .5) * w}px, ${(-tmpV.y * .5 + .5) * h - 6}px) translate(-50%,-100%)`;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  return {
+    setStep,
+    rebuild(cat){
+      buildDynamic(); buildLabels();
+      if (cat && CATS.find(c => c.id === cat).step === cur) stepStart = performance.now();
+      Object.assign(to, camFor(cur)); Object.assign(from, {t:cam.t.clone(), d:cam.d, th:cam.th, ph:cam.ph}); tw = 0; twStart = performance.now();
+    }
+  };
+}
+})();
+</script>
+
+<script src="comun.js"></script>
+</body>
+</html>
