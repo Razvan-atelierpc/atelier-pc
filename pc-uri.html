@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PC-uri pe buget · Atelier PC</title>
+<meta name="description" content="Cel mai bun PC pe care îl poți construi din piese pentru suma ta, comparat cu PC-urile gata asamblate la același preț.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="PC-uri pe buget · Atelier PC">
+<meta property="og:description" content="Cel mai bun PC pe care îl poți construi din piese pentru suma ta, comparat cu PC-urile gata asamblate la același preț.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Două coloane: în stânga bonul PC-ului compus din piese, în dreapta PC-urile gata asamblate din aceeași zonă de preț. */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a;
+  --t-S:#d9a41c; --t-A:#3a9a64; --t-B:#28899a; --t-C:#4570b8; --t-D:#7360b2; --t-E:#a7622d; --t-F:#b4423e; --t-N:#8a939e;
+  --t-ink:#ffffff; --t-ink-S:#1d1503;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --t-N:#5d6772; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --t-N:#5d6772; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;line-height:1}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:2px;overflow-x:auto;min-width:0}
+nav a{text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:500;color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--fg);background:var(--surface-2)}
+nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+@media (max-width:760px){.top{position:static}}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:18px}
+.hero h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,40px);line-height:1.05;text-wrap:balance}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:66ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.budgets{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.budgets button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.budgets button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.custom{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 4px 3px 12px}
+.custom input{width:92px;border:0;background:none;padding:5px 0;font-family:var(--display);font-weight:700;font-size:17px}
+.custom input:focus{outline:none}
+.custom:focus-within{outline:2px solid var(--accent)}
+.custom button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:5px 12px;font-weight:600;cursor:pointer}
+.seg{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:2px;font-size:13.5px}
+.seg > span{padding:0 6px;color:var(--muted)}
+.seg button{border:0;background:none;border-radius:7px;padding:6px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:1fr}}
+.col h2{margin:0 0 10px;font-family:var(--display);font-weight:700;font-size:22px}
+.col h2 small{font-family:var(--body);font-weight:400;font-size:14px;color:var(--muted);margin-left:6px}
+.tier{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:7px;font-family:var(--display);font-weight:700;font-size:17px;color:var(--t-ink);background:var(--t,var(--t-N));flex:none}
+.tier.S{color:var(--t-ink-S)}
+.tier.big{width:58px;height:58px;font-size:34px;border-radius:12px}
+.bill{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.bill .head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.bill .head .tier{grid-row:span 2}
+.bill .head strong{font-family:var(--display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.bill .head > span:not(.tier){font-size:13.5px;color:var(--muted)}
+.item{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding-block:9px;border-bottom:1px solid var(--line)}
+.item:last-of-type{border-bottom:0}
+.item .cat{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.item a{font-weight:600;text-decoration:none;line-height:1.3}
+.item a:hover{color:var(--accent)}
+.item .amt{font-family:var(--display);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.chip{--t:var(--t-N);display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 8px 2px 3px;border-radius:999px;background:color-mix(in srgb,var(--t) 12%,transparent);border:1px solid color-mix(in srgb,var(--t) 40%,var(--line))}
+.chip i{font-style:normal;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--t);color:var(--t-ink);font-family:var(--display);font-weight:700;font-size:11px}
+.chip.S i{color:var(--t-ink-S)}
+.chip.none{padding-left:8px}
+.note{font-size:13.5px;color:var(--muted)}
+.note b{color:var(--warn)}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:600;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pcs{display:grid;gap:12px}
+.pc{--t:var(--t-N);display:grid;gap:10px;padding:14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--t) 45%,var(--line));background:color-mix(in srgb,var(--t) 8%,var(--surface))}
+.pc .row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:start}
+.pc h3{margin:0;font-size:15.5px;line-height:1.3}
+.pc .shop{font-size:12.5px;color:var(--muted)}
+.pc .price{font-family:var(--display);font-weight:700;font-size:22px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pc .vs{font-size:13.5px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.cta{justify-self:start;text-decoration:none;font-weight:600;padding:8px 14px;border-radius:9px;background:var(--fg);color:var(--bg)}
+.cta:hover{background:var(--accent);color:var(--accent-ink)}
+.empty{padding:22px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.notice{border:1px dashed var(--warn);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px}
+.foot{color:var(--muted);font-size:13px;max-width:80ch}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html">Atelier <b>PC</b></a>
+  <nav aria-label="Pagini">
+    <a href="index.html">Configurator</a>
+    <a href="pc-uri.html" aria-current="page">PC-uri pe buget</a>
+    <a href="pc-ul-meu.html">PC-ul meu</a>
+    <a href="reduceri.html">Reduceri</a>
+    <a href="montaj.html">Montaj 3D</a>
+  </nav>
+</div></header>
+<div class="wrap">
+  <div class="notice" id="exemplu" hidden>Date de exemplu, ca să vezi cum arată. Pe laptop apar prețurile reale din bot.</div>
+  <div class="hero">
+    <h1>Ce PC iei pe banii tăi?</h1>
+    <p>Alege suma. În stânga e cel mai bun PC pe care îl poți construi din piese, cu nota fiecărei piese. În dreapta sunt PC-urile gata asamblate din magazine la același preț, ca să le compari.</p>
+  </div>
+  <div class="controls">
+    <div class="budgets" id="budgets" role="group" aria-label="Buget"></div>
+    <form class="custom" id="custom"><input id="suma" inputmode="numeric" placeholder="Altă sumă" aria-label="Altă sumă, în lei"><span class="note">lei</span><button>Arată</button></form>
+    <span class="seg" id="profil" role="group" aria-label="Pentru"><span>Pentru</span><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button></span>
+  </div>
+  <div class="cols">
+    <section class="col"><h2>Construit din piese</h2><div id="bill"></div></section>
+    <section class="col"><h2>Gata asamblate <small id="band"></small></h2><div class="pcs" id="pcs"></div></section>
+  </div>
+  <p class="foot">Build-ul din piese se calculează din ofertele urmărite de bot și nu combină piese incompatibile (de exemplu, procesor AMD cu placă Intel). La PC-urile gata asamblate notăm doar piesele scrise în numele produsului. Sursa și placa de bază lipsesc de obicei de acolo, așa că întreabă de ele înainte să cumperi.</p>
+</div>
+<script src="date.js"></script>
+<script src="comun.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.ATELIER || {produse:[]};
+const B = window.AtelierBuild;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf0 = new Intl.NumberFormat("ro-RO", {maximumFractionDigits:0});
+const lei = v => v == null ? "?" : nf0.format(v) + " lei";
+const store = {get(k, d){ try { const v = localStorage.getItem("atelier-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+               set(k, v){ try { localStorage.setItem("atelier-" + k, JSON.stringify(v)); } catch (e) {} }};
+const BUGETE = [5000, 8000, 10000, 12000, 15000];
+const P = (D.produse || []).filter(p => p.pret && p.piesa);
+const PIESE = P.filter(p => p.piesa !== "PC complet"), PCS = P.filter(p => p.piesa === "PC complet");
+const m = location.hash.match(/^#b(\d{3,6})$/);
+const S = {buget: m ? +m[1] : store.get("buget", 10000), profil: store.get("profil", "gaming")};
+const N = p => p && p.note && p.note[S.profil] ? p.note[S.profil].n : p && p.nota;
+const W = p => p && p.note && p.note[S.profil] ? p.note[S.profil].why : [];
+if (D.exemplu) $("exemplu").hidden = false;
+
+const chip = x => `<span class="chip ${x.n || "none"}" style="--t:var(--t-${x.n || "N"})">${x.n ? `<i>${x.n}</i>` : ""}${esc(x.p)}: ${esc(x.v)}</span>`;
+const PROF = {gaming:"jocuri", creatie:"editare video și 3D"};
+
+function render(){
+  $("budgets").innerHTML = BUGETE.map(b => `<button data-b="${b}" aria-pressed="${S.buget === b}">${nf0.format(b)}</button>`).join("");
+  document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil));
+  if (!BUGETE.includes(S.buget)) $("suma").value = S.buget;
+
+  // ---- din piese
+  const r = B.autoBuild(PIESE, S.buget, S.profil, N);
+  if (r.eroare === "fara-oferte") $("bill").innerHTML = `<div class="empty">Încă nu urmărim piese. Trimite-i botului linkuri de componente pe Telegram.</div>`;
+  else if (r.eroare) $("bill").innerHTML = `<div class="empty">Cu ofertele de acum, cel mai ieftin PC complet din piese costă cam <b>${lei(r.minim)}</b>. Alege un buget mai mare.</div>`;
+  else {
+    const rows = B.ORDINE.filter(c => r.pick[c]).map(c => { const p = r.pick[c], n = N(p);
+      return `<div class="item"><span class="tier ${n || ""}" style="--t:var(--t-${n || "N"})">${n || "?"}</span>
+        <div><span class="cat">${esc(c)}</span><a href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">${esc(p.nume)}</a>
+          <div class="chips">${(p.specs || []).filter(x => x.n).slice(0, 3).map(chip).join("")}</div></div>
+        <span class="amt">${lei(p.pret_lei)}</span></div>`; }).join("");
+    const rest = S.buget - r.total;
+    $("bill").innerHTML = `<div class="bill">
+      <div class="head"><span class="tier big ${r.nota || ""}" style="--t:var(--t-${r.nota || "N"})">${r.nota || "?"}</span>
+        <strong>${lei(r.total)}</strong><span>nota PC-ului pentru ${PROF[S.profil]} · îți rămân ${lei(rest)} din ${lei(S.buget)}</span></div>
+      ${rows}
+      ${r.lipsa.length ? `<p class="note"><b>Lipsesc:</b> ${esc(r.lipsa.join(", ").toLowerCase())}. Nu urmărim încă oferte pentru ele, deci nu intră în total.</p>` : ""}
+      <div class="acts"><button class="btn primary" id="open3d">Deschide-l în configuratorul 3D →</button><a class="btn" href="reduceri.html">Toate ofertele</a></div></div>`;
+    $("open3d").onclick = () => {
+      store.set("ales", Object.fromEntries(Object.entries(r.pick).map(([c, p]) => [c, p.url])));
+      store.set("profil", S.profil); store.set("vazut", true);
+      location.href = "index.html";
+    };
+  }
+
+  // ---- gata asamblate, în zona de preț
+  const lo = Math.round(S.buget * .8), hi = Math.round(S.buget * 1.1);
+  $("band").textContent = `între ${lei(lo)} și ${lei(hi)}`;
+  const xs = PCS.filter(p => p.pret_lei >= lo && p.pret_lei <= hi && p.stoc !== false)
+    .sort((a, b) => ((N(a) ? B.NOTE.indexOf(N(a)) : 9) - (N(b) ? B.NOTE.indexOf(N(b)) : 9)) || a.pret_lei - b.pret_lei);
+  if (!xs.length) {
+    $("pcs").innerHTML = `<div class="empty">${PCS.length ? "Niciun PC gata asamblat urmărit în zona asta de preț." : "Încă nu urmărim PC-uri gata asamblate."} Ca să apară aici, trimite-i botului pe Telegram o categorie de PC-uri de pe eMAG sau PC Garage cu <b>/urmareste</b>.</div>`;
+    return;
+  }
+  $("pcs").innerHTML = xs.map(p => {
+    const n = N(p);
+    let vs = "";
+    if (!r.eroare && r.nota && n) {
+      const d = B.NOTE.indexOf(n) - B.NOTE.indexOf(r.nota), dl = p.pret_lei - r.total;
+      vs = `<div class="vs">Din piese: nota <b>${r.nota}</b> pentru ${lei(r.total)}. ` +
+        (d > 0 ? `Construit din piese iei un PC <b>mai bun</b>${dl > 0 ? ` și cu ${lei(dl)} mai ieftin` : ""}.`
+         : d < 0 ? `Acesta are nota mai bună${dl < 0 ? " și e mai ieftin" : `, dar costă cu ${lei(dl)} mai mult`}.`
+         : dl > 0 ? `Aceeași notă, dar din piese economisești ${lei(dl)}.` : `Aceeași notă și e mai ieftin cu ${lei(-dl)}, plus că vine montat.`) + `</div>`;
+    }
+    return `<article class="pc" style="--t:var(--t-${n || "N"})">
+      <div class="row"><span class="tier ${n || ""}">${n || "?"}</span><div><h3>${esc(p.nume)}</h3><span class="shop">${esc(p.magazin)}</span></div><span class="price">${lei(p.pret_lei)}</span></div>
+      <div class="chips">${(p.specs || []).map(chip).join("")}</div>
+      ${vs}
+      <a class="cta" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a></article>`;
+  }).join("");
+}
+$("budgets").addEventListener("click", e => { const b = e.target.closest("[data-b]"); if (!b) return; S.buget = +b.dataset.b; $("suma").value = ""; store.set("buget", S.buget); history.replaceState(null, "", "#b" + S.buget); render(); });
+$("custom").addEventListener("submit", e => { e.preventDefault(); const v = parseInt(String($("suma").value).replace(/\D/g, ""), 10); if (v >= 1000) { S.buget = v; store.set("buget", v); history.replaceState(null, "", "#b" + v); render(); } });
+$("profil").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; S.profil = b.dataset.p; store.set("profil", S.profil); render(); });
+render();
+})();
+</script>
+</body>
+</html>
