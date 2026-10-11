@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atelier PC</title>
+<meta name="description" content="Alege piesele PC-ului direct pe modelul 3D, cu oferte reale și note de la S la F.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="Atelier PC">
+<meta property="og:description" content="Alege piesele PC-ului direct pe modelul 3D, cu oferte reale și note de la S la F.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Configurator: PC-ul 3D ocupă ecranul; dai click pe o piesă, ea iese din carcasă și se deschide panoul cu oferte (stânga/dreapta/jos). */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a; --info:#2c6aa8; --stage:#dbe2ea;
+  --t-S:#d9a41c; --t-A:#3a9a64; --t-B:#28899a; --t-C:#4570b8; --t-D:#7360b2; --t-E:#a7622d; --t-F:#b4423e; --t-N:#8a939e;
+  --t-ink:#ffffff; --t-ink-S:#1d1503;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --head:56px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --info:#7fb2e8; --stage:#0b0e12; --t-N:#5d6772; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718;
+  --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --info:#7fb2e8; --stage:#0b0e12; --t-N:#5d6772; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;height:var(--head);background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{height:100%;padding-inline:16px;display:flex;align-items:center;gap:8px 18px}
+.brand{font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;line-height:1;white-space:nowrap}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:2px;overflow-x:auto;min-width:0}
+nav a{text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:500;color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--fg);background:var(--surface-2)}
+nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.gsearch{margin-left:auto;flex:0 1 260px;min-width:0}
+.gsearch input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 11px;font:inherit;font-size:14px;color:inherit}
+@media (max-width:760px){.top{height:auto;position:static}.top .in{flex-wrap:wrap;padding-block:8px}.gsearch{flex:1 1 100%;order:3;margin-left:0}}
+@media (max-width:760px){.meta{display:none}.brand{font-size:20px}nav a{padding:6px 8px}}
+
+/* aplicația: scenă + panou */
+.app{display:grid;height:calc(100dvh - var(--head) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:520px;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+.app.open.dreapta{grid-template-columns:minmax(0,1fr) min(440px,42vw)}
+.app.open.stanga{grid-template-columns:min(440px,42vw) minmax(0,1fr)}
+.app.open.stanga .panel{order:-1;border-right:1px solid var(--line);border-left:0}
+.app.open.jos{grid-template-rows:minmax(0,1fr) min(46%,440px)}
+.app.open.jos .panel{border-left:0;border-top:1px solid var(--line)}
+@media (max-width:760px){
+  .app,.app.open.dreapta,.app.open.stanga,.app.open.jos{height:auto;min-height:0;grid-template-columns:1fr;grid-template-rows:auto}
+  .app.open.stanga .panel{order:0}
+  .stage{height:auto;display:flex;flex-direction:column}
+  .app .stage canvas{height:58vh!important;min-height:340px;flex:none}
+  .app.open .stage canvas{height:42vh!important;min-height:280px}
+  .panel{border-left:0!important;border-top:1px solid var(--line)}
+  .scroll{overflow:visible!important}
+  .sides{display:none!important}
+}
+.stage{position:relative;background:var(--stage);overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;min-width:0}
+.stage canvas{display:block;width:100%!important;height:100%!important;cursor:grab}
+.stage.hovering canvas{cursor:pointer}
+.stage.drag canvas{cursor:grabbing}
+.intro{position:absolute;left:16px;top:14px;right:60px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;pointer-events:none}
+.intro > *{pointer-events:auto}
+.intro h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(22px,3.2vw,30px);line-height:1.1;text-wrap:balance}
+.intro p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:44ch}
+.seg{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:2px;font-size:13px}
+.seg > span{padding:0 6px;color:var(--muted)}
+.seg button{border:0;background:none;border-radius:7px;padding:5px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tip3d{position:absolute;left:0;top:0;pointer-events:none;transform:translate(-50%,-140%);font-size:13px;font-weight:600;padding:4px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--line);box-shadow:0 3px 10px rgb(0 0 0 / .18);white-space:nowrap}
+.zoom{position:absolute;right:12px;top:14px;display:grid;gap:6px}
+.zoom button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
+.back{position:absolute;left:16px;top:14px;display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgb(0 0 0 / .12)}
+
+/* bara de piese */
+.dock{position:absolute;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:stretch;overflow-x:auto;background:linear-gradient(to top,color-mix(in srgb,var(--stage) 94%,transparent) 60%,transparent);scrollbar-width:thin}
+.part{flex:none;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px 6px 6px;cursor:pointer;min-width:116px}
+.part:hover{border-color:var(--accent)}
+.part[aria-current="true"]{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.part .tier{grid-row:span 2}
+.part b{font-size:13px;line-height:1.2}
+.part small{font-size:12px;color:var(--muted);line-height:1.2;font-variant-numeric:tabular-nums}
+.part.empty .tier{background:transparent;color:var(--muted);border:1.5px dashed var(--muted)}
+.sum{flex:none;margin-left:auto;display:grid;align-content:center;justify-items:end;padding:4px 6px 4px 14px;gap:2px}
+.sum strong{font-family:var(--display);font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.sum span{font-size:12px;color:var(--muted)}
+.sum .mini{display:flex;gap:8px}
+.sum .mini button{border:0;background:none;padding:0;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer}
+@media (max-width:760px){.dock{position:static;background:var(--bg);padding:10px 16px}.notice{bottom:auto;top:calc(58vh - 40px)}.app.open .notice{display:none}}
+
+.tier{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:7px;font-family:var(--display);font-weight:700;font-size:17px;color:var(--t-ink);background:var(--t,var(--t-N));flex:none}
+.tier.S{color:var(--t-ink-S)}
+
+/* panou */
+.panel{background:var(--surface);border-left:1px solid var(--line);display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0;min-height:0}
+.ph{padding:14px 16px 12px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.ph .row1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ph h2{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1}
+.ph p{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
+.ph .tools{display:flex;gap:8px;align-items:center}
+.sides{display:inline-flex;gap:2px;border:1px solid var(--line);border-radius:8px;padding:2px}
+.sides button{border:0;background:none;border-radius:6px;width:30px;height:26px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.sides button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.sides svg{width:16px;height:16px}
+.close{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:14px}
+.scroll{overflow-y:auto;min-height:0;padding:0 16px 28px}
+.group{display:grid;gap:8px;padding-top:6px}
+.ghead{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;padding:10px 0 8px;background:var(--surface)}
+.ghead .tier{width:28px;height:28px;font-size:16px}
+.ghead b{font-size:14px}
+.ghead span{font-size:12.5px;color:var(--muted)}
+.weak{margin-top:20px;padding:12px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:13.5px;text-align:center}
+.group.low{opacity:.8}
+.offer{--t:var(--t-N);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:11px 12px;border-radius:10px;border:1px solid color-mix(in srgb,var(--t) 40%,var(--line));background:color-mix(in srgb,var(--t) 8%,var(--surface))}
+.offer.sel{box-shadow:inset 0 0 0 2px var(--t);border-color:var(--t)}
+.offer.out{opacity:.6}
+.offer .nm{font-weight:600;font-size:14.5px;line-height:1.3}
+.offer .shop{font-size:12.5px;color:var(--muted)}
+.offer .pr{text-align:right;font-family:var(--display);font-weight:700;font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.offer .pr small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted)}
+.offer .why{grid-column:1 / -1;font-size:13px;color:var(--muted)}
+.lab{font-weight:600}
+.lab.minim,.lab.sub{color:var(--ok)} .lab.fals{color:var(--bad)} .lab.peste{color:var(--warn)} .lab.cautare{color:var(--info)} .lab.normal{color:var(--muted)}
+.offer .act{grid-column:1 / -1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pick{border:1px solid var(--fg);background:var(--fg);color:var(--bg);border-radius:8px;padding:6px 14px;font-weight:600;cursor:pointer}
+.offer.sel .pick{background:transparent;color:var(--fg)}
+.go{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+.go:hover{color:var(--accent);border-color:var(--accent)}
+.none{padding:24px 4px;color:var(--muted)}
+.search{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 12px;font:inherit;color:inherit}
+.search:focus{outline:2px solid var(--accent);outline-offset:0}
+.row{--t:var(--t-N);width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;padding:8px 10px;border-radius:10px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--t) 38%,var(--line));background:color-mix(in srgb,var(--t) 7%,var(--surface))}
+.row:hover{border-color:var(--t)}
+.row.sel{box-shadow:inset 0 0 0 2px var(--t);border-color:var(--t)}
+.row.out{opacity:.6}
+.thumb{width:52px;height:52px;border-radius:8px;background:var(--surface);display:grid;place-items:center;overflow:hidden;color:color-mix(in srgb,var(--t) 75%,var(--muted));border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:contain;background:#fff}
+.thumb svg{width:32px;height:32px}
+.row .nm{font-weight:600;font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row .shop{font-size:12px;color:var(--muted)}
+.row .right{display:grid;justify-items:end;gap:4px}
+.row .pr{font-family:var(--display);font-weight:700;font-size:18px;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .tier{width:26px;height:26px;font-size:15px}
+.hub{display:grid;gap:14px;padding-top:12px}
+.hub .backl{justify-self:start;border:0;background:none;padding:0;color:var(--muted);cursor:pointer;font-size:14px}
+.hub .backl:hover{color:var(--fg)}
+.hub .top2{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:center}
+.hub .top2 .thumb{width:96px;height:96px}
+.hub .top2 .thumb svg{width:56px;height:56px}
+.hub h3{margin:0;font-size:17px;line-height:1.3}
+.hub .big{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.hub .big small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted);margin-left:6px}
+.hub h4{margin:6px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.uses{display:grid;gap:8px}
+.use{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.use.cur{border-color:var(--fg)}
+.use b{font-size:14px}
+.use > span:not(.tier){grid-column:2;font-size:13px;color:var(--muted)}
+.use .tier{grid-row:span 2;grid-column:1}
+.params{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.param{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:2px 12px;align-items:center;padding:9px 12px;border-top:1px solid var(--line)}
+.param:first-child{border-top:0}
+.param b{font-size:13.5px;font-weight:600}
+.param .val{font-size:13.5px;font-variant-numeric:tabular-nums;text-align:right}
+.param .tier{width:24px;height:24px;font-size:14px}
+.param .tier.none{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.param p{grid-column:1 / -1;margin:0;font-size:12.5px;color:var(--muted)}
+.spark{width:100%;height:40px;display:block}
+.hub .acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.no3d{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+.notice{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;font-size:12.5px;color:var(--warn);background:var(--surface);border:1px dashed var(--warn);border-radius:8px;padding:4px 10px;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+
+.app.open .notice{display:none}
+/* flux de aer */
+.aer-btn{position:absolute;right:12px;top:136px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 9px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgb(0 0 0 / .12);z-index:2}
+.aer-btn svg{width:18px;height:18px;color:#3d8fe0}
+.aer-btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.flbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:none;font-size:12.5px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap;box-shadow:0 2px 8px rgb(0 0 0 / .2)}
+.flbl.rece{background:#2f7fd4;color:#fff}.flbl.cald{background:#d9692b;color:#fff}.flbl.neutru{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.rules{display:grid;gap:10px;padding-top:12px}
+.rule{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.rule .k{grid-row:span 2;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-family:var(--display);font-weight:700;background:var(--accent-soft);color:var(--accent)}
+.rule b{font-size:14.5px}
+.rule p{margin:0;font-size:13.5px;color:var(--muted)}
+.rule.bad .k{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.ctypes{display:flex;flex-wrap:wrap;gap:6px;padding-top:10px}
+.ctypes button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer}
+.ctypes button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ctype{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.ctype svg{width:100%;height:auto;display:block}
+.ctype .ex{font-size:12.5px;color:var(--muted)}
+.ctype p{margin:0;font-size:13.5px}
+.ctype ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.ctype .ok{color:var(--ok);font-weight:600;font-size:13px}
+.ctype .wa{color:var(--warn);font-weight:600;font-size:13px}
+.sch .box{fill:none;stroke:var(--muted);stroke-width:1.5}
+.sch .part{fill:var(--surface-2);stroke:var(--line)}
+.sch .glass{stroke:#7fb2e8;stroke-width:3.5;opacity:.8}
+.sch .fan{stroke:var(--fg);stroke-width:2.6;stroke-linecap:round}
+.sch .fan circle{fill:var(--fg);stroke:none}
+.sch text{font-family:var(--mono);font-size:7.5px;fill:var(--muted);letter-spacing:.06em}
+.sch .fl{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:7 9;animation:fl 1.1s linear infinite}
+.sch .fl.slow{animation-duration:2.4s;stroke-width:2}
+@keyframes fl{to{stroke-dashoffset:-32}}
+@media (prefers-reduced-motion: reduce){.sch .fl{animation:none;stroke-dasharray:none}}
+.legend2{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding-top:10px}
+.legend2 i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+/* bun venit + ghid */
+.welcome{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);width:min(440px,calc(100% - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:0 10px 30px rgb(0 0 0 / .22);display:grid;gap:12px;z-index:3}
+.welcome h2{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1}
+.welcome ol{margin:0;padding:0;list-style:none;display:grid;gap:9px;counter-reset:pas}
+.welcome li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;font-size:14.5px;counter-increment:pas}
+.welcome li::before{content:counter(pas);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-weight:700}
+.welcome .btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dock.hint .part{animation:puls 1.8s ease-in-out infinite}
+.dock.hint .part:nth-child(2){animation-delay:.15s}.dock.hint .part:nth-child(3){animation-delay:.3s}.dock.hint .part:nth-child(4){animation-delay:.45s}
+@keyframes puls{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent)}}
+.toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:var(--fg);color:var(--bg);border-radius:10px;padding:9px 14px;font-size:14px;z-index:4;box-shadow:0 6px 18px rgb(0 0 0 / .25)}
+.ghid-btn{position:absolute;right:12px;top:96px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:999px;padding:6px 12px 6px 8px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgb(0 0 0 / .12);z-index:2}
+.ghid-btn span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:13px}
+.ghid{position:absolute;right:12px;top:136px;width:min(370px,calc(100% - 24px));max-height:calc(100% - 236px);min-height:220px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgb(0 0 0 / .22);z-index:5;overflow:hidden}
+.ghid header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 10px 14px;border-bottom:1px solid var(--line)}
+.ghid header b{font-family:var(--display);font-size:19px}
+.ghid header button{border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--muted);padding:2px 6px}
+.msgs{overflow-y:auto;padding:12px;display:grid;gap:8px;align-content:start}
+.msg{max-width:88%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.45}
+.msg.bot{background:var(--bg);border:1px solid var(--line);justify-self:start;border-bottom-left-radius:4px}
+.msg.me{background:var(--fg);color:var(--bg);justify-self:end;border-bottom-right-radius:4px}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.quick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 10px;font-size:13px;cursor:pointer}
+.quick button:hover{border-color:var(--accent);color:var(--accent)}
+.ghid form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+.ghid input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px;font:inherit;color:inherit}
+.ghid form button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:9px;padding:0 14px;font-weight:600;cursor:pointer}
+@media (max-width:760px){
+  .aer-btn{top:96px}
+  .welcome{bottom:auto;top:150px}
+  .ghid-btn{position:fixed;top:auto;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 4px 14px rgb(0 0 0 / .3)}
+  .ghid{position:fixed;top:auto;left:8px;right:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-height:72vh;z-index:21}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}.dock.hint .part{animation:none;box-shadow:0 0 0 2px var(--accent)}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html">Atelier <b>PC</b></a>
+  <nav aria-label="Pagini">
+    <a href="index.html" aria-current="page">Configurator</a>
+    <a href="pc-uri.html">PC-uri pe buget</a>
+    <a href="pc-ul-meu.html">PC-ul meu</a>
+    <a href="reduceri.html">Reduceri</a>
+    <a href="montaj.html">Montaj 3D</a>
+  </nav>
+  <form class="gsearch" id="gs" role="search"><input id="gq" type="search" autocomplete="off" placeholder="Caută o piesă, ex: 5080" aria-label="Caută o piesă"></form>
+  <span class="meta" id="meta"></span>
+</div></header>
+
+<main class="app dreapta" id="app">
+  <section class="stage" id="stage" aria-label="Modelul 3D al PC-ului">
+    <canvas id="cv"></canvas>
+    <div class="intro" id="intro">
+      <div><h1>Alege piesele pe PC</h1><p>Apasă pe o piesă din model sau din bara de jos ca să vezi ofertele, ordonate după notă.</p></div>
+      <span class="seg" id="profil" role="group" aria-label="Notă pentru"><span>Notă pentru</span><button data-p="gaming">Gaming</button><button data-p="creatie">Editare și 3D</button></span>
+    </div>
+    <button class="back" id="back" hidden>← Înapoi la tot PC-ul</button>
+    <div class="zoom"><button id="zin" aria-label="Apropie">+</button><button id="zout" aria-label="Depărtează">−</button></div>
+    <span class="tip3d" id="tip3d" hidden></span>
+    <span class="notice" id="exemplu" hidden>Date de exemplu. Pe laptop apar prețurile reale din bot.</span>
+    <span class="toast" id="toast" hidden role="status"></span>
+    <div class="welcome" id="welcome" hidden role="dialog" aria-labelledby="w-title">
+      <h2 id="w-title">Bun venit în Atelier PC</h2>
+      <ol>
+        <li><span>Apasă pe o piesă din PC sau din bara de jos, de exemplu pe placa video.</span></li>
+        <li><span>Alege una dintre oferte. Sus sunt cele cu nota <b>S</b>, cele mai bune, iar mai jos cele mai slabe.</span></li>
+        <li><span>Piesa aleasă se colorează în PC, iar jos vezi cât costă tot calculatorul.</span></li>
+      </ol>
+      <div class="btns"><button class="btn primary" id="w-show">Arată-mi</button><button class="btn" id="w-ok">Am înțeles</button></div>
+    </div>
+    <button class="ghid-btn" id="ghid-btn" aria-expanded="false"><span>?</span>Ghid</button>
+    <button class="aer-btn" id="aer-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/></svg>Flux de aer</button>
+    <div id="flbls"></div>
+    <section class="ghid" id="ghid" hidden aria-label="Ghid">
+      <header><b>Ghid</b><button id="ghid-x" aria-label="Închide ghidul">×</button></header>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <form id="ghid-f"><input id="ghid-in" autocomplete="off" placeholder="Ex: PC de jocuri de 8000 lei"><button>Trimite</button></form>
+    </section>
+    <div class="dock" id="dock" role="toolbar" aria-label="Piese"></div>
+  </section>
+  <aside class="panel" id="panel" hidden aria-live="polite">
+    <div class="ph">
+      <div class="row1">
+        <h2 id="ptitle"></h2>
+        <span class="tools">
+          <span class="sides" id="sides" role="group" aria-label="Unde stă panoul">
+            <button data-side="stanga" aria-label="Panou în stânga" title="Panou în stânga"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect x="1.5" y="2.5" width="5" height="11" fill="currentColor"/></svg></button>
+            <button data-side="jos" aria-label="Panou jos" title="Panou jos"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect x="1.5" y="9" width="13" height="4.5" fill="currentColor"/></svg></button>
+            <button data-side="dreapta" aria-label="Panou în dreapta" title="Panou în dreapta"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect x="9.5" y="2.5" width="5" height="11" fill="currentColor"/></svg></button>
+          </span>
+          <button class="close" id="close">Înapoi</button>
+        </span>
+      </div>
+      <p id="pinfo"></p>
+      <input class="search" id="q" type="search" autocomplete="off" placeholder="Caută">
+    </div>
+    <div class="scroll" id="offers"></div>
+  </aside>
+</main>
+
+<script src="date.js"></script>
+<script src="comun.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.ATELIER || {produse:[], build:{piese:[]}};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const NOTE = ["S","A","B","C","D","E","F"];
+const TIER_HEX = {S:0xd9a41c, A:0x3a9a64, B:0x28899a, C:0x4570b8, D:0x7360b2, E:0xa7622d, F:0xb4423e};
+const TIER_NAME = {S:"cele mai bune", A:"foarte bune", B:"bune", C:"decente", D:"slabe", E:"de evitat", F:"de evitat"};
+const CATS = [
+  {id:"Placă video", info:"Desenează imaginea în jocuri și accelerează randarea și editarea. Pentru jocuri, e cea mai importantă piesă."},
+  {id:"Procesor", info:"Creierul PC-ului. Pentru jocuri contează 3D V-Cache (modelele X3D), iar pentru editare video și Unreal, numărul de nuclee."},
+  {id:"Placă de bază", info:"Leagă toate piesele. Trebuie să aibă același socket ca procesorul (AM5 pentru Ryzen 7000/9000) și sloturi DDR5."},
+  {id:"RAM", info:"Memoria de lucru. Pentru jocuri: 32 GB DDR5-6000 CL30. Pentru editare video și Unreal: 64 GB."},
+  {id:"SSD", info:"Aici stau Windows-ul, jocurile și proiectele. Alege NVMe PCIe 4.0 sau 5.0, de cel puțin 2 TB."},
+  {id:"Cooler", info:"Răcește procesorul și ține PC-ul silențios. Un cooler bun pe aer sau o răcire pe lichid de 360 mm ajung pentru orice procesor."},
+  {id:"Sursă", info:"Alimentează tot PC-ul. Contează calitatea mai mult decât wații de pe etichetă: alege o serie testată, de 850–1000 W pentru plăci video puternice."},
+  {id:"Carcasă", info:"Ține totul împreună. Contează fluxul de aer și să încapă placa video și coolerul."},
+];
+const nf0 = new Intl.NumberFormat("ro-RO", {maximumFractionDigits:0});
+const nf2 = new Intl.NumberFormat("ro-RO", {maximumFractionDigits:2});
+const lei = v => v == null ? "?" : nf0.format(v) + " lei";
+const money = (v, c) => v == null ? "?" : nf2.format(v) + (c === "EUR" ? " €" : " lei");
+const store = {get(k, d){ try { const v = localStorage.getItem("atelier-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+               set(k, v){ try { localStorage.setItem("atelier-" + k, JSON.stringify(v)); } catch (e) {} }};
+
+const P = (D.produse || []).filter(p => p.pret && p.piesa);
+const byUrl = Object.fromEntries(P.map(p => [p.url, p]));
+const S = {profil: store.get("profil", "gaming"), side: store.get("panou", "dreapta"), focus: null,
+           ales: Object.fromEntries(Object.entries(store.get("ales", {})).filter(([c, u]) => byUrl[u]))};
+const N = p => p && p.note && p.note[S.profil] ? p.note[S.profil].n : p && p.nota;
+const W = p => p && p.note && p.note[S.profil] ? p.note[S.profil].why : (p && p.motive) || [];
+
+if (D.exemplu) $("exemplu").hidden = false;
+if (D.generat) $("meta").textContent = "Prețuri din " + D.generat.slice(8, 10) + "." + D.generat.slice(5, 7) + ", ora " + D.generat.slice(11);
+
+// ---------------------------------------------------------------- bara de piese
+function renderDock(){
+  let total = 0, n = 0;
+  const parts = CATS.map(c => {
+    const p = byUrl[S.ales[c.id]], t = N(p);
+    if (p) { total += p.pret_lei || 0; n++; }
+    const count = P.filter(x => x.piesa === c.id).length;
+    return `<button class="part ${p ? "" : "empty"}" data-cat="${esc(c.id)}" aria-current="${S.focus === c.id}" style="--t:var(--t-${t || "N"})">
+      <span class="tier ${t || ""}">${p ? (t || "?") : "+"}</span><b>${esc(c.id)}</b>
+      <small>${p ? lei(p.pret_lei) : count ? `${count} ${count === 1 ? "ofertă" : "oferte"}` : "fără oferte"}</small></button>`;
+  }).join("");
+  const mine = D.build && D.build.piese && D.build.piese.length;
+  $("dock").innerHTML = parts + `<div class="sum"><strong>${lei(total)}</strong><span>${n} din ${CATS.length} piese alese</span>
+    <span class="mini">${mine ? `<button id="mine">Încarcă build-ul meu</button>` : ""}${n ? `<button id="clear">Golește</button>` : ""}</span></div>`;
+}
+$("dock").addEventListener("click", e => {
+  if (e.target.id === "mine") {
+    for (const r of D.build.piese) { const p = P.find(x => x.url === r.url) || P.find(x => x.piesa === r.piesa && x.nume === r.nume); if (p) S.ales[p.piesa] = p.url; }
+    saveAles(); return;
+  }
+  if (e.target.id === "clear") { S.ales = {}; saveAles(); return; }
+  const b = e.target.closest("[data-cat]"); if (b) focus(b.dataset.cat === S.focus ? null : b.dataset.cat);
+});
+function saveAles(){ store.set("ales", S.ales); renderDock(); if (S.focus) renderOffers(true); if (G) G.paint(); }
+
+// ---------------------------------------------------------------- panou
+function renderProfil(){ document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil)); }
+$("profil").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; S.profil = b.dataset.p; store.set("profil", S.profil); renderProfil(); renderDock(); if (S.focus) renderOffers(true); if (G) G.paint(); });
+function renderSides(){
+  document.querySelectorAll("#sides [data-side]").forEach(b => b.setAttribute("aria-pressed", b.dataset.side === S.side));
+  const app = $("app"); app.classList.remove("dreapta", "stanga", "jos"); app.classList.add(S.side);
+}
+$("sides").addEventListener("click", e => { const b = e.target.closest("[data-side]"); if (!b) return; S.side = b.dataset.side; store.set("panou", S.side); renderSides(); });
+
+const GLYPH = {
+  "Placă video":'<rect x="6" y="18" width="52" height="26" rx="3"/><circle cx="22" cy="31" r="8"/><circle cx="42" cy="31" r="8"/><path d="M10 44v6M20 44v4M30 44v4"/>',
+  "Procesor":'<rect x="18" y="18" width="28" height="28" rx="3"/><rect x="25" y="25" width="14" height="14" rx="1"/><path d="M24 10v8M32 10v8M40 10v8M24 46v8M32 46v8M40 46v8M10 24h8M10 32h8M10 40h8M46 24h8M46 32h8M46 40h8"/>',
+  "Placă de bază":'<rect x="10" y="8" width="44" height="48" rx="3"/><rect x="18" y="16" width="14" height="14"/><path d="M38 14v20M42 14v20M18 40h28M18 46h20"/>',
+  "RAM":'<rect x="6" y="22" width="52" height="16" rx="2"/><path d="M12 38v6M18 38v6M24 38v6M30 38v6M36 38v6M42 38v6M48 38v6M14 27h8M26 27h8M38 27h8"/>',
+  "SSD":'<rect x="6" y="24" width="52" height="16" rx="2"/><rect x="14" y="28" width="12" height="8"/><rect x="30" y="28" width="12" height="8"/><path d="M50 28v8"/>',
+  "Sursă":'<rect x="8" y="14" width="48" height="36" rx="3"/><circle cx="28" cy="32" r="11"/><path d="M28 21v22M17 32h22M46 22v4"/>',
+  "Cooler":'<circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="5"/><path d="M32 27c-2-8 2-13 8-14M37 32c8-2 13 2 14 8M32 37c2 8-2 13-8 14M27 32c-8 2-13-2-14-8"/>',
+  "Carcasă":'<rect x="16" y="6" width="32" height="52" rx="3"/><circle cx="32" cy="20" r="6"/><circle cx="32" cy="38" r="6"/><path d="M22 52h20"/>',
+};
+const glyph = c => `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPH[c] || ""}</svg>`;
+const thumb = p => `<span class="thumb">${p.imagine ? `<img src="${esc(p.imagine)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML=this.dataset.g" data-g="${esc(glyph(p.piesa))}">` : glyph(p.piesa)}</span>`;
+const fold = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+S.detail = null; S.q = "";
+
+function rowHtml(p){
+  const t = N(p), sel = S.ales[p.piesa] === p.url;
+  return `<button class="row ${sel ? "sel" : ""} ${p.stoc === false ? "out" : ""}" data-open="${esc(p.url)}" style="--t:var(--t-${t || "N"})">
+    ${thumb(p)}<span><span class="nm">${esc(p.nume)}</span><span class="shop">${esc(p.magazin)}${p.stoc === false ? " · stoc epuizat" : ""}${sel ? " · <b style='color:var(--fg)'>✓ aleasă</b>" : ""}</span></span>
+    <span class="right"><span class="pr">${p.moneda === "EUR" ? lei(p.pret_lei) : lei(p.pret)}</span><span class="tier ${t || ""}" title="${t ? "Nota " + t : "Fără notă"}">${t || "?"}</span></span></button>`;
+}
+function spark(h){
+  if (!h || h.length < 2) return "";
+  const v = h.map(x => x[1]), lo = Math.min(...v), hi = Math.max(...v), Wd = 300, H = 40, pad = 4;
+  const x = i => pad + i * (Wd - 2 * pad) / (v.length - 1), y = p => hi === lo ? H / 2 : pad + (hi - p) * (H - 2 * pad) / (hi - lo);
+  let d = `M${x(0)},${y(v[0])}`; for (let i = 1; i < v.length; i++) d += `H${x(i)}V${y(v[i])}`;
+  return `<svg class="spark" viewBox="0 0 ${Wd} ${H}" preserveAspectRatio="none" role="img" aria-label="Prețul a fost între ${nf0.format(lo)} și ${nf0.format(hi)}">
+    <path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><circle cx="${x(v.length - 1)}" cy="${y(v[v.length - 1])}" r="3.5" fill="var(--accent)"/></svg>`;
+}
+function hubHtml(p){
+  const sel = S.ales[p.piesa] === p.url, et = p.eticheta || {}, prof = D.profile || {gaming:"Gaming", creatie:"Editare video și 3D"};
+  const uses = Object.keys(prof).map(k => { const x = (p.note || {})[k] || {}; return `<div class="use ${k === S.profil ? "cur" : ""}" style="--t:var(--t-${x.n || "N"})">
+      <span class="tier ${x.n || ""}">${x.n || "?"}</span><b>${esc(prof[k])}</b><span>${esc((x.why || []).join(" · ") || "Încă nu recunoaștem modelul.")}</span></div>`; }).join("");
+  const params = (p.specs || []).map(x => `<div class="param"><b>${esc(x.p)}</b><span class="val">${esc(x.v)}</span>
+      <span class="tier ${x.n || "none"}" style="--t:var(--t-${x.n || "N"})">${x.n || "–"}</span><p>${esc(x.d)}</p></div>`).join("");
+  const eur = p.moneda === "EUR" ? `<small>${money(p.pret, "EUR")}${D.taxa_eur_lei ? ", cu transport" : ""}</small>` : "";
+  return `<div class="hub">
+    <button class="backl" data-list>← Toate ofertele pentru ${esc(p.piesa.toLowerCase())}</button>
+    <div class="top2">${thumb(p)}<div><h3>${esc(p.nume)}</h3><div class="shop" style="font-size:13px;color:var(--muted)">${esc(p.magazin)}${p.oficial === false ? ` · <span style="color:var(--warn)">vândut de ${esc(p.vanzator || "alt vânzător")}</span>` : p.oficial ? " · vândut de magazin" : ""}${p.stoc === false ? " · stoc epuizat" : ""}</div></div></div>
+    <div><div class="big">${lei(p.pret_lei)}${eur}</div>${et.text && et.tip !== "nou" ? `<div class="lab ${et.tip}" style="font-size:13.5px">${esc(et.text)}</div>` : ""}${spark(p.istoric)}</div>
+    <div class="acts"><button class="pick" data-pick="${esc(p.url)}">${sel ? "✓ Aleasă pentru PC" : "Alege pentru PC"}</button>
+      <a class="go" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a></div>
+    <h4>Pentru ce îl recomandăm</h4><div class="uses">${uses}</div>
+    ${params ? `<h4>Parametri</h4><div class="params">${params}</div>` : ""}
+  </div>`;
+}
+const fanV = (x, y) => `<g class="fan"><line x1="${x}" y1="${y - 11}" x2="${x}" y2="${y + 11}"/><circle cx="${x}" cy="${y}" r="2.6"/></g>`;
+const fanH = (x, y) => `<g class="fan"><line x1="${x - 11}" y1="${y}" x2="${x + 11}" y2="${y}"/><circle cx="${x}" cy="${y}" r="2.6"/></g>`;
+const R_ = (x, y, w, h) => `<rect class="part" x="${x}" y="${y}" width="${w}" height="${h}" rx="2"/>`;
+let flId = 0;
+const FL = (d, x1, y1, x2, y2, slow) => { const id = "fg" + (++flId);
+  return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="#3d8fe0"/><stop offset=".45" stop-color="#3d8fe0"/><stop offset="1" stop-color="#e8742f"/></linearGradient><path class="fl ${slow ? "slow" : ""}" d="${d}" stroke="url(#${id})"/>`; };
+const SCH = (inner, label = "vedere din lateral") => `<svg class="sch" viewBox="-6 0 232 168" role="img" aria-label="Schemă flux de aer">${inner}<text x="110" y="164" text-anchor="middle">${label}</text></svg>`;
+const CARCASE = [
+  {id:"clasica", nume:"Clasică", ex:"Cea din modelul 3D: Lancool, 4000D, North și majoritatea carcaselor.",
+   svg:() => SCH(`<rect class="box" x="20" y="14" width="180" height="132" rx="4"/>${R_(28,22,60,78)}${R_(48,34,16,16)}${R_(28,82,120,9)}${R_(26,122,58,20)}
+     ${fanV(198,40)}${fanV(198,78)}${fanV(198,116)}${fanV(22,36)}${fanH(80,16)}${fanH(115,16)}${fanH(150,16)}
+     ${FL("M232,40 C170,40 120,30 60,36 L-4,36",232,40,-4,36)}${FL("M232,78 C170,76 130,70 115,40 L115,-4",232,78,115,-4)}
+     ${FL("M232,116 C170,116 150,104 130,98 C100,86 150,50 150,-4",232,116,150,-4)}${FL("M55,168 L55,140 L40,132 L-4,132",55,168,-4,132,true)}
+     <text x="206" y="10">FAȚĂ</text><text x="-4" y="10">SPATE</text>`),
+   p:"Aerul rece intră prin față, iese prin spate și prin sus.", bun:["Simplă și eficientă pentru toate piesele.", "Merge cu orice cooler și orice placă video."], atentie:["Nu bloca fața cu cabluri.", "Curăță filtrul din față."]},
+  {id:"acvariu", nume:"Acvariu (2 camere)", ex:"Ex.: Lian Li O11 Dynamic, HYTE Y60. Au sticlă în față și pe lateral.",
+   svg:() => SCH(`<rect class="box" x="20" y="14" width="180" height="132" rx="4"/><line class="glass" x1="200" y1="16" x2="200" y2="144"/>${R_(28,22,60,78)}${R_(48,34,16,16)}${R_(28,82,120,9)}
+     ${fanH(80,144)}${fanH(120,144)}${fanH(160,144)}${fanH(80,16)}${fanH(120,16)}${fanH(160,16)}${fanV(22,36)}
+     ${FL("M80,176 L80,118 C80,100 70,70 80,-4",80,176,80,-4)}${FL("M120,176 L120,100 C120,92 125,60 120,-4",120,176,120,-4)}${FL("M160,176 C160,120 150,80 160,-4",160,176,160,-4)}
+     <text x="150" y="60">STICLĂ ÎN FAȚĂ</text><text x="30" y="118">SURSA E ÎN CAMERA DIN SPATE</text>`),
+   p:"Fața e din sticlă, deci nu bagă aer. Aerul intră pe jos și prin lateral, apoi iese sus și prin spate.", bun:["Arată spectaculos.", "Placa video primește aer rece direct de dedesubt."], atentie:["Îți trebuie multe ventilatoare, de obicei 7–10.", "Filtrul de jos se umple repede de praf.", "Sursa stă în camera din spate și are aerul ei."]},
+  {id:"cos", nume:"Coș de fum", ex:"Ex.: SilverStone Raven. Placa de bază e rotită, cu porturile în sus.",
+   svg:() => SCH(`<rect class="box" x="20" y="14" width="180" height="132" rx="4"/>${R_(28,24,40,112)}${R_(36,60,16,16)}${R_(104,26,10,104)}${fanH(70,144)}${fanH(140,144)}
+     <line x1="40" y1="14" x2="180" y2="14" stroke="var(--bg)" stroke-width="3" stroke-dasharray="4 4"/>
+     ${FL("M70,176 L70,-4",70,176,70,-4)}${FL("M140,176 L140,-4",140,176,140,-4)}${FL("M100,176 C100,120 92,60 100,-4",100,176,100,-4)}
+     <text x="196" y="40" text-anchor="end">IEȘIRE LIBERĂ SUS</text>`),
+   p:"Ventilatoare mari jos împing aerul drept în sus, în aceeași direcție în care urcă singur aerul cald.", bun:["Foarte silențios: ventilatoarele pot merge încet.", "Fiecare piesă e în calea aerului."], atentie:["Cablurile ies prin partea de sus.", "Puține carcase de felul ăsta, iar unele coolere nu se potrivesc orientării."]},
+  {id:"itx", nume:"Mini-ITX „sandwich”", ex:"Ex.: Fractal Ridge, Lian Li A4-H2O. Placa video stă în spatele plăcii de bază.",
+   svg:() => SCH(`<rect class="box" x="58" y="26" width="104" height="112" rx="4"/><line x1="110" y1="30" x2="110" y2="134" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3"/>
+     ${R_(64,36,40,64)}${R_(76,50,16,16)}${R_(118,32,12,98)}${fanH(140,136)}
+     ${FL("M140,170 L140,0",140,170,140,0)}${FL("M85,170 C85,120 80,80 85,0",85,170,85,0)}
+     <text x="118" y="148">RISER</text><text x="64" y="148">PLACA</text>`),
+   p:"Placa video e legată printr-un cablu riser și stă în spatele plăcii de bază. Fiecare parte are curentul ei de aer, de jos spre sus.", bun:["PC foarte mic, cât o consolă."], atentie:["Ai nevoie de un riser de calitate (PCIe 4.0/5.0).", "Placa video și coolerul încap la milimetru, deci verifică dimensiunile.", "E mai zgomotos sub sarcină."]},
+  {id:"inchisa", nume:"Față din sticlă închisă", ex:"Carcase cu panoul din față plin, din sticlă sau plastic, fără găuri.",
+   svg:() => SCH(`<rect class="box" x="20" y="14" width="180" height="132" rx="4"/><line class="glass" x1="200" y1="30" x2="200" y2="130"/>${R_(28,22,60,78)}${R_(48,34,16,16)}${R_(28,82,120,9)}${R_(26,122,58,20)}
+     ${fanV(190,40)}${fanV(190,78)}${fanV(190,116)}${fanV(22,36)}
+     ${FL("M232,22 C214,22 205,26 196,36 C150,40 100,32 -4,36",232,22,-4,36,true)}${FL("M232,138 C214,138 205,132 196,118 C160,110 140,100 120,92 C110,70 120,40 115,-4",232,138,115,-4,true)}
+     <text x="196" y="155" text-anchor="end">AER DOAR PE MARGINI</text>`),
+   p:"Panoul din față nu are găuri, așa că aerul intră doar prin fantele înguste de pe margini.", bun:["Arată curat și filtrează bine praful."], atentie:["Temperaturile sunt mai mari cu câteva grade și zgomotul crește.", "Dacă poți, alege varianta cu plasă (Mesh, Flow, Airflow).", "Pune ventilatoarele din față la turație mai mare."]},
+  {id:"vertical", nume:"Placă video verticală", ex:"Montată cu riser, cu fața spre geam.",
+   svg:() => SCH(`<rect class="box" x="20" y="40" width="180" height="84" rx="4"/><line class="glass" x1="22" y1="124" x2="198" y2="124"/>${R_(26,44,110,6)}${R_(50,102,110,12)}
+     ${fanV(198,70)}${fanV(198,100)}
+     <line x1="170" y1="114" x2="170" y2="124" stroke="var(--warn)" stroke-width="1.5"/><text x="166" y="134" text-anchor="end" style="fill:var(--warn)">SPAȚIU MIC</text>
+     ${FL("M232,100 C200,108 180,118 120,119 C90,119 60,112 30,90 L-4,80",232,100,-4,80,true)}${FL("M232,70 C170,70 120,70 60,62 L-4,60",232,70,-4,60)}
+     <text x="30" y="136">GEAM</text><text x="30" y="58">PLACA DE BAZĂ</text>`, "vedere de sus"),
+   p:"Arată bine prin geam, dar ventilatoarele plăcii video ajung aproape de sticlă și respiră mai greu.", bun:["Placa video se vede din plin prin geam."], atentie:["Lasă câțiva centimetri între ventilatoare și sticlă.", "Folosește un riser de calitate.", "Poate merge mai cald decât montată normal."]},
+];
+S.carcasa = "clasica";
+function viewSeg(){ return `<div class="ctypes" role="group" aria-label="Ce arată modelul"><button data-av="flux" aria-pressed="${S.aerView === "flux"}">Flux de aer</button><button data-av="caldura" aria-pressed="${S.aerView === "caldura"}">Unde se adună căldura</button></div>`; }
+function renderCaldura(){
+  $("ptitle").textContent = "Unde se adună căldura"; $("q").hidden = true;
+  $("pinfo").textContent = "Zonele roșii din model sunt cele mai calde când te joci. Pentru fiecare ai mai jos ce o răcește.";
+  $("offers").innerHTML = viewSeg() + `<div class="legend2"><span><i style="background:#e0402b"></i>foarte cald</span><span><i style="background:#f0a040"></i>cald</span></div>
+    <div class="rules">${HEAT.map(([b, p], i) => `<div class="rule"><span class="k" style="background:color-mix(in srgb,#e0402b 18%,transparent);color:#d0402b">${i + 1}</span><b>${esc(b)}</b><p>${esc(p)}</p></div>`).join("")}
+    <div class="rule"><span class="k">°C</span><b>Temperaturi normale în jocuri (orientativ)</b><p>Procesor 65–85 °C, placă video 60–80 °C. Dacă trec mereu de 90 °C, verifică praful, pasta și fluxul de aer. Le poți vedea cu HWiNFO sau din aplicația plăcii video.</p></div></div>`;
+}
+function renderCarcasa(){
+  const c = CARCASE.find(x => x.id === S.carcasa) || CARCASE[0];
+  return `<div class="ctypes" role="group" aria-label="Tip de carcasă">${CARCASE.map(x => `<button data-ct="${x.id}" aria-pressed="${x.id === c.id}">${esc(x.nume)}</button>`).join("")}</div>
+    <div class="ctype">${c.svg()}<span class="ex">${esc(c.ex)}</span><p>${esc(c.p)}</p>
+      <span class="ok">Avantaje</span><ul>${c.bun.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <span class="wa">Atenție la</span><ul>${c.atentie.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+S.aerView = "flux";
+const HEAT = [
+  ["Sub placa video", "E cea mai caldă zonă. Ventilatoarele din față de jos aduc aer rece direct aici, iar placa video și-l trage de dedesubt."],
+  ["Procesorul și VRM-ul din jur", "Ventilatorul din spate și radiatorul de sus scot căldura din zonă. Fără ele, aerul cald stă pe loc deasupra procesorului."],
+  ["SSD-ul M.2 de lângă placa video", "Se încălzește de la placa video. Folosește radiatorul de pe placa de bază, mai ales la un SSD PCIe 5.0."],
+  ["Colțul de sus din spate", "Aerul cald urcă și se strânge aici. Un ventilator în spate, care scoate aerul afară, golește colțul."],
+];
+function renderAer(){
+  if (S.aerView === "caldura") return renderCaldura();
+  $("ptitle").textContent = "Cum circulă aerul"; $("q").hidden = true;
+  $("pinfo").textContent = "Aerul rece intră prin față, trece peste placa video și procesor, se încălzește și iese prin spate și prin sus. Așa piesele stau reci și PC-ul e silențios.";
+  const R = [
+    ["Față = intrare", "Ventilatoarele din față trag aer rece în carcasă. Cele de jos răcesc direct placa video, care își ia aerul de dedesubt."],
+    ["Spate și sus = ieșire", "Aerul cald urcă, așa că îl scoți prin ventilatorul din spate și prin cele de sus. Radiatorul răcirii pe lichid merge bine sus, tot ca ieșire."],
+    ["Cum vezi încotro suflă", "Aerul iese prin partea pe care se văd brațele ramei și eticheta. Pe marginea ventilatorului sunt și două săgeți mici: una arată direcția aerului, cealaltă sensul de rotație."],
+    ["Puțin mai mult aer să intre decât să iasă", "Așa praful intră doar prin filtre, nu prin fiecare fantă. Dacă scot aer mai multe ventilatoare decât bagă (ex. 1 spate + 3 sus contra 3 în față), pune-le pe cele din față la o turație puțin mai mare."],
+    ["Sursa are circuitul ei", "Dacă are filtru dedesubt și carcasa stă pe picioare, pune sursa cu ventilatorul în jos: ia aer rece de afară și nu se încălzește de la placa video."],
+    ["Curăță filtrele", "O dată la 1–2 luni, filtrele din față și de jos. Un filtru înfundat crește temperaturile mai mult decât un ventilator lipsă."],
+  ];
+  const X = [
+    ["Toate ventilatoarele scot aer", "Carcasa trage praf prin fiecare gaură, iar piesele se încălzesc."],
+    ["Ventilatorul din spate pus invers", "Bagă aer cald înapoi peste procesor, contra curentului."],
+    ["Cabluri sau HDD-uri în fața ventilatoarelor", "Blochează aerul rece exact acolo unde intră."],
+  ];
+  $("offers").innerHTML = viewSeg() + `<div class="legend2"><span><i style="background:#3d8fe0"></i>aer rece</span><span><i style="background:#e8742f"></i>aer cald</span><span>Rotește PC-ul ca să vezi din toate părțile.</span></div>
+    <div class="rules">${R.map(([b, p], i) => `<div class="rule"><span class="k">${i + 1}</span><b>${esc(b)}</b><p>${esc(p)}</p></div>`).join("")}
+    <h4 style="margin:10px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Greșeli frecvente</h4>
+    ${X.map(([b, p]) => `<div class="rule bad"><span class="k">✗</span><b>${esc(b)}</b><p>${esc(p)}</p></div>`).join("")}
+    <h4 style="margin:14px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Carcase mai neobișnuite (în teorie)</h4>
+    <div id="ct">${renderCarcasa()}</div></div>`;
+}
+function renderOffers(keepScroll){
+  if (S.focus === "__aer") return renderAer();
+  const c = CATS.find(x => x.id === S.focus);
+  const y = $("offers").scrollTop;
+  $("ptitle").textContent = c.id; $("pinfo").textContent = c.info;
+  $("q").placeholder = `Caută în ${({"Placă video":"plăci video","Procesor":"procesoare","Placă de bază":"plăci de bază","RAM":"memorii RAM","SSD":"SSD-uri","Cooler":"coolere","Sursă":"surse","Carcasă":"carcase"})[c.id] || c.id}…`;
+  if (S.detail && byUrl[S.detail]) { $("q").hidden = true; $("offers").innerHTML = hubHtml(byUrl[S.detail]); $("offers").scrollTop = keepScroll ? y : 0; return; }
+  $("q").hidden = false;
+  let xs = P.filter(p => p.piesa === c.id).sort((a, b) => (a.stoc === false) - (b.stoc === false) || (a.pret_lei ?? 1e9) - (b.pret_lei ?? 1e9));
+  if (!xs.length) { $("q").hidden = true; $("offers").innerHTML = `<p class="none">Încă nu sunt oferte urmărite pentru ${esc(c.id.toLowerCase())}. Trimite-i botului un link pe Telegram și apare aici.</p>`; return; }
+  const words = fold(S.q).split(/\s+/).filter(Boolean);
+  if (words.length) xs = xs.filter(p => words.every(w => fold(p.nume + " " + p.magazin).includes(w)));
+  if (!xs.length) { $("offers").innerHTML = `<p class="none">Nimic pentru „${esc(S.q)}”. Încearcă alt cuvânt.</p>`; return; }
+  // un singur șir: S sus, apoi A, B, C; D–F și fără notă mai jos, după un separator
+  const groups = [...NOTE, "?"].map(n => [n, xs.filter(p => (N(p) || "?") === n)]).filter(g => g[1].length);
+  const strong = groups.filter(([n]) => "SABC".includes(n)), weak = groups.filter(([n]) => !"SABC".includes(n));
+  const g = ([n, items], low) => `<section class="group ${low ? "low" : ""}"><div class="ghead"><span class="tier ${n === "?" ? "" : n}" style="--t:var(--t-${n === "?" ? "N" : n})">${n}</span>
+    <b>${n === "?" ? "Fără notă încă" : "Nota " + n}</b><span>${n === "?" ? "" : TIER_NAME[n] + " · "}${items.length} ${items.length === 1 ? "ofertă" : "oferte"}</span></div>${items.map(rowHtml).join("")}</section>`;
+  $("offers").innerHTML = (strong.length ? strong.map(x => g(x)).join("") : `<p class="none">Nicio ofertă cu nota S–C acum.</p>`)
+    + (weak.length ? `<div class="weak">Mai jos sunt variantele mai slabe (D–F și fără notă). Derulează dacă vrei să le vezi.</div>` + weak.map(x => g(x, true)).join("") : "");
+  $("offers").scrollTop = keepScroll ? y : 0;
+}
+$("q").addEventListener("input", e => { S.q = e.target.value; renderOffers(); });
+$("offers").addEventListener("click", e => {
+  const ct = e.target.closest("[data-ct]"); if (ct) { S.carcasa = ct.dataset.ct; $("ct").innerHTML = renderCarcasa(); return; }
+  const av = e.target.closest("[data-av]"); if (av) { S.aerView = av.dataset.av; renderAer(); $("offers").scrollTop = 0; return; }
+  const o = e.target.closest("[data-open]"); if (o) { S.listY = $("offers").scrollTop; S.detail = o.dataset.open; renderOffers(); return; }
+  if (e.target.closest("[data-list]")) { S.detail = null; renderOffers(); $("offers").scrollTop = S.listY || 0; return; }
+  const b = e.target.closest("[data-pick]"); if (!b) return;
+  const p = byUrl[b.dataset.pick];
+  if (S.ales[p.piesa] === p.url) delete S.ales[p.piesa]; else S.ales[p.piesa] = p.url;
+  saveAles();
+});
+function focus(cat){
+  if (cat) seen();
+  if (cat !== S.focus) { S.detail = null; S.q = ""; $("q").value = ""; }
+  S.focus = cat;
+  $("panel").hidden = !cat; $("app").classList.toggle("open", !!cat);
+  $("back").hidden = !cat; $("intro").hidden = !!cat;
+  if (cat) renderOffers();
+  renderDock();
+  if (G) G.focus(cat);
+  $("aer-btn").setAttribute("aria-pressed", cat === "__aer");
+  if (cat && window.matchMedia("(max-width:760px)").matches) setTimeout(() => $("stage").scrollIntoView({behavior:"smooth", block:"start"}), 50);
+}
+$("aer-btn").addEventListener("click", () => focus(S.focus === "__aer" ? null : "__aer"));
+$("back").addEventListener("click", () => focus(null));
+$("close").addEventListener("click", () => focus(null));
+document.addEventListener("keydown", e => { if (e.key === "Escape" && S.focus) focus(null); });
+
+// ---------------------------------------------------------------- 3D
+let G = null;
+try { if (window.THREE) G = make3D(); } catch (err) { console.error(err); G = null; }
+if (!G) $("stage").insertAdjacentHTML("afterbegin", `<div class="no3d">Modelul 3D nu s-a putut încărca pe acest dispozitiv. Alege piesele din bara de jos.</div>`);
+renderProfil(); renderSides(); renderDock(); if (G) G.paint();
+
+// ---------------------------------------------------------------- bun venit
+function seen(){ if (!store.get("vazut", false)) { store.set("vazut", true); } $("welcome").hidden = true; $("dock").classList.remove("hint"); }
+if (!store.get("vazut", false)) { $("welcome").hidden = false; $("dock").classList.add("hint"); }
+$("w-ok").addEventListener("click", seen);
+// cine se grăbește nu trebuie să închidă nimic: orice click pe PC, pe bară sau în căutare ascunde mesajul
+$("cv").addEventListener("pointerdown", () => { if (!$("welcome").hidden) seen(); });
+$("profil").addEventListener("click", () => { if (!$("welcome").hidden) seen(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("welcome").hidden) seen(); });
+
+// căutare rapidă din antet: deschide direct componenta potrivită, cu căutarea completată
+$("gs").addEventListener("submit", e => {
+  e.preventDefault(); seen();
+  const q = $("gq").value.trim(); if (!q) return;
+  const words = fold(q).split(/\s+/).filter(Boolean);
+  const hits = P.filter(p => words.every(w => fold(p.nume + " " + p.magazin + " " + p.piesa).includes(w)));
+  if (!hits.length) {
+    const cat = CAT_WORDS.find(([, r]) => r.test(fold(q)));
+    if (cat) { focus(cat[0]); return; }
+    return toast(`Nu am găsit „${q}”. Încearcă alt cuvânt, de exemplu „5080” sau „ssd 2tb”.`);
+  }
+  const count = {}; hits.forEach(p => count[p.piesa] = (count[p.piesa] || 0) + 1);
+  const cat = Object.keys(count).sort((a, b) => count[b] - count[a])[0];
+  focus(cat);
+  const inCat = hits.filter(p => p.piesa === cat);
+  if (inCat.length === 1) { S.detail = inCat[0].url; renderOffers(); }
+  else { S.q = q; $("q").value = q; renderOffers(); }
+  $("gq").blur();
+});
+$("w-show").addEventListener("click", () => {
+  seen(); focus("Placă video");
+  toast(window.matchMedia("(max-width:760px)").matches ? "Asta e placa video. Mai jos vezi ofertele, de la S la F. Apasă pe una ca să vezi detaliile."
+    : "Asta e placa video. În panou vezi ofertele, de la S la F. Apasă pe una ca să vezi detaliile.");
+});
+let toastT = 0;
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 7000); }
+
+// ---------------------------------------------------------------- ghid
+const CAT_WORDS = [["Placă video", /plac[aă] video|placa grafica|\bgpu\b|\brtx\b|\bradeon\b|\brx ?\d/], ["Procesor", /procesor|\bcpu\b|ryzen|intel|\bcore\b/],
+  ["Placă de bază", /plac[aă] de baz|placa mama|motherboard|\bmb\b/], ["RAM", /\bram\b|memori|ddr/], ["SSD", /\bssd\b|stocare|\bhdd\b|hard|nvme/],
+  ["Sursă", /surs|\bpsu\b|alimentare/], ["Cooler", /cooler|racire|răcire|ventilator|\baio\b/], ["Carcasă", /carcas|\bcase\b|tower/]];
+function say(html, who = "bot"){ const d = document.createElement("div"); d.className = "msg " + who; d.innerHTML = html; $("msgs").appendChild(d); $("msgs").scrollTop = 1e9; return d; }
+function quick(){ return `<div class="quick">
+  <button data-q="Vreau un PC de jocuri">PC de jocuri</button><button data-q="Vreau un PC pentru editare video și 3D">Editare video / 3D</button>
+  <button data-q="Alege-mi piesele pentru 8000 lei">Am un buget</button><button data-q="Ce înseamnă notele S–F?">Ce înseamnă S–F?</button>
+  <button data-q="Unde văd doar reducerile?">Doar reduceri</button><button data-q="Cum montez PC-ul?">Cum îl montez?</button><button data-q="Cum pun ventilatoarele?">Ventilatoare și aer</button><button data-q="Ce notă are PC-ul meu?">Nota PC-ului meu</button></div>`; }
+function openGhid(){
+  $("ghid").hidden = false; $("ghid-btn").setAttribute("aria-expanded", "true"); seen();
+  if (!$("msgs").children.length) say(`Salut! Spune-mi ce PC vrei și te duc unde trebuie. Poți scrie, de exemplu, „PC de jocuri de 8000 lei”, sau alege mai jos.${quick()}`);
+  setTimeout(() => $("ghid-in").focus(), 50);
+}
+$("ghid-btn").addEventListener("click", () => $("ghid").hidden ? openGhid() : ($("ghid").hidden = true, $("ghid-btn").setAttribute("aria-expanded", "false")));
+$("ghid-x").addEventListener("click", () => { $("ghid").hidden = true; $("ghid-btn").setAttribute("aria-expanded", "false"); });
+$("msgs").addEventListener("click", e => { const b = e.target.closest("[data-q]"); if (b) ask(b.dataset.q); const c = e.target.closest("[data-go]"); if (c) focus(c.dataset.go); });
+$("ghid-f").addEventListener("submit", e => { e.preventDefault(); const v = $("ghid-in").value.trim(); if (v) ask(v); $("ghid-in").value = ""; });
+function setProfil(p){ S.profil = p; store.set("profil", p); renderProfil(); renderDock(); if (S.focus) renderOffers(true); if (G) G.paint(); }
+function ask(q){
+  say(esc(q), "me");
+  const t = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const m = t.replace(/(\d)[.\s](\d{3})/g, "$1$2").match(/(\d+(?:[.,]\d+)?)\s*(k|mii|000)?/);
+  let budget = m ? parseFloat(m[1].replace(",", ".")) * (m[2] === "k" || m[2] === "mii" ? 1000 : 1) : null;
+  if (budget && budget < 300) budget = null;
+  if (/editar|randar|video|\b3d\b|blender|premiere|davinci|unreal|stream/.test(t)) setProfil("creatie");
+  else if (/joc|gaming|game|fps/.test(t)) setProfil("gaming");
+  const prof = S.profil === "creatie" ? "editare video și 3D" : "jocuri";
+  if (budget) return autoBuild(budget, prof);
+  if (/cumpar.*(pc|calculator|sistem)|pc (complet|gata|asamblat)|gata (facut|asamblat)|sistem/.test(t))
+    return say(`Pe pagina <a href="pc-uri.html${budget ? "#b" + Math.round(budget) : ""}">PC-uri pe buget</a> alegi suma și vezi cel mai bun PC din piese lângă PC-urile gata asamblate la același preț, cu notele lor.`);
+  if (/pc-?ul meu|calculatorul meu|ce nota are|upgrade|imbunatat|pasta|termoconduct|curat|praf|intretin/.test(t))
+    return say(`Pe pagina <a href="pc-ul-meu.html">PC-ul meu</a> alegi piesele pe care le ai și vezi nota PC-ului, ce merită îmbunătățit (varianta decentă, nu cea mai scumpă) și jurnalul de întreținere: pastă, praf, filtre.`);
+  if (/acvariu|o11|cos de fum|sandwich|itx|vertical|carcas[ae] (ciudat|neobisnuit|speciala)/.test(t)) { focus("__aer"); const id = /acvariu|o11/.test(t) ? "acvariu" : /cos/.test(t) ? "cos" : /sandwich|itx/.test(t) ? "itx" : /vertical/.test(t) ? "vertical" : "clasica"; S.carcasa = id; renderOffers(); setTimeout(() => $("ct") && $("ct").scrollIntoView({behavior:"smooth", block:"start"}), 300); return say("Ți-am deschis schema pentru carcasa asta, în panoul <b>Flux de aer</b>, jos."); }
+  if (/cald|caldur|fierbint|hotspot|se incalzeste/.test(t)) { S.aerView = "caldura"; focus("__aer"); return say("Ți-am arătat în model <b>unde se adună căldura</b>, iar în panou ai ce o răcește pe fiecare zonă."); }
+  if (/aer|ventilat|flux|temperatur|incalz|racesc|airflow/.test(t)) { S.aerView = "flux"; focus("__aer"); return say("Ți-am pornit <b>fluxul de aer</b>: vezi în PC cum intră aerul rece prin față și iese cald prin spate și sus. Regulile sunt în panou."); }
+  if (/nota|note|s.f|ce inseamna|clasament/.test(t))
+    return say("Notele arată cât de potrivită e piesa pentru ce vrei să faci: <b>S</b> e cea mai bună alegere, <b>A</b> foarte bună, <b>B</b> bună, <b>C</b> decentă, iar <b>D–F</b> sunt de evitat. Aceeași piesă poate avea note diferite la jocuri și la editare. Le schimbi din butonul „Notă pentru”, sus.");
+  if (/reducer|oferte|ieftin|chilipir/.test(t) && !CAT_WORDS.some(([, r]) => r.test(t)))
+    return say(`Toate reducerile, ca listă, sunt pe pagina <a href="reduceri.html">Reduceri</a>. Acolo poți filtra după componentă și notă.`);
+  if (/mont|asambl|construiesc|pun piesele/.test(t))
+    return say(`Ghidul pas cu pas, în 3D, e pe pagina <a href="montaj.html">Montaj 3D</a>. Îți arată unde intră fiecare piesă.`);
+  const cat = CAT_WORDS.find(([, r]) => r.test(t));
+  if (cat) { focus(cat[0]); return say(`Ți-am deschis <b>${esc(cat[0].toLowerCase())}</b>. Ofertele sunt ordonate după nota pentru ${prof}: cele cu S sunt sus.`); }
+  if (/joc|gaming|game/.test(t) || /editar|video|3d/.test(t)) {
+    const first = S.profil === "creatie" ? "Procesor" : "Placă video";
+    focus(first);
+    return say(`Am pus notele pentru <b>${prof}</b>. Începe cu <b>${first === "Procesor" ? "procesorul" : "placa video"}</b>, care contează cel mai mult pentru asta. Ți l-am deschis. Dacă îmi spui și bugetul, de exemplu „8000 lei”, aleg eu piesele.`);
+  }
+  if (/ajut|nu inteleg|cum|ce fac|unde/.test(t))
+    return say(`Apasă pe orice piesă din PC sau din bara de jos. Se deschide lista cu oferte, iar când alegi una, piesa se colorează și totalul apare jos. Sau spune-mi ce vrei să faci cu PC-ul.${quick()}`);
+  say(`Nu am înțeles exact. Încearcă așa: „PC de jocuri de 7000 lei”, „vreau o placă video” sau „ce înseamnă notele”.${quick()}`);
+}
+function autoBuild(budget, prof){
+  const r = window.AtelierBuild.autoBuild(P, budget, S.profil, N);
+  if (r.eroare === "fara-oferte") return say("Încă nu am oferte pe site din care să aleg.");
+  if (r.eroare) return say(`Cu ofertele de acum, cel mai ieftin PC complet costă cam <b>${lei(r.minim)}</b>, peste bugetul de ${lei(budget)}. Încearcă o sumă mai mare.`);
+  const cats = Object.keys(r.pick);
+  S.ales = Object.fromEntries(cats.map(c => [c, r.pick[c].url])); saveAles();
+  if (S.focus) focus(null);
+  say(`Gata! Am ales ${cats.length} piese pentru ${prof}, în total <b>${lei(r.total)}</b> din ${lei(budget)}, nota PC-ului: <b>${r.nota || "?"}</b>. Le vezi colorate în PC și în bara de jos.
+    ${window.AtelierBuild.ORDINE.filter(c => r.pick[c]).map(c => `<br>· <a href="#" data-go="${esc(c)}" onclick="return false">${esc(c)}</a>: nota ${N(r.pick[c]) || "?"}, ${lei(r.pick[c].pret_lei)}`).join("")}
+    ${r.lipsa.length ? `<br><br>Nu am oferte pentru: ${esc(r.lipsa.join(", ").toLowerCase())}.` : ""}
+    <br><br>Apasă pe o piesă dacă vrei s-o schimbi. Compară și cu <a href="pc-uri.html#b${Math.round(budget)}">PC-urile gata asamblate</a> la prețul ăsta.`);
+}
+
+function make3D(){
+  const T = THREE, V = (x, y, z) => new T.Vector3(x, y, z);
+  const stage = $("stage"), canvas = $("cv"), tip = $("tip3d");
+  const renderer = new T.WebGLRenderer({canvas, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(36, 1, .5, 800);
+  scene.add(new T.HemisphereLight(0xffffff, 0x3a4552, .75));
+  const d1 = new T.DirectionalLight(0xffffff, .9); d1.position.set(40, 90, 70); scene.add(d1);
+  const d2 = new T.DirectionalLight(0xffe0c2, .35); d2.position.set(-70, 20, -30); scene.add(d2);
+  const COPPER = 0xd27a3c, rotors = [];
+  const M = (color, o = {}) => new T.MeshStandardMaterial({color, metalness:o.metal ?? .4, roughness:o.rough ?? .55, emissive:o.em ?? 0,
+    emissiveIntensity:o.emI ?? 0, transparent:true, opacity:o.op ?? 1, depthWrite:(o.op ?? 1) >= 1});
+  const box = (w, h, d, m, x = 0, y = 0, z = 0) => { const b = new T.Mesh(new T.BoxGeometry(w, h, d), m); b.position.set(x, y, z); return b; };
+  function fan(r, axis){
+    const g = new T.Group();
+    g.add(new T.Mesh(new T.TorusGeometry(r, .32, 10, 40), M(0x7a3f18, {em:COPPER, emI:.9, metal:.2})));
+    const rotor = new T.Group();
+    rotor.add(new T.Mesh(new T.CylinderGeometry(r * .3, r * .3, .9, 20).rotateX(Math.PI / 2), M(0x1d2026)));
+    for (let i = 0; i < 7; i++) { const b = box(r * .62, r * .2, .1, M(0x2a2e35)); b.position.x = r * .55; b.rotation.x = .5; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 7; rotor.add(h); }
+    g.add(rotor); rotors.push(rotor);
+    if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
+    return g;
+  }
+  const grid = new T.GridHelper(400, 80, 0x9aa6b3, 0x9aa6b3); grid.material.transparent = true; grid.material.opacity = .28; grid.position.y = -25.6; scene.add(grid);
+
+  // fiecare piesă e un grup cu categoria ei, ca să știm pe ce s-a dat click
+  const parts = {};
+  const part = (cat, parent = scene) => { const g = new T.Group(); g.userData.cat = cat; parent.add(g); parts[cat] = g; return g; };
+  const caseM = new T.Matrix4().makeTranslation(-9.8, 7.25, -10.6);
+  const inCase = v => v.clone().applyMatrix4(caseM);
+
+  const cs = part("Carcasă");
+  cs.add(box(48, 50, .4, M(0x15181c, {metal:.5}), 0, 0, -11.7), box(48.8, .4, 23.8, M(0x1d2127), 0, 25.2, 0), box(48.8, .4, 23.8, M(0x1d2127), 0, -25.2, 0),
+         box(.4, 50, 23, M(0x15181c), -24.2, 0, 0), box(.4, 50, 23, M(0x23272e, {op:.45, rough:.8}), 24.2, 0, 0),
+         box(48.8, 50.8, .2, M(0x9fb4c8, {op:.07, metal:.1, rough:.05}), 0, 0, 11.9));
+  cs.add(new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(48.8, 50.8, 23.8)), new T.LineBasicMaterial({color:0x5c6775, transparent:true})));
+  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.4, y, 0); cs.add(f); }
+  const rf = fan(5.6, "x"); rf.position.set(-22.4, 15, 0); cs.add(rf);
+
+  const mb = part("Placă de bază"); mb.position.set(-9.8, 7.25, -10.6);
+  mb.add(box(24.4, 30.5, .16, M(0x1a1e24, {metal:.2, rough:.75})), box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.8, rough:.3}), -3, 7, .25),
+         box(11, 2.6, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -4, 13, 1.2), box(2.4, 9, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -8.6, 6.5, 1.2),
+         box(2.3, 9, 3, M(0x2a2f36), -11, 8, 1.6), box(7, 6, 1, M(0x343a43, {metal:.6}), 5, -9.5, .6), box(9, 2.6, .5, M(0x343a43, {metal:.6}), -6, -12, .35),
+         box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7), box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7),
+         box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.8, rough:.3}), -7.05, -3.5, .6), box(8.9, .8, 1.1, M(0x22262c), -7.05, -8.5, .6), box(8.2, 2.4, .1, M(0x2b3038), -2, .5, .13));
+  for (const x of [3.5, 4.4, 5.3, 6.2]) mb.add(box(.62, 13.3, .7, M(0x2a2f36), x, 6.5, .4));
+
+  const cpu = part("Procesor", mb); cpu.position.set(-3, 7, .6);
+  cpu.add(box(4, 4, .35, M(0xbfc4cb, {metal:.85, rough:.28})));
+  const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0, 0), new T.Vector2(.8, 0), new T.Vector2(0, .8)])), M(0xd9a41c, {metal:.7}));
+  tri.position.set(-1.85, -1.85, .18); cpu.add(tri);
+
+  const ssd = part("SSD", mb); ssd.position.set(-2, .5, .3);
+  ssd.add(box(8, 2.2, .16, M(0x15181c, {metal:.3})), box(2, 1.6, .1, M(0x3b4049, {metal:.6}), -1.5, 0, .12), box(2.2, 1.6, .1, M(0x3b4049, {metal:.6}), 1.4, 0, .12),
+          box(1.2, .6, .02, M(0x8c4a1f, {em:COPPER, emI:.2}), 3.2, .5, .17));
+
+  const ram = part("RAM", mb);
+  for (const x of [4.4, 6.2]) ram.add(box(.7, 13.3, 3.2, M(0x17191d, {metal:.55, rough:.4}), x, 6.5, 2.35), box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1, metal:.1}), x, 6.5, 4.1));
+
+  const Lc = 33, gpu = part("Placă video", mb); gpu.position.set(-12.2 + Lc / 2, -6.7, 7.3);
+  gpu.add(box(Lc, 6, 14, M(0x1d2026, {metal:.55, rough:.45})), box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1}), -Lc * .08, 1.6, 7.03),
+          box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -1.6, 7.03));
+  for (let i = 0; i < 3; i++) { const f = fan(4.3, "y"); f.position.set(-Lc / 2 + Lc * (i + .5) / 3, -3.1, 0); gpu.add(f); }
+
+  const cool = part("Cooler");
+  const pump = new T.Group();
+  pump.add(new T.Mesh(new T.CylinderGeometry(3.5, 3.6, 2.6, 36).rotateX(Math.PI / 2), M(0x1a1d22, {metal:.5})));
+  const ring = new T.Mesh(new T.TorusGeometry(2.6, .22, 8, 36), M(0x7a3f18, {em:COPPER, emI:1})); ring.position.z = 1.35; pump.add(ring);
+  pump.position.copy(inCase(V(-3, 7, 2.15))); cool.add(pump);
+  const rad = new T.Group(); rad.add(box(39.4, 2.7, 12, M(0x1a1d22, {metal:.5})));
+  for (const x of [-12.6, 0, 12.6]) { const f = fan(5.4, "y"); f.position.set(x, -2.4, 0); rad.add(f); }
+  rad.position.set(2, 23.3, 1.5); cool.add(rad);
+  const pw = inCase(V(-3, 7, 3.2));
+  for (const pts of [[pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)]])
+    cool.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, .55, 8, false), M(0x111316, {rough:.8})));
+
+  const psu = part("Sursă"); psu.position.set(-15.5, -20.6, -1.5);
+  psu.add(box(15, 8.6, 16, M(0x202329, {metal:.5})), box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.25}), 1.5, .6, 8.03));
+
+  // ---- flux de aer: particule care merg pe trasee, albastre la intrare, portocalii spre ieșire
+  const flow = new T.Group(); flow.visible = false; scene.add(flow);
+  const C = (...pts) => new T.CatmullRomCurve3(pts.map(p => V(...p)));
+  const PATHS = [
+    {c:C([30,13,0],[18,13,0],[0,14,-2],[-12,15,-3],[-20,15,0],[-31,15,0]), w:3},
+    {c:C([30,13,3],[15,14,4],[6,19,3],[4,23.5,2],[4,31,2]), w:2},
+    {c:C([30,0,0],[14,3,5],[0,7,6],[-8,14,4],[-6,22,2],[-6,31,2]), w:3},
+    {c:C([30,0,-2],[12,-4,0],[-2,-5,-2],[-8,-1,7],[-14,8,5],[-21,14,0],[-31,15,0]), w:3},
+    {c:C([30,-13,0],[12,-10,2],[0,-6,1],[-10,4,7],[-14,18,4],[-14,31,2]), w:3},
+    {c:C([30,-13,4],[10,-13,7],[-10,-10,7],[-19,4,3],[-22,14,0],[-31,15,0]), w:2},
+    {c:C([-11,-33,-1.5],[-12,-27,-1.5],[-15,-21,-1.5],[-22,-21,-1.5],[-31,-21,-1.5]), w:1.5, psu:true},
+  ];
+  const NP = 340, fpos = new Float32Array(NP * 3), fcol = new Float32Array(NP * 3);
+  const totalW = PATHS.reduce((a, p) => a + p.w, 0);
+  const parts3 = Array.from({length:NP}, (_, i) => { let r = (i / NP) * totalW, k = 0; while (r > PATHS[k].w) { r -= PATHS[k].w; k++; }
+    return {k, t:Math.random(), sp:.1 + Math.random() * .07, j:V((Math.random() - .5) * 3, (Math.random() - .5) * 3, (Math.random() - .5) * 4)}; });
+  const fgeo = new T.BufferGeometry();
+  fgeo.setAttribute("position", new T.BufferAttribute(fpos, 3)); fgeo.setAttribute("color", new T.BufferAttribute(fcol, 3));
+  const dot = document.createElement("canvas"); dot.width = dot.height = 32;
+  { const g = dot.getContext("2d"), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.5, "rgba(255,255,255,.8)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); }
+  flow.add(new T.Points(fgeo, new T.PointsMaterial({size:2.3, map:new T.CanvasTexture(dot), vertexColors:true, transparent:true, depthWrite:false, sizeAttenuation:true})));
+  const COLD = new T.Color(0x3d8fe0), HOT = new T.Color(0xe8742f), tmpC = new T.Color(), tmpP = V(0, 0, 0);
+  const FLBL = [["Aer rece intră prin față", V(27, 6, 9), "rece"], ["Aer cald iese prin spate", V(-27, 19, 6), "cald"], ["și prin radiatorul de sus", V(2, 29, 4), "cald"],
+                ["Sursa ia aer de dedesubt", V(-12, -29, 6), "neutru"], ["Placa video trage aer de jos", V(6, -6, 9), "rece"]];
+  const flEl = $("flbls");
+  flEl.innerHTML = FLBL.map(([t, , c]) => `<span class="flbl ${c}" hidden>${esc(t)}</span>`).join("");
+  const heat = new T.Group(); heat.visible = false; scene.add(heat);
+  const hc = document.createElement("canvas"); hc.width = hc.height = 64;
+  { const g = hc.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.4, "rgba(255,255,255,.55)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); }
+  const htex = new T.CanvasTexture(hc);
+  const HOT_SPOTS = [[V(-4, -6, -2), 24, 0xe0402b, 1], [V(-13, 15, -7), 15, 0xe0402b, .9], [V(-12, 7.5, -8), 10, 0xf07a30, .9], [V(-19, 21, 0), 17, 0xf0a040, .7], [V(-15, -20, -1.5), 10, 0xf0a040, .45]];
+  const sprites = HOT_SPOTS.map(([p, sc, col, a]) => { const sp = new T.Sprite(new T.SpriteMaterial({map:htex, color:col, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending, opacity:a}));
+    sp.position.copy(p); sp.scale.set(sc, sc, 1); sp.userData = {sc, a}; heat.add(sp); return sp; });
+  const HLBL = [["1 · Sub placa video", V(-4, -9, 6)], ["2 · Procesorul și VRM-ul", V(-13, 19, -4)], ["3 · SSD-ul M.2", V(-4, 6, -6)], ["4 · Colțul de sus din spate", V(-19, 25, 4)]];
+  flEl.insertAdjacentHTML("beforeend", HLBL.map(([t]) => `<span class="flbl cald" hidden>${esc(t)}</span>`).join(""));
+  function stepHeat(now){
+    sprites.forEach((sp, i) => { const k = 1 + Math.sin(now / 600 + i) * .08; sp.scale.set(sp.userData.sc * k, sp.userData.sc * k, 1); sp.material.opacity = sp.userData.a * (.85 + Math.sin(now / 700 + i * 2) * .15); });
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    HLBL.forEach(([, v], i) => { const el = flEl.children[FLBL.length + i]; tmpP.copy(v).project(camera);
+      const vis = tmpP.z < 1 && Math.abs(tmpP.x) < 1.05 && Math.abs(tmpP.y) < 1.05; el.hidden = !vis;
+      if (vis) el.style.transform = `translate(${(tmpP.x * .5 + .5) * w}px, ${(-tmpP.y * .5 + .5) * h}px) translate(-50%,-50%)`; });
+  }
+  function stepFlow(dt){
+    for (let i = 0; i < NP; i++) {
+      const q = parts3[i], P2 = PATHS[q.k];
+      q.t += dt * q.sp; if (q.t > 1) q.t -= 1;
+      P2.c.getPointAt(q.t, tmpP);
+      const fade = Math.min(1, q.t * 8, (1 - q.t) * 8);
+      fpos[i * 3] = tmpP.x + q.j.x * fade; fpos[i * 3 + 1] = tmpP.y + q.j.y * fade; fpos[i * 3 + 2] = tmpP.z + q.j.z * fade;
+      const h = P2.psu ? Math.max(0, (q.t - .45) * .9) : Math.min(1, Math.max(0, (q.t - .25) / .5));
+      tmpC.copy(COLD).lerp(HOT, h);
+      fcol[i * 3] = tmpC.r; fcol[i * 3 + 1] = tmpC.g; fcol[i * 3 + 2] = tmpC.b;
+    }
+    fgeo.attributes.position.needsUpdate = true; fgeo.attributes.color.needsUpdate = true;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    FLBL.forEach(([, v], i) => { const el = flEl.children[i]; tmpP.copy(v).project(camera);
+      const vis = tmpP.z < 1 && Math.abs(tmpP.x) < 1.05 && Math.abs(tmpP.y) < 1.05; el.hidden = !vis;
+      if (vis) el.style.transform = `translate(${(tmpP.x * .5 + .5) * w}px, ${(-tmpP.y * .5 + .5) * h}px) translate(-50%,-50%)`; });
+  }
+
+  function partOf(o){ while (o) { if (o.userData && o.userData.cat) return o.userData.cat; o = o.parent; } return null; }
+  const meshes = {};
+  scene.traverse(o => {
+    if (!o.material || o === grid) return;
+    o.userData.base = {c:o.material.color.getHex(), e:o.material.emissive ? o.material.emissive.getHex() : 0, ei:o.material.emissiveIntensity || 0, op:o.material.opacity};
+    const c = partOf(o); if (c) (meshes[c] = meshes[c] || []).push(o);
+  });
+
+  // ---- cameră
+  const cam = {t:V(0, 0, 0), d:118, th:.6, ph:1.13}, from = {}, to = {};
+  let tw = 1, twStart = 0, dragging = false, moved = 0, lastInteract = -1e9;
+  const OUT = {"Procesor":V(0, 0, 9), "SSD":V(0, 0, 9), "RAM":V(0, 0, 10), "Placă video":V(0, -2, 13), "Cooler":V(0, 4, 10), "Sursă":V(0, 0, 15), "Placă de bază":V(0, 0, 8), "Carcasă":V(0, 0, 0)};
+  const basePos = Object.fromEntries(Object.entries(parts).map(([k, g]) => [k, g.position.clone()]));
+  for (const g of Object.values(parts)) Object.assign(g.userData, {ex:0, exFrom:0, exTo:0, exStart:0});
+  function camTo(c, instant){
+    Object.assign(from, {t:cam.t.clone(), d:cam.d, th:cam.th, ph:cam.ph}); Object.assign(to, c);
+    let d = to.th - from.th; d = ((d + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; to.th = from.th + d;
+    tw = instant ? 1 : 0; twStart = performance.now();
+    if (instant) { cam.t.copy(to.t); cam.d = to.d; cam.th = to.th; cam.ph = to.ph; }
+  }
+  const narrow = () => camera.aspect < 1.05;
+  function focusCam(cat){
+    if (!cat) return {t:V(0, -1, 0), d:118 * (narrow() ? 1.3 : 1), th:.6, ph:1.13};
+    if (cat === "__aer") return {t:V(0, 0, 0), d:112 * (narrow() ? 1.3 : 1), th:.32, ph:1.2};
+    const g = parts[cat], keep = g.position.clone();
+    g.position.copy(basePos[cat]).add(OUT[cat]); g.updateMatrixWorld(true);
+    const bb = new T.Box3();
+    for (const o of meshes[cat]) if (o.isMesh) { o.geometry.computeBoundingBox(); bb.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
+    g.position.copy(keep); g.updateMatrixWorld(true);
+    const size = bb.getSize(V(0, 0, 0)).length(), c = bb.getCenter(V(0, 0, 0));
+    const pref = {"Procesor":[.25, .95], "SSD":[.2, .95], "RAM":[.45, 1], "Sursă":[.4, 1.2], "Carcasă":[.6, 1.12], "Cooler":[.4, 1.05]}[cat] || [.35, 1.1];
+    return {t:c, d:Math.max(20, size * 1.55 + 8) * (narrow() ? 1.35 : 1), th:pref[0], ph:pref[1]};
+  }
+
+  // ---- culoarea notei + estompare
+  function paint(){
+    for (const cat of Object.keys(parts)) {
+      const p = byUrl[S.ales[cat]], t = N(p);
+      const op = S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .35 : .08);
+      for (const o of meshes[cat] || []) {
+        const b = o.userData.base, m = o.material;
+        m.color.setHex(b.c);
+        if (t) {
+          if (o.isLineSegments) m.color.setHex(TIER_HEX[t]);
+          else { m.color.lerp(new T.Color(TIER_HEX[t]), cat === "Carcasă" ? .14 : .6); m.emissive.setHex(TIER_HEX[t]); m.emissiveIntensity = cat === "Carcasă" ? Math.max(b.ei * .4, .06) : Math.max(b.ei * .4, .22); }
+        } else if (m.emissive) { m.emissive.setHex(b.e); m.emissiveIntensity = b.ei; }
+        m.opacity = b.op * op; m.depthWrite = m.opacity >= 1;
+      }
+    }
+  }
+  // ---- click și trecere cu mouse-ul
+  const ray = new T.Raycaster(), ptr = new T.Vector2();
+  let px = 0, py = 0;
+  function pick(e){
+    const r = canvas.getBoundingClientRect();
+    ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ptr, camera);
+    const objs = Object.values(meshes).flat().filter(o => o.isMesh && o.material.opacity > .2);
+    const hits = ray.intersectObjects(objs, false);
+    // panourile și geamul carcasei nu „fură” click-ul de la piesele din interior
+    const inner = hits.find(h => partOf(h.object) !== "Carcasă");
+    return inner ? partOf(inner.object) : (hits[0] ? partOf(hits[0].object) : null);
+  }
+  canvas.addEventListener("pointerdown", e => { dragging = true; moved = 0; px = e.clientX; py = e.clientY; stage.classList.add("drag"); lastInteract = performance.now(); });
+  window.addEventListener("pointermove", e => {
+    if (dragging) {
+      const dx = e.clientX - px, dy = e.clientY - py; moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 5) { cam.th -= dx * .006; cam.ph = Math.max(.15, Math.min(1.5, cam.ph - dy * .006)); tw = 1; tip.hidden = true; }
+      px = e.clientX; py = e.clientY; lastInteract = performance.now(); return;
+    }
+    if (e.target !== canvas || e.pointerType === "touch") return;
+    const h = pick(e);
+    stage.classList.toggle("hovering", !!h);
+    if (h) {
+      const r = stage.getBoundingClientRect(), p = byUrl[S.ales[h]];
+      tip.hidden = false; tip.textContent = h + (p ? ` · nota ${N(p) || "?"}` : " · apasă ca să alegi");
+      tip.style.left = (e.clientX - r.left) + "px"; tip.style.top = (e.clientY - r.top) + "px";
+    } else tip.hidden = true;
+  });
+  window.addEventListener("pointerup", e => {
+    if (!dragging) return; dragging = false; stage.classList.remove("drag");
+    if (moved < 6 && e.target === canvas) { const c = pick(e); if (c) focus(c === S.focus ? null : c); else if (S.focus) focus(null); }
+  });
+  window.addEventListener("pointercancel", () => { dragging = false; stage.classList.remove("drag"); });
+  canvas.addEventListener("pointerleave", () => { tip.hidden = true; stage.classList.remove("hovering"); });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); tw = 1; lastInteract = performance.now(); cam.d = Math.max(12, Math.min(240, cam.d * (1 + Math.sign(e.deltaY) * .1))); }, {passive:false});
+  $("zin").addEventListener("click", () => { tw = 1; lastInteract = performance.now(); cam.d = Math.max(12, cam.d * .82); });
+  $("zout").addEventListener("click", () => { tw = 1; lastInteract = performance.now(); cam.d = Math.min(240, cam.d / .82); });
+
+  function theme(){
+    const v = getComputedStyle(document.documentElement).getPropertyValue("--stage").trim() || "#dbe2ea";
+    renderer.setClearColor(new T.Color(v));
+    grid.material.color.set(new T.Color(v).getHSL({}).l < .3 ? 0x3a4654 : 0x9aa6b3);
+  }
+  theme();
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", theme);
+  new MutationObserver(theme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+  function resize(){ const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  new ResizeObserver(() => { resize(); if (!dragging) camTo(focusCam(S.focus)); }).observe(canvas);
+  resize(); camTo(focusCam(null), true);
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  let last = performance.now();
+  function frame(now){
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    for (const [cat, g] of Object.entries(parts)) { // piesa aleasă iese din carcasă
+      const u = g.userData, target = S.focus === cat ? 1 : 0;
+      if (u.exTo !== target) { u.exFrom = u.ex; u.exTo = target; u.exStart = now; }
+      const k = reduce ? 1 : ease(Math.min(1, (now - u.exStart) / 700));
+      u.ex = u.exFrom + (u.exTo - u.exFrom) * k;
+      g.position.copy(basePos[cat]).addScaledVector(OUT[cat], u.ex);
+    }
+    for (const r of rotors) r.rotation.z += dt * 5;
+    const aer = S.focus === "__aer";
+    flow.visible = aer && S.aerView !== "caldura"; heat.visible = aer && S.aerView === "caldura";
+    if (!aer || heat.visible) [...flEl.children].slice(0, FLBL.length).forEach(e => e.hidden = true);
+    if (!aer || flow.visible) [...flEl.children].slice(FLBL.length).forEach(e => e.hidden = true);
+    if (flow.visible) stepFlow(reduce ? 0 : dt);
+    if (heat.visible) stepHeat(reduce ? 0 : now);
+    if (tw < 1 && !dragging) {
+      tw = Math.min(1, (now - twStart) / 850); const e = reduce ? 1 : ease(tw);
+      cam.t.lerpVectors(from.t, to.t, e); cam.d = from.d + (to.d - from.d) * e; cam.th = from.th + (to.th - from.th) * e; cam.ph = from.ph + (to.ph - from.ph) * e;
+    }
+    if (!S.focus && !dragging && !reduce && tw >= 1 && now - lastInteract > 6000) cam.th += dt * .12;
+    camera.position.set(cam.t.x + cam.d * Math.sin(cam.ph) * Math.sin(cam.th), cam.t.y + cam.d * Math.cos(cam.ph), cam.t.z + cam.d * Math.sin(cam.ph) * Math.cos(cam.th));
+    camera.lookAt(cam.t);
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {
+    paint,
+    focus(cat){ paint(); tip.hidden = true; requestAnimationFrame(() => { resize(); camTo(focusCam(cat)); }); },
+  };
+}
+})();
+</script>
+</body>
+</html>
