@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PC-ul meu · Atelier PC</title>
+<meta name="description" content="Află ce notă are PC-ul tău, ce merită îmbunătățit ca să facă față jocurilor din 2026 și când trebuie întreținut.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="PC-ul meu · Atelier PC">
+<meta property="og:description" content="Află ce notă are PC-ul tău, ce merită îmbunătățit ca să facă față jocurilor din 2026 și când trebuie întreținut.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Fișa PC-ului: formular cu piesele în stânga, nota și upgrade-urile în dreapta; dedesubt jurnalul de întreținere. */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a;
+  --t-S:#d9a41c; --t-A:#3a9a64; --t-B:#28899a; --t-C:#4570b8; --t-D:#7360b2; --t-E:#a7622d; --t-F:#b4423e; --t-N:#8a939e;
+  --t-ink:#ffffff; --t-ink-S:#1d1503;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --t-N:#5d6772; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --t-N:#5d6772; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;line-height:1}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:2px;overflow-x:auto;min-width:0}
+nav a{text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:500;color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--fg);background:var(--surface-2)}
+nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+@media (max-width:760px){.top{position:static}}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:22px}
+.hero h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,40px);line-height:1.05}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:68ch}
+.cols{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.card h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.form{display:grid;gap:12px}
+.field{display:grid;gap:4px}
+.field > label{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.field .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+select,input[type="date"]{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px}
+.seg{display:inline-flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:2px;font-size:13.5px;justify-self:start}
+.seg button{border:0;background:none;border-radius:7px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tier{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:7px;font-family:var(--display);font-weight:700;font-size:17px;color:var(--t-ink);background:var(--t,var(--t-N));flex:none}
+.tier.S{color:var(--t-ink-S)}
+.tier.big{width:64px;height:64px;font-size:38px;border-radius:14px}
+.score{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center}
+.score .tier{grid-row:span 2}
+.score strong{font-family:var(--display);font-size:24px;line-height:1.1}
+.score > span:not(.tier){color:var(--muted);font-size:14px}
+.parts{display:grid}
+.prow{display:grid;grid-template-columns:30px minmax(0,1fr);gap:2px 12px;align-items:center;padding-block:8px;border-top:1px solid var(--line)}
+.prow b{font-size:14.5px}
+.prow small{grid-column:2;color:var(--muted);font-size:13px}
+.prow .tier{grid-row:span 2}
+.ups{display:grid;gap:10px}
+.up{display:grid;gap:8px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.up .h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600}
+.up .arrow{color:var(--muted)}
+.up p{margin:0;font-size:13.5px;color:var(--muted)}
+.offer{--t:var(--t-N);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;border:1px solid color-mix(in srgb,var(--t) 40%,var(--line));background:color-mix(in srgb,var(--t) 8%,var(--surface));text-decoration:none}
+.offer:hover{border-color:var(--t)}
+.offer .tier{width:26px;height:26px;font-size:15px}
+.offer .nm{font-weight:600;font-size:14px;line-height:1.3}
+.offer .nm small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.offer .pr{font-family:var(--display);font-weight:700;font-size:18px;white-space:nowrap}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
+.total strong{font-family:var(--display);font-size:26px}
+.good{padding:14px;border-radius:12px;background:color-mix(in srgb,var(--ok) 10%,transparent);border:1px solid color-mix(in srgb,var(--ok) 40%,var(--line));color:var(--ok);font-weight:500}
+.jur{display:grid;gap:10px}
+.jrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(140px,.7fr) auto auto;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+@media (max-width:640px){.jrow{grid-template-columns:1fr auto}.jrow .dt{grid-column:1 / -1}}
+.jrow b{font-size:14.5px}
+.jrow small{display:block;color:var(--muted);font-size:12.5px}
+.pill{font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.ok{color:var(--ok)} .pill.soon{color:var(--warn)} .pill.due{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)} .pill.none{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:600;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap;font-size:14px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.tg{font-size:13.5px;color:var(--muted)}
+.tg code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--fg)}
+.foot{color:var(--muted);font-size:13px;max-width:80ch}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html">Atelier <b>PC</b></a>
+  <nav aria-label="Pagini">
+    <a href="index.html">Configurator</a>
+    <a href="pc-uri.html">PC-uri pe buget</a>
+    <a href="pc-ul-meu.html" aria-current="page">PC-ul meu</a>
+    <a href="reduceri.html">Reduceri</a>
+    <a href="montaj.html">Montaj 3D</a>
+  </nav>
+</div></header>
+<div class="wrap">
+  <div class="hero">
+    <h1>Cât de bun e PC-ul tău?</h1>
+    <p>Alege piesele pe care le ai. Îți spunem nota fiecăreia, ce merită îmbunătățit ca să facă față jocurilor din 2026 (cu varianta decentă, nu cea mai scumpă) și când trebuie întreținut.</p>
+  </div>
+  <div class="cols">
+    <section class="card" aria-labelledby="f-t">
+      <h2 id="f-t">Piesele tale</h2>
+      <p class="hint">Nu știi ce ai? În Windows: Ctrl+Shift+Esc, apoi „Performanță”. Acolo scrie procesorul, memoria și placa video.</p>
+      <div class="form">
+        <span class="seg" id="profil" role="group" aria-label="Folosesc PC-ul pentru"><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button></span>
+        <div class="field"><label for="cpu">Procesor</label><select id="cpu"></select></div>
+        <div class="field"><label for="gpu">Placă video</label><select id="gpu"></select></div>
+        <div class="field"><label for="ramgb">Memorie RAM</label><div class="two">
+          <select id="ramgb"><option value="8">8 GB</option><option value="16">16 GB</option><option value="32">32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option></select>
+          <select id="ramtip" aria-label="Tip memorie"><option>DDR4</option><option>DDR5</option></select></div></div>
+        <div class="field"><label for="ssdtip">Disc principal</label><div class="two">
+          <select id="ssdtip"><option value="hdd">HDD</option><option value="sata">SSD SATA</option><option value="g3">SSD NVMe PCIe 3.0</option><option value="g4">SSD NVMe PCIe 4.0</option><option value="g5">SSD NVMe PCIe 5.0</option></select>
+          <select id="ssdgb" aria-label="Capacitate"><option value="256">256 GB</option><option value="512">512 GB</option><option value="1000">1 TB</option><option value="2000">2 TB</option><option value="4000">4 TB</option></select></div></div>
+        <div class="field"><label for="psuw">Sursă</label><div class="two">
+          <select id="psuw"><option>450</option><option>550</option><option>650</option><option>750</option><option>850</option><option>1000</option><option>1200</option></select>
+          <select id="psuq" aria-label="Calitate sursă"><option value="noname">fără marcă / nu știu</option><option value="bronze">80+ Bronze</option><option value="gold">80+ Gold, marcă bună</option><option value="plat">Platinum / Titanium</option></select></div></div>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="r-t">
+      <h2 id="r-t">Nota PC-ului</h2>
+      <div id="score"></div>
+      <div class="parts" id="parts"></div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="u-t">
+    <h2 id="u-t">Ce merită îmbunătățit</h2>
+    <p class="hint">Îți propunem cea mai ieftină variantă care e destul de bună pentru jocurile din 2026, nu cea mai scumpă. Ordinea e după cât de mult ajută.</p>
+    <div id="ups"></div>
+  </section>
+
+  <section class="card" aria-labelledby="j-t">
+    <h2 id="j-t">Jurnal de întreținere</h2>
+    <p class="hint">Notează când ai făcut fiecare lucru, iar aici vezi ce urmează. Datele rămân în browserul tău.</p>
+    <div class="jur" id="jur"></div>
+    <p class="tg">Vrei alertă pe telefon? Scrie-i botului de Telegram <code>/pasta</code>, <code>/praf</code> sau <code>/filtre</code> când le faci, iar el îți scrie când e din nou timpul. <code>/jurnal</code> îți arată tot.</p>
+  </section>
+  <p class="foot">Notele folosesc aceleași reguli ca restul site-ului. Pentru modelele vechi sunt aproximative. Upgrade-urile vin din ofertele urmărite de bot; dacă o componentă nu are oferte, îți spunem ce să cauți.</p>
+</div>
+<script src="date.js"></script>
+<script src="comun.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.ATELIER || {produse:[]};
+const B = window.AtelierBuild, NOTE = B.NOTE;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf0 = new Intl.NumberFormat("ro-RO", {maximumFractionDigits:0});
+const lei = v => v == null ? "?" : nf0.format(v) + " lei";
+const store = {get(k, d){ try { const v = localStorage.getItem("atelier-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+               set(k, v){ try { localStorage.setItem("atelier-" + k, JSON.stringify(v)); } catch (e) {} }};
+const CAT = D.catalog || {gpu:[], cpu:[], platforme:{}, sursa_gpu:{}};
+const P = (D.produse || []).filter(p => p.pret && p.piesa && p.stoc !== false);
+const shift = (n, k) => NOTE[Math.max(0, Math.min(6, NOTE.indexOf(n) + k))];
+const idx = n => n ? NOTE.indexOf(n) : 7;
+
+const DEF = {profil:"gaming", cpu:"Ryzen 5 3600", gpu:"RTX 2060", ramgb:"16", ramtip:"DDR4", ssdtip:"sata", ssdgb:"512", psuw:"550", psuq:"bronze"};
+const S = Object.assign({}, DEF, store.get("pcmeu", {}));
+const N = p => p && p.note && p.note[S.profil] ? p.note[S.profil].n : p && p.nota;
+
+// ---- formular
+$("cpu").innerHTML = CAT.cpu.map(c => `<option>${esc(c.nume)}</option>`).join("");
+$("gpu").innerHTML = CAT.gpu.map(g => `<option>${esc(g.nume)}</option>`).join("");
+for (const k of ["cpu", "gpu", "ramgb", "ramtip", "ssdtip", "ssdgb", "psuw", "psuq"]) {
+  if ([...$(k).options].some(o => (o.value || o.text) === S[k])) $(k).value = S[k];
+  $(k).addEventListener("change", e => { S[k] = e.target.value; save(); render(); });
+}
+$("profil").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; S.profil = b.dataset.p; save(); render(); });
+function save(){ store.set("pcmeu", S); }
+
+// ---- note pentru piesele introduse (aceleași reguli ca în clasament.py)
+function noteRam(){
+  const gb = +S.ramgb, d5 = S.ramtip === "DDR5";
+  if (S.profil === "creatie") { let n = gb >= 64 ? "S" : gb >= 48 ? "A" : gb >= 32 ? "B" : gb >= 16 ? "D" : "F"; if (!d5) n = shift(n, 1);
+    return [n, `${gb} GB ${S.ramtip}` + (gb >= 64 ? ", loc pentru proiecte mari" : gb >= 32 ? ", ajunge pentru editare 1080p/1440p" : ", prea puțin pentru editare")]; }
+  let n = gb >= 32 ? (d5 ? "A" : "C") : gb >= 16 ? (d5 ? "C" : "D") : "F";
+  return [n, `${gb} GB ${S.ramtip}` + (gb >= 32 ? "" : gb >= 16 ? ", la limită pentru jocurile noi" : ", prea puțin")];
+}
+function noteSsd(){
+  const base = {g5:"S", g4:"A", g3:"C", sata:"D", hdd:"F"}[S.ssdtip], gb = +S.ssdgb;
+  let n = base;
+  const txt = {g5:"NVMe PCIe 5.0", g4:"NVMe PCIe 4.0", g3:"NVMe PCIe 3.0", sata:"SSD SATA", hdd:"HDD, jocurile se încarcă greu"}[S.ssdtip];
+  if (S.ssdtip !== "hdd") {
+    if (S.profil === "creatie") n = gb >= 4000 ? shift(n, -1) : gb < 2000 ? shift(n, 1) : n;
+    else if (gb < 1000) n = shift(n, 1);
+  }
+  return [n, `${txt}, ${gb >= 1000 ? gb / 1000 + " TB" : gb + " GB"}`];
+}
+function notePsu(){
+  const w = +S.psuw;
+  if (S.psuq === "noname") return ["F", `${w} W, fără marcă: e piesa care poate strica restul`];
+  let n = {bronze:"D", gold:"A", plat:"S"}[S.psuq];
+  if (w < 650) n = shift(n, 2); else if (w < 850) n = shift(n, 1);
+  return [n, `${w} W, ${$("psuq").selectedOptions[0].text}`];
+}
+const GPU_PSU = CAT.sursa_gpu || {};
+function needW(gpuName){ return GPU_PSU[gpuName] || (/5060|4060|3060|9060|7600|6600|2060|1660|1060|580|3050/i.test(gpuName) ? 550 : 650); }
+function gpuKey(title){ const t = B.fold(title); return Object.keys(GPU_PSU).sort((a, b) => b.length - a.length).find(k => t.includes(B.fold(k))); }
+
+function evaluate(){
+  const cpu = CAT.cpu.find(c => c.nume === S.cpu) || CAT.cpu[0], gpu = CAT.gpu.find(g => g.nume === S.gpu) || CAT.gpu[0];
+  const pick = (x) => (x && x.note && x.note[S.profil]) || {};
+  const [rn, rw] = noteRam(), [sn, sw] = noteSsd(), [pn, pw] = notePsu();
+  return {
+    "Procesor": {n:pick(cpu).n, why:`${cpu.nume} · ${(pick(cpu).why || [])[0] || ""}`, plat:cpu.platforma},
+    "Placă video": {n:pick(gpu).n, why:`${gpu.nume} · ${(pick(gpu).why || [])[0] || ""}`, name:gpu.nume},
+    "RAM": {n:rn, why:rw}, "SSD": {n:sn, why:sw}, "Sursă": {n:pn, why:pw},
+  };
+}
+const TXT = {gaming:{S:"Excelent: ține ani buni, chiar și la 4K.", A:"Foarte bun pentru 1440p și chiar 4K cu DLSS/FSR.", B:"Bun pentru 1440p la setări înalte.", C:"Decent: 1080p pe setări înalte, 1440p pe medii.", D:"La limită: 1080p pe setări medii sau joase.", E:"Slab pentru jocurile din 2026.", F:"Prea slab pentru jocurile noi."},
+             creatie:{S:"Excelent pentru editare 4K, 3D și Unreal.", A:"Foarte bun pentru editare și 3D.", B:"Bun pentru editare 1080p/1440p.", C:"Decent pentru proiecte mici.", D:"Lent la randare.", E:"Slab pentru editare.", F:"Prea slab pentru editare."}};
+const TARGET = {gaming:{"Placă video":"C", "Procesor":"C", "RAM":"C", "SSD":"B", "Sursă":"B"}, creatie:{"Procesor":"C", "Placă video":"C", "RAM":"B", "SSD":"B", "Sursă":"B"}};
+const WEIGHT = {gaming:{"Placă video":3, "Procesor":2, "RAM":1.5, "SSD":1, "Sursă":1.2}, creatie:{"Procesor":3, "Placă video":2, "RAM":2, "SSD":1, "Sursă":1.2}};
+
+function cheapest(filter){ return P.filter(filter).sort((a, b) => a.pret_lei - b.pret_lei)[0]; }
+const okTier = (p, t) => N(p) && idx(N(p)) <= idx(t);
+const watts = p => { const s = (p.specs || []).find(x => x.p === "Putere"); return s ? parseInt(s.v, 10) : 0; };
+const gbOf = p => { const m = B.fold(p.titlu || p.nume).match(/(\d)\s?x\s?(\d{1,2})\s?gb/); if (m) return m[1] * m[2]; const k = B.fold(p.titlu || p.nume).match(/\b(16|24|32|48|64|96|128)\s?gb/); return k ? +k[1] : 0; };
+
+function suggestions(ev){
+  const T = TARGET[S.profil], Wt = WEIGHT[S.profil], out = [];
+  let newPlatform = false;
+  const weak = Object.keys(T).filter(c => idx(ev[c].n) > idx(T[c]));
+  // sursa devine necesară și dacă placa video nouă cere mai mulți wați
+  weak.sort((a, b) => (idx(ev[b].n) - idx(T[b])) * Wt[b] - (idx(ev[a].n) - idx(T[a])) * Wt[a]);
+  let gpuNeed = needW(ev["Placă video"].name);
+  for (const c of weak) {
+    const u = {c, from:ev[c], target:T[c], offers:[], note:""};
+    if (c === "Placă video") {
+      const o = cheapest(p => p.piesa === c && okTier(p, T[c]) && idx(N(p)) < idx(ev[c].n));
+      if (o) { u.offers.push(o); gpuNeed = needW(gpuKey(o.titlu || o.nume) || ""); }
+      else u.note = "Caută o placă video cu nota cel puțin " + T[c] + ", de exemplu RTX 5070 sau RX 9060 XT 16 GB.";
+    } else if (c === "Procesor") {
+      const plat = ev[c].plat;
+      const same = cheapest(p => p.piesa === c && okTier(p, T[c]) && B.platforma(p) === plat && idx(N(p)) < idx(ev[c].n));
+      if (same) { u.offers.push(same); u.note = "Merge pe placa de bază pe care o ai."; }
+      else {
+        u.note = (CAT.platforme || {})[plat] || "";
+        const cpu = cheapest(p => p.piesa === c && okTier(p, T[c]) && B.platforma(p) === "AM5");
+        const mb = cheapest(p => p.piesa === "Placă de bază" && B.platforma(p) === "AM5");
+        const ram = cheapest(p => p.piesa === "RAM" && B.platforma(p) === "DDR5" && gbOf(p) >= 32);
+        if (cpu && mb && ram && plat !== "AM5") { u.offers.push(cpu, mb, ram); u.platform = true; newPlatform = true; }
+      }
+    } else if (c === "RAM") {
+      if (newPlatform) continue; // memoria DDR5 e deja în pachetul cu platformă nouă
+      const d5 = S.ramtip === "DDR5", gb = S.profil === "creatie" ? 64 : 32;
+      const o = cheapest(p => p.piesa === "RAM" && B.platforma(p) === (d5 ? "DDR5" : "DDR4") && gbOf(p) >= gb);
+      if (o) u.offers.push(o);
+      else u.note = d5 ? `Caută un kit DDR5 de ${gb} GB (2 plăcuțe).` : `Ia un kit DDR4 de ${gb} GB (2×${gb / 2} GB), 3200–3600 MHz. Nu urmărim încă oferte DDR4, dar se găsesc ieftin.`;
+    } else if (c === "SSD") {
+      const o = cheapest(p => p.piesa === "SSD" && okTier(p, T[c]));
+      if (o) { u.offers.push(o); u.note = "Mută Windows-ul și jocurile pe el; păstrează discul vechi pentru arhivă."; }
+      else u.note = "Caută un SSD NVMe PCIe 4.0 de minim 1 TB.";
+    } else if (c === "Sursă") {
+      const o = cheapest(p => p.piesa === "Sursă" && okTier(p, T[c]) && watts(p) >= gpuNeed);
+      if (o) u.offers.push(o); else u.note = `Caută o sursă 80+ Gold de minim ${gpuNeed} W, de la o marcă cunoscută.`;
+    }
+    out.push(u);
+  }
+  // placa video nouă poate cere o sursă mai mare chiar dacă sursa actuală are notă bună
+  if (!weak.includes("Sursă") && +S.psuw < gpuNeed) {
+    const o = cheapest(p => p.piesa === "Sursă" && okTier(p, "B") && watts(p) >= gpuNeed);
+    out.push({c:"Sursă", from:ev["Sursă"], target:"B", offers:o ? [o] : [], note:`Placa video propusă cere minim ${gpuNeed} W, iar sursa ta are ${S.psuw} W.`});
+  }
+  return out;
+}
+
+const tierEl = (n, cls = "") => `<span class="tier ${n || ""} ${cls}" style="--t:var(--t-${n || "N"})">${n || "?"}</span>`;
+const offerEl = p => `<a class="offer" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}" style="--t:var(--t-${N(p) || "N"})">${tierEl(N(p))}
+  <span class="nm">${esc(p.nume)}<small>${esc(p.piesa)} · ${esc(p.magazin)}</small></span><span class="pr">${lei(p.pret_lei)}</span></a>`;
+
+function render(){
+  document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil));
+  const ev = evaluate();
+  const n = B.notaTotala(Object.fromEntries(Object.entries(ev).map(([c, v]) => [c, v])), S.profil, x => x.n);
+  $("score").innerHTML = `<div class="score">${tierEl(n, "big")}<strong>Nota ${n || "?"} pentru ${S.profil === "creatie" ? "editare și 3D" : "jocuri"}</strong><span>${esc((TXT[S.profil] || {})[n] || "")}</span></div>`;
+  $("parts").innerHTML = Object.entries(ev).map(([c, v]) => `<div class="prow">${tierEl(v.n)}<b>${esc(c)}</b><small>${esc(v.why)}</small></div>`).join("");
+  const ups = suggestions(ev);
+  if (!ups.length) { $("ups").innerHTML = `<div class="good">✓ PC-ul tău face față jocurilor din 2026. Nu e nevoie de upgrade acum, deci nu cheltui degeaba.</div>`; return; }
+  let total = 0;
+  const html = ups.map((u, i) => {
+    u.offers.forEach(o => total += o.pret_lei || 0);
+    return `<div class="up"><div class="h">${i + 1}. ${esc(u.c)}: ${tierEl(u.from.n)}<span class="arrow">→ minim</span>${tierEl(u.target)}</div>
+      ${u.platform ? `<p>${esc(u.note)} Varianta cu platformă nouă (procesor + placă + memorie DDR5):</p>` : u.note ? `<p>${esc(u.note)}</p>` : ""}
+      ${u.offers.map(offerEl).join("")}</div>`;
+  }).join("");
+  $("ups").innerHTML = `<div class="ups">${html}</div>${total ? `<div class="total"><span>Total pentru upgrade-urile de mai sus</span><strong>${lei(total)}</strong></div>` : ""}`;
+}
+
+// ---- jurnal
+const J = [
+  {k:"pasta", nume:"Pasta termoconductoare", zile:730, info:"La 2–3 ani, sau mai devreme dacă procesorul se încălzește mai mult ca înainte."},
+  {k:"praf", nume:"Curățenie de praf", zile:180, info:"La 6 luni: radiatoare, ventilatoare, placa video. Cu PC-ul scos din priză."},
+  {k:"filtre", nume:"Filtrele de praf", zile:45, info:"La 1–2 luni: filtrele din față, de sus și de jos."},
+];
+function jurnal(){
+  const loc = store.get("jurnal", {}), bot = D.intretinere || {};
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  $("jur").innerHTML = J.map(j => {
+    const d = [loc[j.k], bot[j.k]].filter(Boolean).sort().pop();
+    let pill = `<span class="pill none">nenotat</span>`;
+    if (d) {
+      const left = Math.round((new Date(d + "T00:00") - today) / 864e5) + j.zile;
+      pill = left <= 0 ? `<span class="pill due">e timpul</span>` : left <= 30 ? `<span class="pill soon">în ${left} zile</span>` : `<span class="pill ok">peste ${left} zile</span>`;
+    }
+    return `<div class="jrow"><span><b>${esc(j.nume)}</b><small>${esc(j.info)}${bot[j.k] && bot[j.k] === d ? " Data vine de la bot." : ""}</small></span>
+      <input class="dt" type="date" id="j-${j.k}" value="${esc(d || "")}" aria-label="Ultima dată: ${esc(j.nume)}">${pill}
+      <button class="btn" data-azi="${j.k}">Am făcut-o azi</button></div>`;
+  }).join("");
+}
+$("jur").addEventListener("change", e => { const k = e.target.id.replace("j-", ""); const loc = store.get("jurnal", {}); loc[k] = e.target.value; store.set("jurnal", loc); jurnal(); });
+$("jur").addEventListener("click", e => { const b = e.target.closest("[data-azi]"); if (!b) return; const loc = store.get("jurnal", {});
+  const t = new Date(); loc[b.dataset.azi] = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; store.set("jurnal", loc); jurnal(); });
+
+render(); jurnal();
+})();
+</script>
+</body>
+</html>
