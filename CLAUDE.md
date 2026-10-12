@@ -15,7 +15,7 @@ Site: https://razvan-atelierpc.github.io/atelier-pc/
 - `note-ai.js` se încarcă imediat după `date.js` (calculează nota „AI local” în pagină).
 - 3D: three.js r128 de pe cdnjs + `vendor/three-extra-r128.js`. Culorile se dau în sRGB și se trec prin `lin()`.
 - Orice schimbare se verifică și pe telefon (390 px lățime), nu doar pe calculator.
-- Fără plăci de bază MSI în recomandări (preferința lui Răzvan).
+- Site-ul e neutru față de mărci: preferințele personale ale lui Răzvan (ex. fără plăci MSI) țin doar de botul și PC-ul lui, nu de site.
 - Linkurile de afiliere au `rel="sponsored"`; notele nu depind de comision.
 
 ## Pagini
