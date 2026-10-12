@@ -196,6 +196,7 @@ button{font:inherit;color:inherit}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="vendor/three-extra-r128.js"></script>
 <script>
 (() => {
 "use strict";
@@ -474,51 +475,79 @@ function make3D(){
   const T = THREE, V = (x, y, z) => new T.Vector3(x, y, z);
   const stage = $("stage"), canvas = $("cv"), labelsEl = $("labels");
   const renderer = new T.WebGLRenderer({canvas, antialias:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const PR = Math.min(window.devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(PR);
+  renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   const scene = new T.Scene();
   const camera = new T.PerspectiveCamera(38, 4/3, 0.5, 800);
-  scene.add(new T.HemisphereLight(0xffffff, 0x3a4552, 0.7));
-  const d1 = new T.DirectionalLight(0xffffff, 0.9); d1.position.set(40, 90, 70); scene.add(d1);
-  const d2 = new T.DirectionalLight(0xffe0c2, 0.35); d2.position.set(-70, 20, -30); scene.add(d2);
-  const glow = new T.PointLight(0xe08a4a, 0.5, 70); glow.position.set(4, 4, 4); scene.add(glow);
+  // culorile sunt date ca în CSS (sRGB); scena lucrează liniar și le corectăm la final
+  const lin = hex => new T.Color(hex).convertSRGBToLinear();
+  const FX = !!(T.EffectComposer && T.OutlinePass && T.RoomEnvironment);
+  if (FX) { const pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), .04).texture; pm.dispose(); }
+  scene.add(new T.HemisphereLight(lin(0xffffff), lin(0x3a4552), FX ? .35 : .7));
+  const d1 = new T.DirectionalLight(0xffffff, FX ? 1.8 : .9); d1.position.set(40, 90, 70);
+  d1.castShadow = true; d1.shadow.mapSize.set(2048, 2048); d1.shadow.bias = -.0004; d1.shadow.normalBias = .04;
+  Object.assign(d1.shadow.camera, {left:-75, right:75, top:70, bottom:-70, near:20, far:280}); scene.add(d1);
+  const d2 = new T.DirectionalLight(lin(0xffe0c2), .45); d2.position.set(-70, 20, -30); scene.add(d2);
+  const glow = new T.PointLight(lin(0xe08a4a), FX ? .55 : .5, 40, 2); glow.position.set(4, 4, 4); scene.add(glow);
 
-  const COPPER = 0xd27a3c;
+  const COPPER = 0xd27a3c, COPPER_L = lin(COPPER).getHex();
   const M = (color, o = {}) => {
-    const m = new T.MeshStandardMaterial({color, metalness:o.metal ?? .35, roughness:o.rough ?? .6,
-      emissive:o.em ?? 0x000000, emissiveIntensity:o.emI ?? 0, transparent:(o.op ?? 1) < 1, opacity:o.op ?? 1});
+    const m = new T.MeshStandardMaterial({color:lin(color), metalness:o.metal ?? .35, roughness:o.rough ?? .6,
+      emissive:lin(o.em ?? 0), emissiveIntensity:o.emI ?? 0, transparent:(o.op ?? 1) < 1, opacity:o.op ?? 1, envMapIntensity:o.env ?? .55});
     if (o.op !== undefined && o.op < 1) m.depthWrite = false;
-    m.userData.base = {em:o.em ?? 0x000000, emI:o.emI ?? 0};
+    if (o.map) m.map = o.map; if (o.alpha) { m.alphaMap = o.alpha; m.alphaTest = .04; m.transparent = true; }
+    if (o.side) m.side = o.side;
+    m.userData.base = {em:lin(o.em ?? 0).getHex(), emI:o.emI ?? 0};
     return m;
   };
-  const box = (w, h, d, mat, x = 0, y = 0, z = 0) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+  const RB = !!T.RoundedBoxGeometry;
+  const geo = (w, h, d, r) => RB && r ? new T.RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.01, h / 2.01, d / 2.01)) : new T.BoxGeometry(w, h, d);
+  const box = (w, h, d, mat, x = 0, y = 0, z = 0, r = 0) => { const m = new T.Mesh(geo(w, h, d, r), mat); m.position.set(x, y, z); return m; };
+  const cyl = (r, h, m, x = 0, y = 0, z = 0, seg = 24) => { const c = new T.Mesh(new T.CylinderGeometry(r, r, h, seg).rotateX(Math.PI / 2), m); c.position.set(x, y, z); return c; };
+  const ctex = (w, h, draw, rep) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new T.CanvasTexture(c);
+    t.wrapS = t.wrapT = T.RepeatWrapping; if (rep) t.repeat.set(...rep); t.anisotropy = 4; return t; };
+  const holes = rep => ctex(64, 64, (g, w, h) => { g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.fillStyle = "#000";
+    for (const [x, y] of [[16, 16], [48, 16], [0, 48], [32, 48], [64, 48]]) { g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill(); } }, rep);
+  const fins = (rep, light = "#4a515b", dark = "#121418") => ctex(64, 8, (g, w, h) => { g.fillStyle = dark; g.fillRect(0, 0, w, h); g.fillStyle = light; for (let x = 0; x < w; x += 8) g.fillRect(x, 0, 3, h); }, rep);
   const rotors = [];
-  function fan(r, axis){ // axis: "x" | "y" | "z"
+  const finsTex = (rep, a, b) => { const t = fins(rep, a, b); t.rotation = Math.PI / 2; return t; };
+  function fan(r, axis, frame = true){ // axis: "x" | "y" | "z"
     const g = new T.Group();
-    const ring = new T.Mesh(new T.TorusGeometry(r, .32, 10, 40), M(0x7a3f18, {em:COPPER, emI:.9, metal:.2, rough:.5}));
-    const frame = new T.Mesh(new T.TorusGeometry(r + .25, .18, 6, 4), M(0x16181c));
-    frame.rotation.z = Math.PI / 4; frame.scale.set(1.35, 1.35, 1);
+    g.add(new T.Mesh(new T.TorusGeometry(r, .3, 12, 48), M(0x7a3f18, {em:COPPER, emI:1.6, metal:.2, rough:.5})));
+    if (frame) { // ramă pătrată cu colțuri rotunjite și gaură rotundă
+      const s = r + .9, k = 1.2, sh = new T.Shape();
+      sh.moveTo(-s + k, -s); sh.lineTo(s - k, -s); sh.quadraticCurveTo(s, -s, s, -s + k); sh.lineTo(s, s - k); sh.quadraticCurveTo(s, s, s - k, s);
+      sh.lineTo(-s + k, s); sh.quadraticCurveTo(-s, s, -s, s - k); sh.lineTo(-s, -s + k); sh.quadraticCurveTo(-s, -s, -s + k, -s);
+      const hole = new T.Path(); hole.absarc(0, 0, r - .05, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const fr = new T.Mesh(new T.ExtrudeGeometry(sh, {depth:1.4, bevelEnabled:false, curveSegments:24}), M(0x16181c, {metal:.2, rough:.7}));
+      fr.position.z = -.7; g.add(fr);
+    }
     const rotor = new T.Group();
-    rotor.add(new T.Mesh(new T.CylinderGeometry(r * .3, r * .3, .9, 20).rotateX(Math.PI / 2), M(0x1d2026)));
-    for (let i = 0; i < 7; i++) { const b = box(r * .62, r * .2, .1, M(0x2a2e35, {op:.92})); b.position.x = r * .55; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 7; b.rotation.x = .5; rotor.add(h); }
-    g.add(ring, frame, rotor); rotors.push(rotor);
+    rotor.add(cyl(r * .3, 1, M(0x1d2026, {metal:.3, rough:.45})), cyl(r * .18, .1, M(0x8c4a1f, {em:COPPER, emI:.5}), 0, 0, .52));
+    for (let i = 0; i < 9; i++) { const b = box(r * .66, r * .26, .08, M(0x23262c, {rough:.45, op:.96})); b.position.x = r * .6; b.rotation.x = .55; b.rotation.z = .25; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 9; rotor.add(h); }
+    g.add(rotor); rotors.push(rotor);
     if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
     return g;
   }
 
-  // sol + carcasă
+  // sol + carcasă: spate din tablă, față și sus din plasă perforată, geam fumuriu
   const grid = new T.GridHelper(400, 80, 0x8a96a3, 0x8a96a3);
-  grid.material.transparent = true; grid.material.opacity = .25; grid.position.y = -25.6; scene.add(grid);
+  grid.material.transparent = true; grid.material.opacity = .22; grid.position.y = -25.62; scene.add(grid);
+  const ground = new T.Mesh(new T.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new T.ShadowMaterial({opacity:.28})); ground.position.y = -25.6; ground.receiveShadow = true; scene.add(ground);
   const caseG = new T.Group(); scene.add(caseG);
-  const dark = M(0x15181c, {metal:.5, rough:.55}), panel = M(0x1d2127, {metal:.5, rough:.6});
-  caseG.add(box(48, 50, .4, dark, 0, 0, -11.7), box(48.8, .4, 23.8, panel, 0, 25.2, 0), box(48.8, .4, 23.8, panel, 0, -25.2, 0),
-            box(.4, 50, 23, dark, -24.2, 0, 0), box(.4, 50, 23, M(0x23272e, {metal:.3, rough:.8, op:.45}), 24.2, 0, 0));
-  caseG.add(box(48.8, 50.8, .2, M(0x9fb4c8, {op:.07, metal:.1, rough:.05}), 0, 0, 11.9));
-  const edges = new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(48.8, 50.8, 23.8)), new T.LineBasicMaterial({color:0x4a5563}));
-  caseG.add(edges);
-  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.4, y, 0); caseG.add(f); }
-  const rearFan = fan(5.6, "x"); rearFan.position.set(-22.4, 15, 0); caseG.add(rearFan);
+  caseG.add(box(48, 50, .4, M(0x17191d, {metal:.6, rough:.42}), 0, 0, -11.7, .15), box(48.8, .5, 23.8, M(0x1b1e23, {metal:.6, rough:.45}), 0, -25.15, 0, .2),
+            box(48.8, .5, 23.8, M(0x1b1e23, {metal:.55, rough:.5, alpha:holes([24, 12]), side:T.DoubleSide}), 0, 25.15, 0, .2),
+            box(.5, 50, 23, M(0x15181c, {metal:.6, rough:.45}), -24.15, 0, 0, .15),
+            box(.5, 50.8, 23.8, M(0x1b1e23, {metal:.5, rough:.55, alpha:holes([12, 25]), side:T.DoubleSide}), 24.15, 0, 0, .2));
+  caseG.add(box(47.6, 49.6, .2, M(0x10151b, {op:.16, metal:.1, rough:.05, env:1.4}), 0, 0, 11.9));
+  const trim = M(0x0f1114, {metal:.5, rough:.5});
+  caseG.add(box(48.8, .6, .5, trim, 0, 25.1, 11.85), box(48.8, .6, .5, trim, 0, -25.1, 11.85), box(.6, 50.8, .5, trim, -24.1, 0, 11.85), box(.6, 50.8, .5, trim, 24.1, 0, 11.85));
+  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.6, y, 0); caseG.add(f); }
+  const rearFan = fan(5.6, "x"); rearFan.position.set(-22.6, 15, 0); caseG.add(rearFan);
   // cutia plăcii de bază (masa de lucru)
-  scene.add(box(28, 5, 34, M(0x2b3440, {metal:.1, rough:.9}), 45, -23.1, 4));
+  scene.add(box(28, 5, 34, M(0x2b3440, {metal:.1, rough:.9}), 45, -23.1, 4, .3));
   scene.add(box(10, .05, 8, M(0xb34a2a, {metal:0, rough:.9}), 45, -20.55, 16));
 
   // poziții placă de bază
@@ -531,13 +560,17 @@ function make3D(){
   const HL = new Map(); // pas -> obiecte evidențiate
   const hl = (s, ...objs) => { if (!HL.has(s)) HL.set(s, []); HL.get(s).push(...objs); };
   const pcbMat = M(0x1a1e24, {metal:.2, rough:.75});
-  const pcb = box(24.4, 30.5, .16, pcbMat); pcb.userData.hs = .3; boardG.add(pcb); hl(0, pcb); hl(4, pcb);
+  const pcb = box(24.4, 30.5, .16, pcbMat, 0, 0, 0, .05); pcb.userData.hs = .3; boardG.add(pcb); hl(0, pcb); hl(4, pcb);
   const metal = M(0x4a5059, {metal:.7, rough:.35});
-  const socket = box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.8, rough:.3}), -3, 7, .25); boardG.add(socket); hl(1, socket);
+  const socket = box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.85, rough:.28}), -3, 7, .25, .2); boardG.add(socket); hl(1, socket);
   boardG.add(box(.25, 5, .25, metal, -6, 7, .45));
-  boardG.add(box(11, 2.6, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -4, 13, 1.2), box(2.4, 9, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -8.6, 6.5, 1.2));
-  boardG.add(box(2.3, 9, 3, M(0x2a2f36, {metal:.5, rough:.5}), -11, 8, 1.6));
-  boardG.add(box(7, 6, 1, M(0x343a43, {metal:.6, rough:.4}), 5, -9.5, .6), box(9, 2.6, .5, M(0x343a43, {metal:.6, rough:.4}), -6, -12, .35));
+  const hsM = M(0x3b4049, {metal:.75, rough:.32}), hsDark = M(0x24282e, {metal:.7, rough:.38});
+  boardG.add(box(11, 2.6, 2.2, hsM, -4, 13, 1.2, .35), box(2.4, 9, 2.2, hsM, -8.6, 6.5, 1.2, .35));
+  boardG.add(box(2.3, 9, 3, M(0x22262c, {metal:.6, rough:.4}), -11, 8, 1.6, .4), box(.08, 7, .5, M(0x8c4a1f, {em:COPPER, emI:1.2}), -9.8, 8, 3.1));
+  boardG.add(box(7, 6, 1, M(0x343a43, {metal:.65, rough:.35}), 5, -9.5, .6, .35), box(9, 2.6, .5, hsDark, -6, -12, .35, .2));
+  for (let i = 0; i < 6; i++) boardG.add(box(.25, 2.4, .3, hsDark, -8.2 + i * 1.5, 13, 2.45));
+  for (let i = 0; i < 6; i++) boardG.add(cyl(.32, .7, M(0x2a2d33, {metal:.7, rough:.3}), -7 + i * 1.2, 10.9, .45, 12));
+  boardG.add(cyl(.9, .2, M(0xb9bec5, {metal:.9, rough:.25}), 8.5, -3, .2, 20));
   const conn24 = box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7), eps = box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7);
   boardG.add(conn24, eps); hl(8, conn24, eps);
   const pcie = box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.8, rough:.3}), -7.05, -3.5, .6); boardG.add(pcie); hl(7, pcie);
@@ -546,8 +579,9 @@ function make3D(){
   boardG.add(box(.6, 2.4, .5, M(0x111316), -6.2, .5, .3));
 
   const psu = new T.Group();
-  const psuBody = box(15, 8.6, 16, M(0x202329, {metal:.5, rough:.5})); psu.add(psuBody);
-  psu.add(box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.25, metal:.3}), 1.5, .6, 8.03));
+  const psuBody = box(15, 8.6, 16, M(0x1c1f24, {metal:.45, rough:.6}), 0, 0, 0, .5); psu.add(psuBody);
+  psu.add(box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.35, metal:.3}), 1.5, .6, 8.03), box(10.5, .1, 10.5, M(0x0c0d10, {rough:.7, alpha:holes([5, 5])}), 0, -4.33, 0));
+  for (let i = 0; i < 3; i++) psu.add(box(.1, 1.4, 2.6, M(0x0b0c0e), 7.53, 1.8 - i * 2, -3 + i * 2));
   psuBody.userData.hs = .4; psu.position.set(-15.5, -20.6, -1.5); scene.add(psu); hl(5, psuBody);
 
   // piese montate pe rând: {obj, step, final, dir}
@@ -570,14 +604,15 @@ function make3D(){
     L.ram = [];
     xs.forEach((x, i) => {
       const used = usedIdx.includes(i);
-      const sl = box(.62, 13.3, .7, M(used ? 0x3a4048 : 0x23272d), x, 6.5, .4); boardG.add(sl); dyn.push(sl);
+      const sl = box(.62, 13.3, .7, M(used ? 0x3a4048 : 0x23272d, {rough:.6}), x, 6.5, .4, .1); boardG.add(sl); dyn.push(sl);
+      for (const yy of [13.4, -.4]) { const lt = box(.7, .8, 1, M(0x3a3f47), x, yy, .6); boardG.add(lt); dyn.push(lt); }
       if (used) DH(3, sl);
       L.ram.push({t:names[i], v:V(x, 13.9, used ? 4.6 : 1.2), hot:used});
     });
     // procesor
     const cpuG = new T.Group();
-    const ihs = box(4, 4, .35, M(0xbfc4cb, {metal:.85, rough:.28})); cpuG.add(ihs);
-    const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0,0), new T.Vector2(.8,0), new T.Vector2(0,.8)])), M(0xd9a41c, {metal:.7, rough:.3, em:0x5a3f00, emI:.4}));
+    const ihs = box(4, 4, .35, M(0xbfc4cb, {metal:.9, rough:.22}), 0, 0, 0, .25); cpuG.add(ihs);
+    const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0,0), new T.Vector2(.8,0), new T.Vector2(0,.8)])), M(0xd9a41c, {metal:.8, rough:.3, em:0x5a3f00, emI:.4}));
     tri.position.set(-1.85, -1.85, .18); cpuG.add(tri);
     cpuG.position.set(-3, 7, .6); D(cpuG, 1, V(0, 0, 7)); DH(1, ihs);
     // SSD
@@ -591,33 +626,34 @@ function make3D(){
     // RAM
     if (p.ram.type === p.board.ram) usedIdx.forEach(i => {
       const g = new T.Group();
-      const body = box(.7, 13.3, 3.2, M(0x17191d, {metal:.55, rough:.4})); g.add(body);
-      g.add(box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1, metal:.1, rough:.4}), 0, 0, 1.75));
+      const body = box(.7, 13.3, 3.2, M(0x17191d, {metal:.6, rough:.35}), 0, 0, 0, .25); g.add(body);
+      g.add(box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1.8, metal:.1, rough:.4}), 0, 0, 1.75, .18), box(.76, 9, 1.4, M(0x2a2e35, {metal:.75, rough:.3}), 0, 0, .05, .1));
       g.position.set(xs[i], 6.5, .75 + 1.6); D(g, 3, V(0, 0, 7)); DH(3, body);
     });
     // cooler
     const c = p.cooler;
     if (c.type === "aio") {
       const pump = new T.Group();
-      const cyl = new T.Mesh(new T.CylinderGeometry(3.5, 3.6, 2.6, 36).rotateX(Math.PI / 2), M(0x1a1d22, {metal:.5, rough:.4}));
-      const top = new T.Mesh(new T.TorusGeometry(2.6, .22, 8, 36), M(0x7a3f18, {em:COPPER, emI:1}));
-      top.position.z = 1.35; pump.add(cyl, top);
-      pump.position.set(-3, 7, 2.15); D(pump, 6, V(0, 0, 8)); DH(6, cyl);
+      const pc = cyl(3.5, 2.6, M(0x1a1d22, {metal:.6, rough:.35}), 0, 0, 0, 48);
+      const top = new T.Mesh(new T.TorusGeometry(2.6, .22, 10, 48), M(0x7a3f18, {em:COPPER, emI:2}));
+      top.position.z = 1.38; pump.add(pc, top, cyl(2.9, .15, M(0x0e1013, {metal:.9, rough:.08, env:2}), 0, 0, 1.33, 48));
+      pump.position.set(-3, 7, 2.15); D(pump, 6, V(0, 0, 8)); DH(6, pc);
       const rad = new T.Group();
-      const core = box(39.4, 2.7, 12, M(0x1a1d22, {metal:.5, rough:.5})); rad.add(core);
-      for (const x of [-12.6, 0, 12.6]) { const f = fan(5.4, "y"); f.position.set(x, -2.4, 0); rad.add(f); }
+      const core = box(36, 2.7, 12, M(0x22252b, {metal:.5, rough:.5, map:fins([60, 1])})); rad.add(core);
+      rad.add(box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), -19.1, 0, 0, .4), box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), 19.1, 0, 0, .4));
+      for (const x of [-12.2, 0, 12.2]) { const f = fan(5.3, "y"); f.position.set(x, -2.2, 0); rad.add(f); }
       core.userData.hs = .4; rad.position.set(2, 23.3, 1.5); D(rad, 6, V(0, 12, 0), scene); DH(6, core);
       const pw = inCase(V(-3, 7, 3.2)), pts1 = [pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], pts2 = [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)];
       for (const pts of [pts1, pts2]) {
-        const tube = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, .55, 8, false), M(0x111316, {rough:.8}));
+        const tube = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false), M(0x111316, {rough:.62, metal:.2, map:fins([40, 1], "#26292e", "#0c0d10")}));
         D(tube, 6, V(0, 0, 0), scene); DH(6, tube);
       }
       L.cool = V(-3, 7, 4);
     } else {
       const H = c.h / 10, g = new T.Group();
       if (c.type === "air") {
-        const base = box(4.5, 4.5, 1, M(0xb87333, {metal:.8, rough:.3})); base.position.z = .5; g.add(base);
-        const fins = box(5.2, 12.5, H - 2, M(0xaab1b9, {metal:.75, rough:.35})); fins.position.z = 1 + (H - 2) / 2; g.add(fins);
+        const base = box(4.5, 4.5, 1, M(0xb87333, {metal:.85, rough:.28}), 0, 0, 0, .15); base.position.z = .5; g.add(base);
+        const fins = box(5.2, 12.5, H - 2, M(0xaab1b9, {metal:.75, rough:.35, map:finsTex([1, 40], "#c9ced4", "#6e757d")})); fins.position.z = 1 + (H - 2) / 2; g.add(fins);
         g.add(box(5.4, 12.7, .4, M(0x16181c), 0, 0, H - .2));
         const f = fan(5, "x"); f.position.set(3.6, 0, 1 + (H - 2) / 2); g.add(f);
         DH(6, fins);
@@ -631,25 +667,42 @@ function make3D(){
     // placa video
     if (p.gpu.len) {
       const Lc = p.gpu.len / 10, g = new T.Group();
-      const shroud = box(Lc, 6, 14, M(0x1d2026, {metal:.55, rough:.45})); g.add(shroud);
-      g.add(box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1}), -Lc * .08, 1.6, 7.03));
-      g.add(box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -1.6, 7.03));
+      const shroud = box(Lc, 3.6, 14, M(0x1d2026, {metal:.55, rough:.4}), 0, -1.1, 0, .6); g.add(shroud);
+      g.add(box(Lc - .4, .3, 13.8, M(0x2c3138, {metal:.8, rough:.48}), 0, 2.85, 0, .12),
+            box(Lc - 1.2, 2, 13.2, M(0x23262b, {metal:.5, rough:.5, map:fins([Math.round(Lc * .85), 1], "#6a717b", "#15171b")}), 0, 1.6, 0),
+            box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1.8}), -Lc * .08, -.3, 7.03),
+            box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -2.2, 7.03),
+            box(.25, 6.4, 3, M(0xb6bcc3, {metal:.9, rough:.3}), -Lc / 2 - .15, 0, -5.5, .05));
       const n = Lc > 27 ? 3 : 2, r = Math.min(4.3, Lc / (n * 2.35));
-      for (let i = 0; i < n; i++) { const f = fan(r, "y"); f.position.set(-Lc / 2 + Lc * (i + .5) / n, -3.1, 0); g.add(f); }
-      const pc = box(1.8, 1.4, .9, M(0x111316), Lc * .12, 1.2, 7.4); g.add(pc);
+      for (let i = 0; i < n; i++) { const f = fan(r, "y", false); f.position.set(-Lc / 2 + Lc * (i + .5) / n, -3.1, 0); g.add(f); }
+      const pc = box(1.8, 1.4, .9, M(0x111316), Lc * .12, 2.6, 7.4, .1); g.add(pc);
       shroud.userData.hs = .35; g.position.set(-12.2 + Lc / 2, -6.7, 7.3); D(g, 7, V(0, 0, 11)); DH(7, shroud);
-      L.gpuConn = V(-12.2 + Lc / 2 + Lc * .12, -5.5, 15); L.gpuMid = V(-12.2 + Lc / 2, -6.7, 14.5);
+      L.gpuConn = V(-12.2 + Lc / 2 + Lc * .12, -4.1, 15); L.gpuMid = V(-12.2 + Lc / 2, -6.7, 14.5);
       DH(8, pc);
     } else { L.gpuConn = null; L.gpuMid = null; }
     // cabluri
-    const cab = (pts, r) => { const m = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 8, false), M(0x24272c, {rough:.85})); D(m, 8, V(0, 0, 0), scene); DH(8, m); };
+    const cab = (pts, r) => { const m = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 8, false), M(0x1a1c20, {rough:.7, map:fins([60, 1], "#2a2d33", "#121417")})); D(m, 8, V(0, 0, 0), scene); DH(8, m); };
     cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.3, 2, 1.4)).add(V(0, -2, .6))], .6);
     cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-10.5, 14.6, 1.4))], .38);
     if (L.gpuConn) cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(L.gpuConn).add(V(0, 0, -.6))], .45);
     for (const o of dyn) o.traverse(x => { if (x.material) x.userData.dyn = true; });
+    scene.traverse(o => { if (o.isMesh && o !== ground) { const op = o.material.opacity >= 1; o.castShadow = op; o.receiveShadow = op; } });
   }
   [pcb, socket, conn24, eps, pcie, m2slot, psuBody].forEach(o => o.userData.static = true);
   buildDynamic();
+
+  // ---- post-procesare: contur luminos pe piesa de la pasul curent
+  let composer = null, outSel = null;
+  if (FX) {
+    const rt = renderer.capabilities.isWebGL2 && T.WebGLMultisampleRenderTarget ? new T.WebGLMultisampleRenderTarget(2, 2, {format:T.RGBAFormat}) : undefined;
+    if (rt) rt.samples = 4;
+    composer = new T.EffectComposer(renderer, rt); composer.setPixelRatio(PR);
+    composer.addPass(new T.RenderPass(scene, camera));
+    outSel = new T.OutlinePass(new T.Vector2(2, 2), scene, camera);
+    Object.assign(outSel, {edgeStrength:7, edgeGlow:.9, edgeThickness:2.4, pulsePeriod:0, enabled:false});
+    outSel.visibleEdgeColor.copy(lin(0xffa35c)); outSel.hiddenEdgeColor.copy(lin(0xff8a3d));
+    composer.addPass(outSel); composer.addPass(new T.ShaderPass(T.GammaCorrectionShader));
+  } else renderer.outputEncoding = T.sRGBEncoding;
 
   // ---- cameră
   const cam = {t:V(0,0,0), d:120, th:.5, ph:1.1}, from = {}, to = {};
@@ -715,11 +768,11 @@ function make3D(){
   // ---- temă
   function theme(){
     const v = getComputedStyle(document.documentElement).getPropertyValue("--stage").trim() || "#dbe2ea";
-    renderer.setClearColor(new T.Color(v));
+    renderer.setClearColor(composer ? lin(v) : new T.Color(v));
     const darkMode = new T.Color(v).getHSL({}).l < .3;
     grid.material.opacity = darkMode ? .35 : .3;
-    grid.material.color.set(darkMode ? 0x3a4654 : 0x9aa6b3);
-    edges.material.color.set(darkMode ? 0x4a5563 : 0x5c6775);
+    grid.material.color.copy(lin(darkMode ? 0x3a4654 : 0x9aa6b3));
+    ground.material.opacity = darkMode ? .5 : .28;
   }
   theme();
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", theme);
@@ -729,6 +782,7 @@ function make3D(){
     const w = stage.clientWidth, h = stage.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (composer) composer.setSize(w, h);
   }
   new ResizeObserver(() => { const wasNarrow = isNarrow(); resize(); if (wasNarrow !== isNarrow()) setStep(cur, true); }).observe(stage); resize();
 
@@ -752,7 +806,9 @@ function make3D(){
     // evidențiere
     const pulse = .45 + .35 * Math.sin(now / 260);
     scene.traverse(o => { if (o.isMesh && o.material && o.material.userData.base && o.material.userData.hot) { const b = o.material.userData.base; o.material.emissive.setHex(b.em); o.material.emissiveIntensity = b.emI; o.material.userData.hot = false; } });
-    for (const o of HL.get(cur) || []) { if (!o.visible && !o.parent?.visible) continue; o.material.emissive.setHex(COPPER); o.material.emissiveIntensity = pulse * (o.userData.hs ?? .7); o.material.userData.hot = true; }
+    const hot = [];
+    for (const o of HL.get(cur) || []) { if (!o.visible && !o.parent?.visible) continue; hot.push(o); o.material.emissive.setHex(COPPER_L); o.material.emissiveIntensity = pulse * (o.userData.hs ?? .7) * (outSel ? .15 : 1); o.material.userData.hot = true; }
+    if (outSel) { outSel.selectedObjects = hot; outSel.enabled = hot.length > 0; outSel.edgeStrength = reduce ? 7 : 6 + Math.sin(now / 320) * 2.2; }
     for (const r of rotors) r.rotation.z += dt * 5;
     // cameră
     if (tw < 1 && !dragging) {
@@ -762,7 +818,7 @@ function make3D(){
     if (autoRot && !dragging && tw >= 1 && !reduce) cam.th += dt * .18;
     camera.position.set(cam.t.x + cam.d * Math.sin(cam.ph) * Math.sin(cam.th), cam.t.y + cam.d * Math.cos(cam.ph), cam.t.z + cam.d * Math.sin(cam.ph) * Math.cos(cam.th));
     camera.lookAt(cam.t);
-    renderer.render(scene, camera);
+    if (composer) composer.render(); else renderer.render(scene, camera);
     // etichete
     if (lbls.length) {
       boardG.updateMatrixWorld();
