@@ -713,7 +713,7 @@ function setupLines(list){
 function seg(key, opts, dis){ return `<div class="ctypes" role="group">${opts.map(([v, t]) => `<button data-set="${key}:${v}" aria-pressed="${String(S.setup[key]) === String(v)}" ${dis ? "disabled" : ""}>${esc(t)}</button>`).join("")}</div>`; }
 function renderSetup(){
   $("ptitle").textContent = "Aranjează PC-ul"; $("q").hidden = true;
-  $("pinfo").textContent = "Pune radiatorul, ventilatoarele, placa video și sursa cum vrei. Particulele arată pe unde trece aerul: albastre când e rece, portocalii când s-a încălzit, roșii când stagnează, gri când intră cu praf prin fante.";
+  $("pinfo").textContent = "Pune radiatorul, ventilatoarele, placa video și sursa cum vrei. Dungile cu săgeți arată cum curge aerul: albastre când e rece, portocalii după ce s-a încălzit, roșii când nu are pe unde ieși, gri când intră cu praf prin fante.";
   const c = S.setup, front = c.rad === "fata", L = evalSetup(c);
   const bad = L.filter(x => x.s === "bad").length, warn = L.filter(x => x.s === "warn").length;
   const sel = (i, k, opts) => `<select class="monsel" data-mon="${i}:${k}" aria-label="${k}">${opts.map(([v, t]) => `<option value="${v}" ${S.mon.list[i][k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
@@ -1117,20 +1117,47 @@ function make3D(){
   const flow = new T.Group(); flow.visible = false; scene.add(flow);
   const C = (...pts) => new T.CatmullRomCurve3(pts.map(p => V(...p)));
   // traseele se construiesc din aranjarea aleasă (buildFlow): de la fiecare ventilator care bagă aer, prin carcasă, la cele care scot
-  const NP = 420, fpos = new Float32Array(NP * 3), fcol = new Float32Array(NP * 3);
-  let PATHS = [], parts3 = [];
-  const fgeo = new T.BufferGeometry();
-  fgeo.setAttribute("position", new T.BufferAttribute(fpos, 3)); fgeo.setAttribute("color", new T.BufferAttribute(fcol, 3));
-  const dot = document.createElement("canvas"); dot.width = dot.height = 32;
-  { const g = dot.getContext("2d"), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.5, "rgba(255,255,255,.8)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); }
-  flow.add(new T.Points(fgeo, new T.PointsMaterial({size:2.3, map:new T.CanvasTexture(dot), vertexColors:true, transparent:true, depthWrite:false, sizeAttenuation:true})));
+  // aerul e desenat ca niște „râuri” care curg: benzi semi-transparente cu săgeți care se mișcă,
+  // albastre unde aerul e rece, portocalii după ce trece pe lângă placa video și procesor
+  const chev = document.createElement("canvas"); chev.width = 128; chev.height = 32;
+  { const g = chev.getContext("2d"); g.fillStyle = "rgba(255,255,255,.28)"; g.fillRect(0, 0, 128, 32);
+    g.strokeStyle = "rgba(255,255,255,1)"; g.lineWidth = 7; g.lineJoin = "round"; g.lineCap = "round";
+    for (const x of [22, 86]) { g.beginPath(); g.moveTo(x, 4); g.lineTo(x + 18, 16); g.lineTo(x, 28); g.stroke(); } }
+  const chevTex = new T.CanvasTexture(chev); chevTex.wrapS = T.RepeatWrapping; chevTex.wrapT = T.ClampToEdgeWrapping;
+  let RIBBONS = [];
   const COLD = lin(0x3d8fe0), HOT = lin(0xe8742f), STALE = lin(0xd9302b), DUST = lin(0xa89a86), tmpC = new T.Color(), tmpP = V(0, 0, 0);
   const flEl = $("flbls"), flowLbl = document.createElement("div"), heatLbl = document.createElement("div");
   flowLbl.className = "fl-flow"; flEl.append(flowLbl, heatLbl);
   let FLBL = [];
   const GZ = V(-4, -5.5, 4), CZ = V(-12, 13, -3), MID = V(2, 5, 3); // sub placa video, la procesor, mijlocul carcasei
   const SIDE = {fata:"față", sus:"sus", jos:"jos", spate:"spate"};
+  function ribbon(pts, n, o = {}){
+    const curve = new T.CatmullRomCurve3(pts, false, "catmullrom", .35), len = curve.getLength();
+    const segs = Math.max(40, Math.round(len * 1.5)), rad = .55 + .55 * Math.sqrt(Math.max(.4, n));
+    const geo = new T.TubeGeometry(curve, segs, rad, 10, false);
+    // temperatura de-a lungul traseului: crește lângă placa video și procesor
+    const temp = []; let t = o.warm || 0;
+    for (let k = 0; k <= segs; k++) {
+      const pt = curve.getPointAt(k / segs);
+      if (!o.psu && !o.dust) { if (pt.distanceTo(GZ) < 9) t += 1.4 / segs * 2; if (pt.distanceTo(CZ) < 8) t += 1.2 / segs * 2; if (o.stale) t += 1.2 / segs; }
+      else if (o.psu) t += .5 / segs;
+      temp.push(Math.min(o.stale ? 1.6 : 1, t));
+    }
+    const uv = geo.attributes.uv, col = new Float32Array(uv.count * 3);
+    for (let k = 0; k < uv.count; k++) {
+      const h = temp[Math.min(segs, Math.round(uv.getX(k) * segs))];
+      if (o.dust) tmpC.copy(DUST); else if (h > 1) tmpC.copy(HOT).lerp(STALE, Math.min(1, (h - 1) / .6)); else tmpC.copy(COLD).lerp(HOT, h);
+      col[k * 3] = tmpC.r; col[k * 3 + 1] = tmpC.g; col[k * 3 + 2] = tmpC.b;
+    }
+    geo.setAttribute("color", new T.BufferAttribute(col, 3));
+    const tex = chevTex.clone(); tex.needsUpdate = true; tex.repeat.set(len / 7, 1);
+    const m = new T.Mesh(geo, new T.MeshBasicMaterial({map:tex, vertexColors:true, transparent:true, opacity:o.dust ? .55 : .8, depthWrite:false, side:T.DoubleSide, toneMapped:false}));
+    m.renderOrder = 5; m.userData = {tex, speed:(o.stale ? .25 : o.dust ? .45 : .9) * 7 / len * (len / 7)};
+    flow.add(m); RIBBONS.push(m);
+  }
   function buildFlow(c){
+    for (const r of RIBBONS) { flow.remove(r); r.geometry.dispose(); r.material.map.dispose(); r.material.dispose(); }
+    RIBBONS = [];
     const R = c.rad, ins = [], outs = [];
     const slot = (dir, a, b, kind, viaRad) => (dir === "in" ? ins : outs).push({a, b, kind, viaRad});
     if (R !== "fata") FRONT_Y.slice(0, c.front).forEach(y => slot(c.frontDir, V(33, y, 0), V(19, y, 0), "fata"));
@@ -1139,47 +1166,34 @@ function make3D(){
     else TOP_X.slice(0, c.top).forEach(x => slot(c.topDir, V(x, 33, 1.5), V(x, 18, 1.5), "sus"));
     if (R === "jos") [-10.2, 2, 14.2].forEach(x => slot(c.radDir, V(x, -34, 1.5), V(x, -16, 1.5), "jos", true));
     if (c.rear) slot(c.rearDir, V(-33, 15, 0), V(-18, 15, 0), "spate");
-    const jit = (k = 1) => V((Math.random() - .5) * 5 * k, (Math.random() - .5) * 4 * k, (Math.random() - .5) * 6 * k);
-    const P = [];
-    const add = (pts, w, o = {}) => P.push(Object.assign({c:new T.CatmullRomCurve3(pts), w}, o));
-    if (ins.length && outs.length) {
-      for (const i of ins) {
-        const low = i.kind === "fata" && i.b.y < 8 || i.kind === "jos";
-        const cand = outs.filter(o => o.kind !== i.kind);
-        const targets = cand.length ? cand : outs;
-        for (const o of targets) {
+    // un singur „râu” pe fiecare latură: mai gros cu cât sunt mai multe ventilatoare
+    const group = arr => Object.values(arr.reduce((m, x) => { (m[x.kind] = m[x.kind] || {kind:x.kind, viaRad:x.viaRad, n:0, a:V(0, 0, 0), b:V(0, 0, 0)}); const g = m[x.kind]; g.n++; g.a.add(x.a); g.b.add(x.b); return m; }, {}))
+      .map(g => (g.a.multiplyScalar(1 / g.n), g.b.multiplyScalar(1 / g.n), g));
+    const GI = group(ins), GO = group(outs);
+    if (GI.length && GO.length) {
+      for (const i of GI) {
+        const low = (i.kind === "fata" && i.b.y < 8) || i.kind === "jos";
+        const targets = GO.filter(o => o.kind !== i.kind).length ? GO.filter(o => o.kind !== i.kind) : GO;
+        const ws = targets.map(o => (o.kind === "spate" ? 1.2 : 1) * o.n), tw = ws.reduce((a, x) => a + x, 0);
+        targets.forEach((o, k) => {
           // traseul natural: aerul de jos/din față trece pe sub placa video, apoi pe la procesor, spre spate/sus
           let via;
-          if (o.kind === "spate" || o.kind === "sus") via = low ? [GZ.clone().add(jit()), CZ.clone().add(jit(.6))] : i.kind === "fata" ? [MID.clone().add(jit()), CZ.clone().add(jit(.6))] : [MID.clone().add(jit(.5))];
-          else via = (i.kind === "spate" || i.kind === "sus") ? [CZ.clone().add(jit(.6)), GZ.clone().add(jit())] : [MID.clone().add(jit())];
-          const w = (o.kind === "spate" ? 1.2 : 1) * (i.kind === "spate" && o.kind === "sus" ? .7 : 1);
-          add([i.a, i.b, ...via, o.b, o.a], w, {warm:i.viaRad ? .3 : 0});
-        }
+          if (o.kind === "spate" || o.kind === "sus") via = low ? [GZ.clone(), CZ.clone()] : i.kind === "fata" ? [MID.clone(), CZ.clone()] : [MID.clone()];
+          else via = (i.kind === "spate" || i.kind === "sus") ? [CZ.clone(), GZ.clone()] : [MID.clone()];
+          const off = V(0, 0, (k - (targets.length - 1) / 2) * 3.2); // râurile spre ieșiri diferite nu se suprapun
+          ribbon([i.a, i.b, ...via.map(v => v.add(off)), o.b, o.a], i.n * ws[k] / tw, {warm:i.viaRad ? .3 : 0});
+        });
       }
-    } else if (ins.length) { // intră aer, dar nu iese: se învârte în carcasă și se încălzește
-      for (const i of ins) add([i.a, i.b, GZ.clone().add(jit()), CZ.clone().add(jit()), V(6, 18, 2).add(jit()), V(12, 2, 4).add(jit()), V(0, -10, 4).add(jit()), MID.clone()], 1, {stale:true, warm:i.viaRad ? .3 : 0});
-    } else if (outs.length) { // iese aer, dar nu intră: se trage aer cu praf prin fante
-      const gaps = [V(-30, -6, 0), V(8, -31, 0), V(-4, 6, 16), V(30, 20, 0)];
-      for (const o of outs) for (const g of gaps) add([g, g.clone().lerp(MID, .5).add(jit()), MID.clone().add(jit()), o.b, o.a], 1, {dust:true});
+    } else if (GI.length) { // intră aer, dar nu iese: se învârte în carcasă și se încălzește
+      for (const i of GI) ribbon([i.a, i.b, GZ.clone(), CZ.clone(), V(6, 18, 2), V(12, 2, 4), V(0, -10, 4), V(-10, -4, 2)], i.n, {stale:true, warm:i.viaRad ? .3 : 0});
+    } else if (GO.length) { // iese aer, dar nu intră: se trage aer cu praf prin fante
+      const gaps = [V(-30, -6, 0), V(8, -31, 0)];
+      for (const o of GO) for (const g of gaps) ribbon([g, g.clone().lerp(MID, .5), MID.clone(), o.b, o.a], .6, {dust:true});
     }
     if (R !== "jos") {
-      if (c.psu === "sus") add([V(-4, -9, 4), V(-12, -13, 0), V(-15.5, -15, -1.5), V(-22, -20, -1.5), V(-33, -20.6, -1.5)], 1.2, {psu:true, warm:.45});
-      else add([V(-11, -34, -1.5), V(-12, -27, -1.5), V(-15, -21, -1.5), V(-22, -21, -1.5), V(-33, -21, -1.5)], 1.2, {psu:true});
+      if (c.psu === "sus") ribbon([V(-4, -9, 4), V(-12, -13, 0), V(-15.5, -15, -1.5), V(-22, -20, -1.5), V(-33, -20.6, -1.5)], .5, {psu:true, warm:.45});
+      else ribbon([V(-11, -34, -1.5), V(-12, -27, -1.5), V(-15, -21, -1.5), V(-22, -21, -1.5), V(-33, -21, -1.5)], .5, {psu:true});
     }
-    // cât de cald e aerul de-a lungul traseului: se încălzește când trece pe lângă placa video și procesor
-    for (const p of P) {
-      p.temp = []; let t = p.warm || 0;
-      for (let k = 0; k <= 40; k++) {
-        const pt = p.c.getPointAt(k / 40);
-        if (!p.psu && !p.dust) { if (pt.distanceTo(GZ) < 9) t += .035; if (pt.distanceTo(CZ) < 8) t += .03; if (p.stale) t += .02; }
-        else if (p.psu) t += .012;
-        p.temp.push(Math.min(p.stale ? 1.6 : 1, t));
-      }
-    }
-    PATHS = P;
-    const tw = P.reduce((a, p) => a + p.w, 0) || 1;
-    parts3 = Array.from({length:NP}, (_, i) => { let r = ((i + .5) / NP) * tw, k = 0; while (k < P.length - 1 && r > P[k].w) { r -= P[k].w; k++; }
-      return {k, t:Math.random(), sp:(P[k] && P[k].stale ? .05 : .1) + Math.random() * .07, j:V((Math.random() - .5) * 3, (Math.random() - .5) * 3, (Math.random() - .5) * 4)}; });
     // etichete: pe unde intră, pe unde iese, ce e greșit
     const L = [], avg = arr => arr.reduce((a, x) => a.add(x.a), V(0, 0, 0)).multiplyScalar(1 / arr.length);
     for (const k of Object.keys(SIDE)) {
@@ -1211,18 +1225,7 @@ function make3D(){
       if (vis) el.style.transform = `translate(${(tmpP.x * .5 + .5) * w}px, ${(-tmpP.y * .5 + .5) * h}px) translate(-50%,-50%)`; });
   }
   function stepFlow(dt){
-    for (let i = 0; i < NP; i++) {
-      const q = parts3[i], P2 = PATHS[q.k];
-      if (!P2) { fpos[i * 3 + 1] = -1e4; continue; }
-      q.t += dt * q.sp; if (q.t > 1) q.t -= 1;
-      P2.c.getPointAt(q.t, tmpP);
-      const fade = Math.min(1, q.t * 8, (1 - q.t) * 8);
-      fpos[i * 3] = tmpP.x + q.j.x * fade; fpos[i * 3 + 1] = tmpP.y + q.j.y * fade; fpos[i * 3 + 2] = tmpP.z + q.j.z * fade;
-      const h = P2.temp[Math.min(40, Math.round(q.t * 40))];
-      if (P2.dust) tmpC.copy(DUST); else if (h > 1) tmpC.copy(HOT).lerp(STALE, Math.min(1, (h - 1) / .6)); else tmpC.copy(COLD).lerp(HOT, h);
-      fcol[i * 3] = tmpC.r; fcol[i * 3 + 1] = tmpC.g; fcol[i * 3 + 2] = tmpC.b;
-    }
-    fgeo.attributes.position.needsUpdate = true; fgeo.attributes.color.needsUpdate = true;
+    for (const r of RIBBONS) r.userData.tex.offset.x -= dt * r.userData.speed; // săgețile curg spre ieșire
     const w = canvas.clientWidth, h = canvas.clientHeight;
     FLBL.forEach(([, v], i) => { const el = flowLbl.children[i]; if (!el) return; tmpP.copy(v).project(camera);
       const vis = tmpP.z < 1 && Math.abs(tmpP.x) < 1.05 && Math.abs(tmpP.y) < 1.05; el.hidden = !vis;
