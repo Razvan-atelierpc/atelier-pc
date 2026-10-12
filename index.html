@@ -211,6 +211,22 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .aer-btn{position:absolute;right:12px;top:136px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 9px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgb(0 0 0 / .12);z-index:2}
 .aer-btn svg{width:18px;height:18px;color:#3d8fe0}
 .ai-btn{top:176px}
+.set-btn{top:216px}
+.set-btn svg{color:var(--fg)}
+.sgrp{display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.sgrp:first-of-type{border-top:0}
+.sgrp > b{font-size:14px}
+.sgrp > small{color:var(--muted);font-size:12.5px}
+.sgrp .ctypes{padding-top:0}
+.sgrp .ctypes button:disabled{opacity:.4;cursor:default}
+.mon{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:center;padding:8px 0;border-top:1px dashed var(--line)}
+.mon b{grid-column:1 / -1;font-size:13px}
+.mon select,.monsel{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 6px;font:inherit;font-size:13px;color:inherit;min-width:0}
+details.mons{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+details.mons summary{cursor:pointer;font-weight:600}
+details.mons summary small{font-weight:400;color:var(--muted)}
+.reset{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;margin-top:10px}
+
 .ai-btn svg{color:var(--accent)}
 .aiverd{display:grid;gap:4px;padding:14px;border-radius:12px;margin-top:12px;border:1px solid var(--line);background:var(--bg)}
 .aiverd b{font-family:var(--display);font-size:22px;line-height:1.15}
@@ -290,6 +306,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 @media (max-width:760px){
   .aer-btn{top:96px}
   .ai-btn{top:136px}
+  .set-btn{top:176px}
   .welcome{bottom:auto;top:150px}
   .ghid-btn{position:fixed;top:auto;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 4px 14px rgb(0 0 0 / .3)}
   .ghid{position:fixed;top:auto;left:8px;right:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-height:72vh;z-index:21}
@@ -335,6 +352,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
     <button class="ghid-btn" id="ghid-btn" aria-expanded="false"><span>?</span>Ghid</button>
     <button class="aer-btn" id="aer-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/></svg>Flux de aer</button>
     <button class="aer-btn ai-btn" id="ai-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4M10 10h4v4h-4z"/></svg>Poți rula AI?</button>
+    <button class="aer-btn set-btn" id="set-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Aranjează PC-ul</button>
     <div id="flbls"></div>
     <section class="ghid" id="ghid" hidden aria-label="Ghid">
       <header><b>Ghid</b><button id="ghid-x" aria-label="Închide ghidul">×</button></header>
@@ -588,6 +606,92 @@ function renderAer(){
     <h4 style="margin:14px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Carcase mai neobișnuite (în teorie)</h4>
     <div id="ct">${renderCarcasa()}</div></div>`;
 }
+// ---------------------------------------------------------------- aranjare liberă + monitoare
+const SETUP_DEF = {rad:"sus", radDir:"out", front:3, frontDir:"in", rear:true, rearDir:"out", top:0, topDir:"out", gpu:"orizontal", psu:"jos"};
+S.setup = Object.assign({}, SETUP_DEF, store.get("setup", {}));
+S.mon = Object.assign({on:false, list:[{rez:"1440p", hz:"165", con:"dp", la:"gpu"}]}, store.get("monitoare", {}));
+function evalSetup(c){
+  const out = [], add = (s, t, d) => out.push({s, t, d});
+  const front = c.rad === "fata";
+  const nIn = (front ? (c.radDir === "in" ? 3 : 0) : (c.frontDir === "in" ? c.front : 0)) + (c.rear && c.rearDir === "in" ? 1 : 0) + (front ? (c.topDir === "in" ? c.top : 0) : (c.radDir === "in" ? 3 : 0));
+  const nOut = (front ? (c.radDir === "out" ? 3 : 0) : (c.frontDir === "out" ? c.front : 0)) + (c.rear && c.rearDir === "out" ? 1 : 0) + (front ? (c.topDir === "out" ? c.top : 0) : (c.radDir === "out" ? 3 : 0));
+  if (!nIn) add("bad", "Nu intră aer rece deloc", "Niciun ventilator nu bagă aer în carcasă. Piesele își reîncălzesc propriul aer. Pune ventilatoarele din față să bage aer.");
+  if (!nOut) add("bad", "Aerul cald nu are pe unde să iasă", "Niciun ventilator nu scoate aer. Căldura rămâne în carcasă. Pune ventilatorul din spate și pe cele de sus să scoată aer.");
+  if (nIn && nOut && nOut > nIn + 1) add("warn", `Scoți mai mult aer decât bagi (${nOut} ies, ${nIn} intră)`, "Carcasa trage praf prin toate fantele, nu doar prin filtre. Mai pune un ventilator care bagă aer sau crește turația celor din față.");
+  if (nIn && nOut && nOut <= nIn + 1 && nIn <= nOut + 3) add("ok", `Echilibru bun: ${nIn} ${nIn === 1 ? "ventilator bagă" : "ventilatoare bagă"} aer, ${nOut} ${nOut === 1 ? "scoate" : "scot"}`,
+    nOut > nIn ? "Aproape echilibrat. Ca praful să intre doar prin filtre, pune ventilatoarele care bagă aer la o turație puțin mai mare decât cele care scot." : "Intră puțin mai mult aer decât iese, așa că praful intră doar prin filtre.");
+  if (nIn > nOut + 3) add("warn", `Bagi mult aer și scoți puțin (${nIn} intră, ${nOut} ies)`, "Aerul cald iese greu și temperaturile cresc. Pune ventilatorul din spate să scoată aer.");
+  if (c.rear && c.rearDir === "in") add("bad", "Ventilatorul din spate bagă aer", "Merge contra curentului: aerul cald de la procesor se întoarce în carcasă. În spate, ventilatorul scoate aer.");
+  if (!front && c.front && c.frontDir === "out") add("warn", "Ventilatoarele din față scot aer", "Fața e făcută pentru intrare și are filtru. Așa, placa video nu mai primește aer rece de jos.");
+  if (front && c.top && c.topDir === "in") add("warn", "Ventilatoarele de sus bagă aer", "Aerul cald urcă singur; dacă îl împingi înapoi în jos, lupți cu el. Sus, ventilatoarele scot aer.");
+  if (!front && c.radDir === "in") add("warn", "Radiatorul de sus bagă aer", "Trage aer din cameră, dar îl încălzește prin radiator și îl suflă peste placa video. Sus, radiatorul scoate aer.");
+  if (!front && c.radDir === "out") add("ok", "Radiatorul sus, scoțând aer", "Cea mai folosită variantă: aerul cald din carcasă iese direct prin radiator.");
+  if (front && c.radDir === "in") add("ok", "Radiatorul în față, băgând aer", "Procesorul primește aer rece și e cel mai răcoros. Placa video primește aerul trecut prin radiator, cu 3–5°C mai cald. Pune furtunurile în jos, ca bulele de aer să urce în radiator, nu în pompă.");
+  if (front && c.radDir === "out") add("warn", "Radiatorul din față scoate aer", "Nu mai intră aer rece prin față, iar radiatorul primește aerul cald din carcasă. În față, radiatorul bagă aer.");
+  if (front) add("warn", "Verifică lungimea plăcii video", "Radiatorul cu ventilatoare ocupă cam 5,5 cm în față. Scade lungimea maximă a plăcii video din specificațiile carcasei cu atât.");
+  if (front && !c.top && !(c.rear && c.rearDir === "out")) add("bad", "Nu iese aer pe sus și nici prin spate", "Cu radiatorul în față băgând aer, aerul cald trebuie scos prin spate și prin sus.");
+  if (!front && c.front < 2 && c.frontDir === "in") add("warn", c.front ? "Un singur ventilator în față" : "Fără ventilatoare în față", "Placa video, cea mai caldă piesă, își ia aerul de jos din față. Pune măcar 2 ventilatoare în față.");
+  if (c.gpu === "vertical") add("warn", "Placa video verticală", "Arată bine, dar stă la 1–2 cm de geam și se sufocă: poate fi cu 5–10°C mai caldă. Ia un cablu riser PCIe de aceeași generație ca placa (4.0 sau 5.0) și o carcasă care lasă loc între placă și geam.");
+  if (c.psu === "sus") add("warn", "Sursa are ventilatorul în sus", "Trage aerul cald de la placa video. Dacă jos are filtru și carcasa stă pe picioare, întoarce-o cu ventilatorul în jos.");
+  else add("ok", "Sursa ia aer rece de jos", "Are circuitul ei separat și nu se încălzește de la placa video. Curăță filtrul de jos din când în când.");
+  return out;
+}
+const MON_REZ = {"1080p":["1080p (1920×1080)", 1], "1440p":["1440p (2560×1440)", 1.78], "uw":["Ultrawide 3440×1440", 2.39], "4k":["4K (3840×2160)", 4]};
+function evalMon(){
+  const out = [], add = (s, t, d) => out.push({s, t, d});
+  const L = S.mon.list, gp = byUrl[S.ales["Placă video"]], cp = byUrl[S.ales["Procesor"]];
+  const gn = gp && gp.note && gp.note.gaming ? gp.note.gaming.n : null;
+  const fara = !!cp && (/\d{3,5}k?f\b/i.test(cp.titlu || cp.nume) || /ryzen [3579] [1-5]\d{3}(?![\dg])/i.test(cp.titlu || cp.nume)); // procesor fără grafică integrată
+  if (L.some(m => m.la === "mb")) {
+    if (gp) add("bad", "Monitor legat la placa de bază", fara ? "Procesorul tău nu are grafică integrată, așa că monitorul legat la placa de bază rămâne negru. Leagă-l la porturile plăcii video, jos, în spatele carcasei."
+      : "Așa folosești grafica slabă din procesor, nu placa video: jocurile merg mult mai prost. Leagă monitoarele la porturile plăcii video, jos, în spatele carcasei.");
+    else add("warn", "Monitor legat la placa de bază", "Merge doar dacă procesorul are grafică integrată și nu ai placă video separată.");
+  }
+  if (L.length > 4) add("bad", `${L.length} monitoare la o singură placă video`, "Plăcile video au de obicei 4 ieșiri (3 DisplayPort + 1 HDMI). Pentru mai multe ai nevoie de un hub DisplayPort MST sau de a doua placă.");
+  const hdmi = L.filter(m => m.con === "hdmi" && m.la === "gpu").length;
+  if (hdmi > 1) add("warn", `${hdmi} monitoare pe HDMI`, "Majoritatea plăcilor video au un singur HDMI. Leagă restul prin DisplayPort (cablu DP la DP) sau folosește un adaptor DisplayPort → HDMI activ.");
+  const m0 = L[0];
+  if (m0) {
+    const px = MON_REZ[m0.rez][1] * (+m0.hz / 60);
+    const need = px >= 14 ? "S" : px >= 8 ? "A" : px >= 5 ? "B" : px >= 3 ? "C" : px >= 2 ? "D" : "E";
+    const NOTE_ = ["S","A","B","C","D","E","F"];
+    if (!gp) add("q", "Alege o placă video", `Pentru monitorul principal (${MON_REZ[m0.rez][0]}, ${m0.hz} Hz) în jocuri îți trebuie o placă cu nota ${need} sau mai bună.`);
+    else if (gn && NOTE_.indexOf(gn) > NOTE_.indexOf(need)) add("warn", `Placa video e prea slabă pentru ${MON_REZ[m0.rez][0]} la ${m0.hz} Hz`, `În jocurile noi nu ajunge la ${m0.hz} de cadre pe secundă. Pentru monitorul ăsta ar trebui o placă cu nota ${need} (a ta are ${gn}). Merge cu setări mai mici sau DLSS/FSR.`);
+    else if (gn) add("ok", `Placa video duce monitorul principal`, `${MON_REZ[m0.rez][0]} la ${m0.hz} Hz cere în jocuri o placă cu nota ${need}; a ta are ${gn}.`);
+    if (m0.hz >= 144 && m0.con === "hdmi") add("warn", "Monitor rapid pe HDMI", "Unele monitoare scot frecvența maximă doar pe DisplayPort. Folosește cablul DisplayPort din cutia monitorului.");
+    if (L.length > 1) add("ok", "Monitoarele în plus", "Pentru browser, Discord sau video, monitoarele secundare consumă foarte puțin din placa video.");
+  }
+  return out;
+}
+function setupLines(list){
+  const ic = {ok:"✓", warn:"!", bad:"✗", q:"?"};
+  return list.map(l => `<div class="aiv ${l.s}"><i>${ic[l.s]}</i><b>${esc(l.t)}</b><small>${esc(l.d)}</small></div>`).join("");
+}
+function seg(key, opts, dis){ return `<div class="ctypes" role="group">${opts.map(([v, t]) => `<button data-set="${key}:${v}" aria-pressed="${String(S.setup[key]) === String(v)}" ${dis ? "disabled" : ""}>${esc(t)}</button>`).join("")}</div>`; }
+function renderSetup(){
+  $("ptitle").textContent = "Aranjează PC-ul"; $("q").hidden = true;
+  $("pinfo").textContent = "Pune radiatorul, ventilatoarele, placa video și sursa cum vrei. Săgețile din model arată aerul: albastru intră, portocaliu iese. Dacă ceva nu e bine, îți spunem de ce.";
+  const c = S.setup, front = c.rad === "fata", L = evalSetup(c);
+  const bad = L.filter(x => x.s === "bad").length, warn = L.filter(x => x.s === "warn").length;
+  const sel = (i, k, opts) => `<select class="monsel" data-mon="${i}:${k}" aria-label="${k}">${opts.map(([v, t]) => `<option value="${v}" ${S.mon.list[i][k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  const mons = S.mon.list.map((m, i) => `<div class="mon"><b>Monitor ${i + 1}${i === 0 ? " (principal, pentru jocuri)" : ""}</b>
+      ${sel(i, "rez", Object.entries(MON_REZ).map(([k, v]) => [k, v[0]]))}${sel(i, "hz", [["60","60 Hz"],["75","75 Hz"],["144","144 Hz"],["165","165 Hz"],["240","240 Hz"],["360","360 Hz"]])}
+      ${sel(i, "con", [["dp","DisplayPort"],["hdmi","HDMI"]])}${sel(i, "la", [["gpu","la placa video"],["mb","la placa de bază"]])}</div>`).join("");
+  $("offers").innerHTML = `<div class="aiverd ${bad ? "bad" : warn ? "warn" : "ok"}"><b>${bad ? `${bad} ${bad === 1 ? "problemă" : "probleme"} de rezolvat` : warn ? "Merge, cu câteva atenționări" : "Aranjare foarte bună"}</b><span>${warn && bad ? `și ${warn} ${warn === 1 ? "atenționare" : "atenționări"}` : "Se schimbă pe loc când muți ceva."}</span></div>
+    <div class="sgrp"><b>Răcirea pe lichid (radiatorul)</b>${seg("rad", [["sus","Sus"],["fata","În față"]])}${seg("radDir", [["out","Scoate aer"],["in","Bagă aer"]])}</div>
+    <div class="sgrp"><b>Ventilatoare în față</b>${front ? `<small>În față e radiatorul.</small>` : seg("front", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("frontDir", [["in","Bagă aer"],["out","Scoate aer"]])}</div>
+    <div class="sgrp"><b>Ventilatoare sus</b>${front ? seg("top", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("topDir", [["out","Scoate aer"],["in","Bagă aer"]]) : `<small>Sus e radiatorul.</small>`}</div>
+    <div class="sgrp"><b>Ventilator în spate</b>${seg("rear", [[true,"Da"],[false,"Nu"]])}${c.rear ? seg("rearDir", [["out","Scoate aer"],["in","Bagă aer"]]) : ""}</div>
+    <div class="sgrp"><b>Placa video</b>${seg("gpu", [["orizontal","Orizontală"],["vertical","Verticală"]])}</div>
+    <div class="sgrp"><b>Sursa</b>${seg("psu", [["jos","Ventilatorul în jos"],["sus","Ventilatorul în sus"]])}</div>
+    <h4 class="aih">Ce spunem despre aranjare</h4><div class="ailist" style="padding-top:0">${setupLines(L)}</div>
+    <button class="reset" data-setreset>Revino la aranjarea recomandată</button>
+    <details class="mons" ${S.mon.on ? "open" : ""}><summary>Monitoare <small>(opțional)</small></summary>
+      <div class="sgrp" style="border-top:0"><small>Câte monitoare și cum le legi. Verificăm dacă placa video le duce și dacă sunt legate unde trebuie.</small>
+      <label style="font-size:13px">Câte monitoare: <select class="monsel" data-moncount>${[1,2,3,4,5].map(n => `<option ${n === S.mon.list.length ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>
+      ${mons}<div class="ailist">${setupLines(evalMon())}</div></details>`;
+}
+function saveSetup(){ store.set("setup", S.setup); store.set("monitoare", S.mon); if (G && G.layout) G.layout(S.setup); renderSetup(); }
 function renderAI(){
   $("ptitle").textContent = "Poți rula AI pe el?"; $("q").hidden = true;
   $("pinfo").textContent = "AI local = chat AI (ca ChatGPT) și generare de imagini care rulează pe PC-ul tău, fără internet și fără abonament. Verificăm piesele alese.";
@@ -621,6 +725,7 @@ function renderAI(){
 }
 function renderOffers(keepScroll){
   if (S.focus === "__aer") return renderAer();
+  if (S.focus === "__setup") return renderSetup();
   if (S.focus === "__ai") {
     if (S.detail && byUrl[S.detail]) { $("q").hidden = true; $("offers").innerHTML = hubHtml(byUrl[S.detail]); $("offers").scrollTop = 0; return; }
     return renderAI();
@@ -648,6 +753,9 @@ function renderOffers(keepScroll){
 $("q").addEventListener("input", e => { S.q = e.target.value; renderOffers(); });
 $("offers").addEventListener("click", e => {
   const ct = e.target.closest("[data-ct]"); if (ct) { S.carcasa = ct.dataset.ct; $("ct").innerHTML = renderCarcasa(); return; }
+  const st = e.target.closest("[data-set]");
+  if (st) { const [k, v] = st.dataset.set.split(":"); S.setup[k] = v === "true" ? true : v === "false" ? false : /^\d+$/.test(v) ? +v : v; const y = $("offers").scrollTop; saveSetup(); $("offers").scrollTop = y; return; }
+  if (e.target.closest("[data-setreset]")) { S.setup = {...SETUP_DEF}; saveSetup(); return; }
   const gc = e.target.closest("[data-gocat]"); if (gc) { focus(gc.dataset.gocat); return; }
   const av = e.target.closest("[data-av]"); if (av) { S.aerView = av.dataset.av; renderAer(); $("offers").scrollTop = 0; return; }
   const o = e.target.closest("[data-open]"); if (o) { S.listY = $("offers").scrollTop; S.detail = o.dataset.open; renderOffers(); return; }
@@ -668,9 +776,20 @@ function focus(cat){
   if (G) G.focus(cat);
   $("aer-btn").setAttribute("aria-pressed", cat === "__aer");
   $("ai-btn").setAttribute("aria-pressed", cat === "__ai");
+  $("set-btn").setAttribute("aria-pressed", cat === "__setup");
   if (cat && window.matchMedia("(max-width:760px)").matches) setTimeout(() => $("stage").scrollIntoView({behavior:"smooth", block:"start"}), 50);
 }
 $("aer-btn").addEventListener("click", () => focus(S.focus === "__aer" ? null : "__aer"));
+$("set-btn").addEventListener("click", () => focus(S.focus === "__setup" ? null : "__setup"));
+$("offers").addEventListener("change", e => {
+  const m = e.target.closest("[data-mon]"), n = e.target.closest("[data-moncount]");
+  if (!m && !n) return;
+  const y = $("offers").scrollTop;
+  if (m) { const [i, k] = m.dataset.mon.split(":"); S.mon.list[+i][k] = m.value; }
+  if (n) { const k = +n.value; while (S.mon.list.length < k) S.mon.list.push({rez:"1080p", hz:"60", con:"hdmi", la:"gpu"}); S.mon.list.length = k; }
+  S.mon.on = true; saveSetup(); $("offers").scrollTop = y;
+});
+$("offers").addEventListener("toggle", e => { if (e.target.matches && e.target.matches("details.mons")) { S.mon.on = e.target.open; store.set("monitoare", S.mon); } }, true);
 $("ai-btn").addEventListener("click", () => { if (S.focus === "__ai") return focus(null); if (S.profil !== "ai") setProfil("ai"); focus("__ai"); });
 $("back").addEventListener("click", () => focus(null));
 $("close").addEventListener("click", () => focus(null));
@@ -679,6 +798,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && S.focus) f
 // ---------------------------------------------------------------- 3D
 let G = null;
 try { if (window.THREE) G = make3D(); } catch (err) { console.error(err); G = null; }
+try { if (G && G.layout) G.layout(S.setup); } catch (err) { console.error(err); }
 if (!G) $("stage").insertAdjacentHTML("afterbegin", `<div class="no3d">Modelul 3D nu s-a putut încărca pe acest dispozitiv. Alege piesele din bara de jos.</div>`);
 renderProfil(); renderSides(); renderDock(); if (G) G.paint();
 
@@ -755,6 +875,8 @@ function ask(q){
   if (/pc-?ul meu|calculatorul meu|ce nota are|upgrade|imbunatat|pasta|termoconduct|curat|praf|intretin/.test(t))
     return say(`Pe pagina <a href="pc-ul-meu.html">PC-ul meu</a> alegi piesele pe care le ai și vezi nota PC-ului, ce merită îmbunătățit (varianta decentă, nu cea mai scumpă) și jurnalul de întreținere: pastă, praf, filtre.`);
   if (/acvariu|o11|cos de fum|sandwich|itx|vertical|carcas[ae] (ciudat|neobisnuit|speciala)/.test(t)) { focus("__aer"); const id = /acvariu|o11/.test(t) ? "acvariu" : /cos/.test(t) ? "cos" : /sandwich|itx/.test(t) ? "itx" : /vertical/.test(t) ? "vertical" : "clasica"; S.carcasa = id; renderOffers(); setTimeout(() => $("ct") && $("ct").scrollIntoView({behavior:"smooth", block:"start"}), 300); return say("Ți-am deschis schema pentru carcasa asta, în panoul <b>Flux de aer</b>, jos."); }
+  if (/aranj|radiator|vertical|monitor|ecran|unde pun|cum pun (ventilat|radiat|sursa)/.test(t)) { focus("__setup"); if (/monitor|ecran/.test(t)) { S.mon.on = true; renderSetup(); setTimeout(() => { const d = document.querySelector("details.mons"); d && d.scrollIntoView({behavior:"smooth", block:"start"}); }, 300); }
+    return say("Ți-am deschis <b>Aranjează PC-ul</b>: muți radiatorul, ventilatoarele, placa video și sursa cum vrei, iar eu îți spun dacă e bine. Jos, la <b>Monitoare</b>, verifici și ecranele."); }
   if (/cald|caldur|fierbint|hotspot|se incalzeste/.test(t)) { S.aerView = "caldura"; focus("__aer"); return say("Ți-am arătat în model <b>unde se adună căldura</b>, iar în panou ai ce o răcește pe fiecare zonă."); }
   if (/aer|ventilat|flux|temperatur|incalz|racesc|airflow/.test(t)) { S.aerView = "flux"; focus("__aer"); return say("Ți-am pornit <b>fluxul de aer</b>: vezi în PC cum intră aerul rece prin față și iese cald prin spate și sus. Regulile sunt în panou."); }
   if (/nota|note|s.f|ce inseamna|clasament/.test(t))
@@ -866,8 +988,11 @@ function make3D(){
   cs.add(box(48.8, .6, .5, trim, 0, 25.1, 11.85), box(48.8, .6, .5, trim, 0, -25.1, 11.85), box(.6, 50.8, .5, trim, -24.1, 0, 11.85), box(.6, 50.8, .5, trim, 24.1, 0, 11.85));
   for (const [x, z] of [[-20, -8], [-20, 8], [20, -8], [20, 8]]) cs.add(box(5, .8, 3, M(0x0d0f12, {rough:.8}), x, -25.8, z, .3));
   cs.add(box(.2, 2.2, 6, M(0x30353d, {metal:.7, rough:.35}), 24.45, 21, 6, .1), cyl(.55, .2, M(0x9aa1aa, {metal:.8, rough:.3}), 24.55, 21, 2).rotateY(Math.PI / 2));
-  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.6, y, 0); cs.add(f); }
+  const FRONT_Y = [0, -13, 13]; // ordinea în care se pun ventilatoarele în față: mijloc, jos, sus
+  const frontFans = FRONT_Y.map(y => { const f = fan(5.6, "x"); f.position.set(22.6, y, 0); cs.add(f); return f; });
   const rf = fan(5.6, "x"); rf.position.set(-22.6, 15, 0); cs.add(rf);
+  const TOP_X = [-10.2, 2, 14.2];
+  const topFans = TOP_X.map(x => { const f = fan(5.3, "y"); f.position.set(x, 23.6, 1.5); f.visible = false; cs.add(f); return f; });
 
   // ---- placa de bază (coordonatele plăcii: z iese spre geam)
   const mb = part("Placă de bază"); mb.position.set(-9.8, 7.25, -10.6);
@@ -920,8 +1045,11 @@ function make3D(){
   for (const x of [-12.2, 0, 12.2]) { const f = fan(5.3, "y"); f.position.set(x, -2.2, 0); rad.add(f); }
   rad.position.set(2, 23.3, 1.5); cool.add(rad);
   const pw = inCase(V(-3, 7, 3.2)), braid = M(0x111316, {rough:.62, metal:.2, map:fins([40, 1], "#26292e", "#0c0d10")});
-  for (const pts of [[pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)]])
-    cool.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false), braid));
+  const TUBES = {
+    sus: [[pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)]],
+    fata: [[pw.clone().add(V(1.2, -1, 0)), V(4, 10, 6), V(16, -2, 6.5), V(20.4, -16.5, 0)], [pw.clone().add(V(1.2, 1, .6)), V(5, 12, 7.5), V(17, 0, 8), V(20.4, -16.5, 3.5)]],
+  };
+  const tubes = TUBES.sus.map(pts => { const m = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false), braid); cool.add(m); return m; });
 
   // ---- sursa: carcasă mată, grilaj de ventilator dedesubt, conectori modulari în față
   const psu = part("Sursă"); psu.position.set(-15.5, -20.6, -1.5);
@@ -935,7 +1063,8 @@ function make3D(){
   const cab = (pts, r) => cables.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 10, false), cable));
   cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.3, 2, 1.4)).add(V(0, -2, .6))], .6);
   cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-10.5, 14.6, 1.4))], .38);
-  cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(V(-12.2 + Lc / 2 + Lc * .12, -4, 15)).add(V(0, 0, -.6))], .45);
+  let gpuCable = cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(V(-12.2 + Lc / 2 + Lc * .12, -4, 15)).add(V(0, 0, -.6))], .45).children.slice(-1)[0];
+  const gpuPlug = new T.Object3D(); gpuPlug.position.set(Lc * .12, 2.6, 7.4); gpu.add(gpuPlug);
 
   // umbre: piesele opace aruncă și primesc umbră
   scene.traverse(o => { if (o.isMesh && o !== ground && o.material.opacity >= 1) { o.castShadow = true; o.receiveShadow = true; } });
@@ -1058,6 +1187,7 @@ function make3D(){
   function focusCam(cat){
     if (!cat) return {t:V(0, -1, 0), d:118 * (narrow() ? 1.3 : 1), th:.6, ph:1.13};
     if (cat === "__aer") return {t:V(0, 0, 0), d:112 * (narrow() ? 1.3 : 1), th:.32, ph:1.2};
+    if (cat === "__setup") return {t:V(0, 0, 0), d:118 * (narrow() ? 1.3 : 1), th:.55, ph:1.12};
     if (cat === "__ai") return {t:V(-6, 2, 0), d:88 * (narrow() ? 1.3 : 1), th:.42, ph:1.18};
     const g = parts[cat], keep = g.position.clone();
     g.position.copy(basePos[cat]).add(OUT[cat]); g.updateMatrixWorld(true);
@@ -1074,7 +1204,7 @@ function make3D(){
   function paint(){
     for (const cat of Object.keys(parts)) {
       const p = byUrl[S.ales[cat]], t = N(p);
-      const op = S.focus === "__ai" ? (AI_PARTS.includes(cat) ? 1 : cat === "Carcasă" ? .22 : GHOST) : S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .45 : cat === "Carcasă" ? .22 : GHOST);
+      const op = S.focus === "__setup" ? (cat === "Carcasă" ? .4 : 1) : S.focus === "__ai" ? (AI_PARTS.includes(cat) ? 1 : cat === "Carcasă" ? .22 : GHOST) : S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .45 : cat === "Carcasă" ? .22 : GHOST);
       for (const o of meshes[cat] || []) {
         const b = o.userData.base, m = o.material;
         m.color.setHex(b.c);
@@ -1086,7 +1216,7 @@ function make3D(){
         o.castShadow = m.opacity >= 1 && b.op >= 1;
       }
     }
-    const cop = S.focus === "__aer" ? .55 : S.focus && S.focus !== "Carcasă" ? GHOST : 1; // și la "__ai"
+    const cop = S.focus === "__setup" ? 1 : S.focus === "__aer" ? .55 : S.focus && S.focus !== "Carcasă" ? GHOST : 1; // și la "__ai"
     cables.traverse(o => { if (o.material) { o.material.opacity = cop; o.material.depthWrite = cop >= 1; o.castShadow = cop >= 1; } });
     outline();
   }
@@ -1147,6 +1277,47 @@ function make3D(){
   new ResizeObserver(() => { resize(); if (!dragging) camTo(focusCam(S.focus)); }).observe(canvas);
   resize(); camTo(focusCam(null), true);
 
+  // ---- aranjare liberă: radiator, ventilatoare, placa video verticală, sursa; săgeți pentru aer
+  const arrows = new T.Group(); arrows.visible = false; scene.add(arrows);
+  const AR_IN = lin(0x3d8fe0), AR_OUT = lin(0xe8742f), UP = V(0, 1, 0);
+  function arrow(pos, dir, intake){
+    const g = new T.Group(), m = new T.MeshBasicMaterial({color:intake ? AR_IN : AR_OUT, transparent:true, opacity:.95, depthTest:false, toneMapped:false});
+    const shaft = new T.Mesh(new T.CylinderGeometry(.45, .45, 4.2, 12), m); shaft.position.y = -1;
+    const head = new T.Mesh(new T.ConeGeometry(1.3, 2.4, 16), m); head.position.y = 2.2;
+    g.add(shaft, head); g.renderOrder = 10; shaft.renderOrder = head.renderOrder = 10;
+    g.position.copy(pos); g.quaternion.setFromUnitVectors(UP, dir.clone().normalize()); arrows.add(g);
+  }
+  const radTop = {p:rad.position.clone(), q:rad.quaternion.clone()};
+  const radFront = {p:V(22.2, 0, 1.5), q:new T.Quaternion().setFromAxisAngle(V(0, 0, 1), -Math.PI / 2)};
+  const gpuH = {p:gpu.position.clone(), q:gpu.quaternion.clone()};
+  const gpuV = {p:V(-1, -3.5, 17.6), q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(V(0, 1, 0), V(0, 0, -1), V(-1, 0, 0)))};
+  function layout(c){
+    const front = c.rad === "fata";
+    rad.position.copy(front ? radFront.p : radTop.p); rad.quaternion.copy(front ? radFront.q : radTop.q);
+    TUBES[front ? "fata" : "sus"].forEach((pts, i) => { tubes[i].geometry.dispose(); tubes[i].geometry = new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false); });
+    frontFans.forEach((f, i) => f.visible = !front && i < c.front);
+    topFans.forEach((f, i) => f.visible = front && i < c.top);
+    rf.visible = !!c.rear;
+    const vert = c.gpu === "vertical";
+    gpu.quaternion.copy(vert ? gpuV.q : gpuH.q); basePos["Placă video"] = (vert ? gpuV.p : gpuH.p).clone();
+    gpu.position.copy(basePos["Placă video"]);
+    psu.rotation.z = c.psu === "sus" ? Math.PI : 0;
+    // cablul plăcii video urmează conectorul
+    gpu.updateMatrixWorld(true); const end = gpuPlug.getWorldPosition(V(0, 0, 0));
+    gpuCable.geometry.dispose(); gpuCable.geometry = new T.TubeGeometry(new T.CatmullRomCurve3([V(-6, -16.3, 7), vert ? V(4, -18, 10) : V(2, -15, 10), end.add(V(0, 0, -.6))]), 48, .45, 10, false);
+    // săgeți: albastru = aer care intră, portocaliu = aer care iese
+    while (arrows.children.length) arrows.remove(arrows.children[0]);
+    const io = (pos, inward, dir) => arrow(pos, dir === "in" ? inward : inward.clone().negate(), dir === "in");
+    if (!front) FRONT_Y.slice(0, c.front).forEach(y => io(V(26.5, y, 0), V(-1, 0, 0), c.frontDir));
+    else [12.2, 0, -12.2].forEach(y => io(V(26.5, y, 1.5), V(-1, 0, 0), c.radDir));
+    if (front) TOP_X.slice(0, c.top).forEach(x => io(V(x, 28, 1.5), V(0, -1, 0), c.topDir));
+    else [-10.2, 2, 14.2].forEach(x => io(V(x, 28, 1.5), V(0, -1, 0), c.radDir));
+    if (c.rear) io(V(-27, 15, 0), V(1, 0, 0), c.rearDir);
+    if (c.psu === "sus") io(V(-15.5, -13.5, -1.5), V(0, -1, 0), "in"); else io(V(-15.5, -29, -1.5), V(0, 1, 0), "in");
+    io(V(-27, -20.6, -1.5), V(1, 0, 0), "out");
+    paint();
+  }
+
   // ---- modele din Blender (.glb): pune calea în MODELE și piesa desenată în cod e înlocuită
   // Unități: 1 = 1 cm. Originea modelului = centrul piesei, cu fața spre geamul carcasei (+Z).
   const MODELE = window.ATELIER_MODELE || {};
@@ -1176,6 +1347,8 @@ function make3D(){
     }
     for (const r of rotors) r.rotation.z += dt * 5;
     if (outSel && outSel.enabled) outSel.edgeStrength = reduce ? 7 : 6 + Math.sin(now / 320) * 2.2; // pulsează ușor
+    arrows.visible = S.focus === "__setup";
+    if (arrows.visible && !reduce) arrows.children.forEach((a, i) => { const k = 1 + Math.sin(now / 300 + i) * .08; a.scale.setScalar(k); });
     const aer = S.focus === "__aer";
     flow.visible = aer && S.aerView !== "caldura"; heat.visible = aer && S.aerView === "caldura";
     if (!aer || heat.visible) [...flEl.children].slice(0, FLBL.length).forEach(e => e.hidden = true);
@@ -1194,7 +1367,7 @@ function make3D(){
   }
   requestAnimationFrame(frame);
   return {
-    paint, hover,
+    paint, hover, layout,
     focus(cat){ paint(); tip.hidden = true; hover(null); requestAnimationFrame(() => { resize(); camTo(focusCam(cat)); }); },
   };
 }
