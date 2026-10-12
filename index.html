@@ -93,13 +93,29 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 
 /* bara de piese */
 .dock{position:absolute;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:stretch;overflow-x:auto;background:linear-gradient(to top,color-mix(in srgb,var(--stage) 94%,transparent) 60%,transparent);scrollbar-width:thin}
-.part{flex:none;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px 6px 6px;cursor:pointer;min-width:116px}
-.part:hover{border-color:var(--accent)}
-.part[aria-current="true"]{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
-.part .tier{grid-row:span 2}
-.part b{font-size:13px;line-height:1.2}
-.part small{font-size:12px;color:var(--muted);line-height:1.2;font-variant-numeric:tabular-nums}
-.part.empty .tier{background:transparent;color:var(--muted);border:1.5px dashed var(--muted)}
+.dock .part{--t:var(--t-N);position:relative;flex:none;display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;
+  flex:1 1 150px;min-width:148px;max-width:200px;padding:8px 10px 10px 8px;border-radius:12px;cursor:pointer;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--t) 35%,var(--line));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--t) 9%,var(--surface)),var(--surface));
+  box-shadow:0 1px 2px rgb(0 0 0 / .06),0 4px 12px rgb(0 0 0 / .06);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.dock .part::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--t);opacity:.85}
+.dock .part .ico{grid-row:span 2;position:relative;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--t) 16%,var(--surface));color:color-mix(in srgb,var(--t) 80%,var(--fg))}
+.dock .part .ico svg{width:26px;height:26px}
+.dock .part .ico .tier{position:absolute;right:-6px;bottom:-6px;width:20px;height:20px;font-size:12px;border-radius:6px;box-shadow:0 0 0 2px var(--surface)}
+.dock .part b{font-size:13.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dock .part small{font-size:12px;color:var(--muted);line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dock .part.has small{color:var(--fg);font-weight:600;font-family:var(--display);font-size:14px}
+.dock .part:hover{transform:translateY(-2px);border-color:var(--t);box-shadow:0 2px 4px rgb(0 0 0 / .08),0 8px 20px rgb(0 0 0 / .12)}
+.dock .part[aria-current="true"]{transform:translateY(-3px);border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent),0 0 18px color-mix(in srgb,var(--accent) 55%,transparent),0 8px 20px rgb(0 0 0 / .14)}
+.dock .part[aria-current="true"]::after{background:var(--accent);opacity:1}
+.dock .part[aria-current="true"] .ico{background:var(--accent);color:var(--accent-ink)}
+.dock .part.empty{border-style:dashed;background:var(--surface)}
+.dock .part.empty .ico{background:var(--surface-2);color:var(--muted)}
+.dock .part.empty::after{opacity:0}
+.dock{scroll-padding-inline:12px;padding-top:16px}
 .sum{flex:none;margin-left:auto;display:grid;align-content:center;justify-items:end;padding:4px 6px 4px 14px;gap:2px}
 .sum strong{font-family:var(--display);font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
 .sum span{font-size:12px;color:var(--muted)}
@@ -332,6 +348,15 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 <script src="date.js"></script>
 <script src="comun.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="vendor/three-extra-r128.js"></script>
+<script>
+/* Modele 3D proprii, făcute în Blender și exportate ca .glb (File → Export → glTF 2.0, format „glTF Binary”).
+   Pune fișierul în folderul modele/ și scrie calea lângă piesă. Piesele fără model rămân cele desenate în cod.
+   Unități: 1 = 1 cm. Originea = centrul piesei, cu partea vizibilă spre geamul carcasei (+Z). */
+window.ATELIER_MODELE = {
+  // "Placă video": "modele/placa-video.glb",
+};
+</script>
 <script>
 (() => {
 "use strict";
@@ -375,9 +400,9 @@ function renderDock(){
     const p = byUrl[S.ales[c.id]], t = N(p);
     if (p) { total += p.pret_lei || 0; n++; }
     const count = P.filter(x => x.piesa === c.id).length;
-    return `<button class="part ${p ? "" : "empty"}" data-cat="${esc(c.id)}" aria-current="${S.focus === c.id}" style="--t:var(--t-${t || "N"})">
-      <span class="tier ${t || ""}">${p ? (t || "?") : "+"}</span><b>${esc(c.id)}</b>
-      <small>${p ? lei(p.pret_lei) : count ? `${count} ${count === 1 ? "ofertă" : "oferte"}` : "fără oferte"}</small></button>`;
+    return `<button class="part ${p ? "has" : "empty"}" data-cat="${esc(c.id)}" aria-current="${S.focus === c.id}" style="--t:var(--t-${t || "N"})" title="${esc(p ? p.nume : "Alege " + c.id.toLowerCase())}">
+      <span class="ico">${glyph(c.id)}${p ? `<span class="tier ${t || ""}">${t || "?"}</span>` : ""}</span><b>${esc(c.id)}</b>
+      <small>${p ? lei(p.pret_lei) : count ? `+ ${count} ${count === 1 ? "ofertă" : "oferte"}` : "fără oferte"}</small></button>`;
   }).join("");
   const mine = D.build && D.build.piese && D.build.piese.length;
   $("dock").innerHTML = parts + `<div class="sum"><strong>${lei(total)}</strong><span>${n} din ${CATS.length} piese alese</span>
@@ -391,6 +416,8 @@ $("dock").addEventListener("click", e => {
   if (e.target.id === "clear") { S.ales = {}; saveAles(); return; }
   const b = e.target.closest("[data-cat]"); if (b) focus(b.dataset.cat === S.focus ? null : b.dataset.cat);
 });
+$("dock").addEventListener("pointerover", e => { const b = e.target.closest("[data-cat]"); if (G && G.hover) G.hover(b ? b.dataset.cat : null); });
+$("dock").addEventListener("pointerleave", () => { if (G && G.hover) G.hover(null); });
 function saveAles(){ store.set("ales", S.ales); renderDock(); if (S.focus) renderOffers(true); if (G) G.paint(); }
 
 // ---------------------------------------------------------------- panou
@@ -704,27 +731,62 @@ function make3D(){
   const T = THREE, V = (x, y, z) => new T.Vector3(x, y, z);
   const stage = $("stage"), canvas = $("cv"), tip = $("tip3d");
   const renderer = new T.WebGLRenderer({canvas, antialias:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const PR = Math.min(window.devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(PR);
+  renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   const scene = new T.Scene();
   const camera = new T.PerspectiveCamera(36, 1, .5, 800);
-  scene.add(new T.HemisphereLight(0xffffff, 0x3a4552, .75));
-  const d1 = new T.DirectionalLight(0xffffff, .9); d1.position.set(40, 90, 70); scene.add(d1);
-  const d2 = new T.DirectionalLight(0xffe0c2, .35); d2.position.set(-70, 20, -30); scene.add(d2);
+  // culorile sunt date ca în CSS (sRGB); scena lucrează liniar și le corectăm la final
+  const lin = hex => new T.Color(hex).convertSRGBToLinear();
+  const FX = !!(T.EffectComposer && T.OutlinePass && T.RoomEnvironment);
+  if (FX) { const pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), .04).texture; pm.dispose(); }
+  scene.add(new T.HemisphereLight(lin(0xffffff), lin(0x3a4552), FX ? .35 : .75));
+  const d1 = new T.DirectionalLight(0xffffff, FX ? 1.8 : .9); d1.position.set(40, 90, 70);
+  d1.castShadow = true; d1.shadow.mapSize.set(2048, 2048); d1.shadow.bias = -.0004; d1.shadow.normalBias = .04;
+  Object.assign(d1.shadow.camera, {left:-60, right:60, top:60, bottom:-60, near:20, far:260}); scene.add(d1);
+  const d2 = new T.DirectionalLight(lin(0xffe0c2), .45); d2.position.set(-70, 20, -30); scene.add(d2);
+  const glow = new T.PointLight(lin(0xe08a4a), FX ? .55 : .5, 40, 2); glow.position.set(2, 4, 2); scene.add(glow);
   const COPPER = 0xd27a3c, rotors = [];
-  const M = (color, o = {}) => new T.MeshStandardMaterial({color, metalness:o.metal ?? .4, roughness:o.rough ?? .55, emissive:o.em ?? 0,
-    emissiveIntensity:o.emI ?? 0, transparent:true, opacity:o.op ?? 1, depthWrite:(o.op ?? 1) >= 1});
-  const box = (w, h, d, m, x = 0, y = 0, z = 0) => { const b = new T.Mesh(new T.BoxGeometry(w, h, d), m); b.position.set(x, y, z); return b; };
-  function fan(r, axis){
+  const M = (color, o = {}) => {
+    const m = new T.MeshStandardMaterial({color:lin(color), metalness:o.metal ?? .4, roughness:o.rough ?? .55, emissive:lin(o.em ?? 0),
+      emissiveIntensity:o.emI ?? 0, transparent:true, opacity:o.op ?? 1, depthWrite:(o.op ?? 1) >= 1, envMapIntensity:o.env ?? .55});
+    if (o.map) m.map = o.map; if (o.alpha) { m.alphaMap = o.alpha; m.alphaTest = .04; }
+    if (o.side) m.side = o.side;
+    return m;
+  };
+  const RB = !!T.RoundedBoxGeometry;
+  const geo = (w, h, d, r) => RB && r ? new T.RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.01, h / 2.01, d / 2.01)) : new T.BoxGeometry(w, h, d);
+  const box = (w, h, d, m, x = 0, y = 0, z = 0, r = 0) => { const b = new T.Mesh(geo(w, h, d, r), m); b.position.set(x, y, z); return b; };
+  const cyl = (r, h, m, x = 0, y = 0, z = 0, seg = 24) => { const c = new T.Mesh(new T.CylinderGeometry(r, r, h, seg).rotateX(Math.PI / 2), m); c.position.set(x, y, z); return c; };
+  // texturi desenate în canvas: tablă perforată, aripioare de radiator
+  const ctex = (w, h, draw, rep) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new T.CanvasTexture(c);
+    t.wrapS = t.wrapT = T.RepeatWrapping; if (rep) t.repeat.set(...rep); t.anisotropy = 4; return t; };
+  const holes = rep => ctex(64, 64, (g, w, h) => { g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.fillStyle = "#000";
+    for (const [x, y] of [[16, 16], [48, 16], [0, 48], [32, 48], [64, 48]]) { g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill(); } }, rep);
+  const fins = (rep, light = "#4a515b", dark = "#121418") => ctex(64, 8, (g, w, h) => { g.fillStyle = dark; g.fillRect(0, 0, w, h); g.fillStyle = light; for (let x = 0; x < w; x += 8) g.fillRect(x, 0, 3, h); }, rep);
+
+  function fan(r, axis, frame = true){
     const g = new T.Group();
-    g.add(new T.Mesh(new T.TorusGeometry(r, .32, 10, 40), M(0x7a3f18, {em:COPPER, emI:.9, metal:.2})));
+    g.add(new T.Mesh(new T.TorusGeometry(r, .3, 12, 48), M(0x7a3f18, {em:COPPER, emI:1.6, metal:.2})));
+    if (frame) { // ramă pătrată cu colțuri rotunjite și gaură rotundă
+      const s = r + .9, k = 1.2, sh = new T.Shape();
+      sh.moveTo(-s + k, -s); sh.lineTo(s - k, -s); sh.quadraticCurveTo(s, -s, s, -s + k); sh.lineTo(s, s - k); sh.quadraticCurveTo(s, s, s - k, s);
+      sh.lineTo(-s + k, s); sh.quadraticCurveTo(-s, s, -s, s - k); sh.lineTo(-s, -s + k); sh.quadraticCurveTo(-s, -s, -s + k, -s);
+      const hole = new T.Path(); hole.absarc(0, 0, r - .05, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const fr = new T.Mesh(new T.ExtrudeGeometry(sh, {depth:1.4, bevelEnabled:false, curveSegments:24}), M(0x16181c, {metal:.2, rough:.7}));
+      fr.position.z = -.7; g.add(fr);
+    }
     const rotor = new T.Group();
-    rotor.add(new T.Mesh(new T.CylinderGeometry(r * .3, r * .3, .9, 20).rotateX(Math.PI / 2), M(0x1d2026)));
-    for (let i = 0; i < 7; i++) { const b = box(r * .62, r * .2, .1, M(0x2a2e35)); b.position.x = r * .55; b.rotation.x = .5; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 7; rotor.add(h); }
+    rotor.add(cyl(r * .3, 1, M(0x1d2026, {metal:.3, rough:.45})), cyl(r * .18, .1, M(0x8c4a1f, {em:COPPER, emI:.5}), 0, 0, .52));
+    for (let i = 0; i < 9; i++) { const b = box(r * .66, r * .26, .08, M(0x23262c, {rough:.45, op:.96})); b.position.x = r * .6; b.rotation.x = .55; b.rotation.z = .25; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 9; rotor.add(h); }
     g.add(rotor); rotors.push(rotor);
     if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
     return g;
   }
-  const grid = new T.GridHelper(400, 80, 0x9aa6b3, 0x9aa6b3); grid.material.transparent = true; grid.material.opacity = .28; grid.position.y = -25.6; scene.add(grid);
+  const FLOOR = -26.2;
+  const grid = new T.GridHelper(400, 80, 0x9aa6b3, 0x9aa6b3); grid.material.transparent = true; grid.material.opacity = .22; grid.position.y = FLOOR - .02; scene.add(grid);
+  const ground = new T.Mesh(new T.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new T.ShadowMaterial({opacity:.28})); ground.position.y = FLOOR; ground.receiveShadow = true; scene.add(ground);
 
   // fiecare piesă e un grup cu categoria ei, ca să știm pe ce s-a dat click
   const parts = {};
@@ -732,53 +794,91 @@ function make3D(){
   const caseM = new T.Matrix4().makeTranslation(-9.8, 7.25, -10.6);
   const inCase = v => v.clone().applyMatrix4(caseM);
 
+  // ---- carcasa: spate și laterală din tablă, față și sus din plasă perforată, geam fumuriu
   const cs = part("Carcasă");
-  cs.add(box(48, 50, .4, M(0x15181c, {metal:.5}), 0, 0, -11.7), box(48.8, .4, 23.8, M(0x1d2127), 0, 25.2, 0), box(48.8, .4, 23.8, M(0x1d2127), 0, -25.2, 0),
-         box(.4, 50, 23, M(0x15181c), -24.2, 0, 0), box(.4, 50, 23, M(0x23272e, {op:.45, rough:.8}), 24.2, 0, 0),
-         box(48.8, 50.8, .2, M(0x9fb4c8, {op:.07, metal:.1, rough:.05}), 0, 0, 11.9));
-  cs.add(new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(48.8, 50.8, 23.8)), new T.LineBasicMaterial({color:0x5c6775, transparent:true})));
-  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.4, y, 0); cs.add(f); }
-  const rf = fan(5.6, "x"); rf.position.set(-22.4, 15, 0); cs.add(rf);
+  const steel = M(0x17191d, {metal:.6, rough:.42});
+  cs.add(box(48, 50, .4, steel, 0, 0, -11.7, .15), box(48.8, .5, 23.8, M(0x1b1e23, {metal:.6, rough:.45}), 0, -25.15, 0, .2),
+         box(48.8, .5, 23.8, M(0x1b1e23, {metal:.55, rough:.5, alpha:holes([24, 12]), side:T.DoubleSide}), 0, 25.15, 0, .2),
+         box(.5, 50, 23, M(0x15181c, {metal:.6, rough:.45}), -24.15, 0, 0, .15),
+         box(.5, 50.8, 23.8, M(0x1b1e23, {metal:.5, rough:.55, alpha:holes([12, 25]), side:T.DoubleSide}), 24.15, 0, 0, .2));
+  const glass = box(47.6, 49.6, .2, M(0x10151b, {op:.16, metal:.1, rough:.05, env:1.4}), 0, 0, 11.9); cs.add(glass);
+  const trim = M(0x0f1114, {metal:.5, rough:.5});
+  cs.add(box(48.8, .6, .5, trim, 0, 25.1, 11.85), box(48.8, .6, .5, trim, 0, -25.1, 11.85), box(.6, 50.8, .5, trim, -24.1, 0, 11.85), box(.6, 50.8, .5, trim, 24.1, 0, 11.85));
+  for (const [x, z] of [[-20, -8], [-20, 8], [20, -8], [20, 8]]) cs.add(box(5, .8, 3, M(0x0d0f12, {rough:.8}), x, -25.8, z, .3));
+  cs.add(box(.2, 2.2, 6, M(0x30353d, {metal:.7, rough:.35}), 24.45, 21, 6, .1), cyl(.55, .2, M(0x9aa1aa, {metal:.8, rough:.3}), 24.55, 21, 2).rotateY(Math.PI / 2));
+  for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.6, y, 0); cs.add(f); }
+  const rf = fan(5.6, "x"); rf.position.set(-22.6, 15, 0); cs.add(rf);
 
+  // ---- placa de bază (coordonatele plăcii: z iese spre geam)
   const mb = part("Placă de bază"); mb.position.set(-9.8, 7.25, -10.6);
-  mb.add(box(24.4, 30.5, .16, M(0x1a1e24, {metal:.2, rough:.75})), box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.8, rough:.3}), -3, 7, .25),
-         box(11, 2.6, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -4, 13, 1.2), box(2.4, 9, 2.2, M(0x3b4049, {metal:.65, rough:.35}), -8.6, 6.5, 1.2),
-         box(2.3, 9, 3, M(0x2a2f36), -11, 8, 1.6), box(7, 6, 1, M(0x343a43, {metal:.6}), 5, -9.5, .6), box(9, 2.6, .5, M(0x343a43, {metal:.6}), -6, -12, .35),
-         box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7), box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7),
-         box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.8, rough:.3}), -7.05, -3.5, .6), box(8.9, .8, 1.1, M(0x22262c), -7.05, -8.5, .6), box(8.2, 2.4, .1, M(0x2b3038), -2, .5, .13));
-  for (const x of [3.5, 4.4, 5.3, 6.2]) mb.add(box(.62, 13.3, .7, M(0x2a2f36), x, 6.5, .4));
+  const hs = M(0x3b4049, {metal:.75, rough:.32}), hsDark = M(0x24282e, {metal:.7, rough:.38});
+  mb.add(box(24.4, 30.5, .16, M(0x161a20, {metal:.15, rough:.8}), 0, 0, 0, .05), box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.85, rough:.28}), -3, 7, .25, .2),
+         box(11, 2.6, 2.2, hs, -4, 13, 1.2, .35), box(2.4, 9, 2.2, hs, -8.6, 6.5, 1.2, .35),
+         box(2.3, 9, 3, M(0x22262c, {metal:.6, rough:.4}), -11, 8, 1.6, .4), box(.08, 7, .5, M(0x8c4a1f, {em:COPPER, emI:1.2}), -9.8, 8, 3.1),
+         box(7, 6, 1, M(0x343a43, {metal:.65, rough:.35}), 5, -9.5, .6, .35), box(9, 2.6, .5, hsDark, -6, -12, .35, .2),
+         box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7, .1), box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7, .1),
+         box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.85, rough:.3}), -7.05, -3.5, .6, .1), box(8.9, .8, 1.1, M(0x22262c), -7.05, -8.5, .6, .1),
+         box(8.2, 2.4, .1, M(0x2b3038), -2, .5, .13));
+  for (let i = 0; i < 6; i++) mb.add(box(.25, 2.4, .3, hsDark, -8.2 + i * 1.5, 13, 2.45)); // aripioare pe VRM
+  for (let i = 0; i < 6; i++) mb.add(cyl(.32, .7, M(0x2a2d33, {metal:.7, rough:.3}), -7 + i * 1.2, 10.9, .45, 12)); // condensatori
+  mb.add(cyl(.9, .2, M(0xb9bec5, {metal:.9, rough:.25}), 8.5, -3, .2, 20)); // baterie CMOS
+  for (const x of [3.5, 4.4, 5.3, 6.2]) mb.add(box(.62, 13.3, .7, M(0x2a2f36, {rough:.6}), x, 6.5, .4, .1), box(.7, .8, 1, M(0x3a3f47), x, 13.4, .6), box(.7, .8, 1, M(0x3a3f47), x, -.4, .6));
 
   const cpu = part("Procesor", mb); cpu.position.set(-3, 7, .6);
-  cpu.add(box(4, 4, .35, M(0xbfc4cb, {metal:.85, rough:.28})));
-  const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0, 0), new T.Vector2(.8, 0), new T.Vector2(0, .8)])), M(0xd9a41c, {metal:.7}));
+  cpu.add(box(4, 4, .35, M(0xbfc4cb, {metal:.9, rough:.22}), 0, 0, 0, .25));
+  const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0, 0), new T.Vector2(.8, 0), new T.Vector2(0, .8)])), M(0xd9a41c, {metal:.8, rough:.3}));
   tri.position.set(-1.85, -1.85, .18); cpu.add(tri);
 
   const ssd = part("SSD", mb); ssd.position.set(-2, .5, .3);
-  ssd.add(box(8, 2.2, .16, M(0x15181c, {metal:.3})), box(2, 1.6, .1, M(0x3b4049, {metal:.6}), -1.5, 0, .12), box(2.2, 1.6, .1, M(0x3b4049, {metal:.6}), 1.4, 0, .12),
-          box(1.2, .6, .02, M(0x8c4a1f, {em:COPPER, emI:.2}), 3.2, .5, .17));
+  ssd.add(box(8, 2.2, .16, M(0x15181c, {metal:.3}), 0, 0, 0, .05), box(2, 1.6, .1, M(0x3b4049, {metal:.6}), -1.5, 0, .12), box(2.2, 1.6, .1, M(0x3b4049, {metal:.6}), 1.4, 0, .12),
+          box(1.2, .6, .02, M(0x8c4a1f, {em:COPPER, emI:.2}), 3.2, .5, .17), box(.8, 2, .1, M(0xc9a443, {metal:.9, rough:.3}), -3.7, 0, 0));
 
   const ram = part("RAM", mb);
-  for (const x of [4.4, 6.2]) ram.add(box(.7, 13.3, 3.2, M(0x17191d, {metal:.55, rough:.4}), x, 6.5, 2.35), box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1, metal:.1}), x, 6.5, 4.1));
+  for (const x of [4.4, 6.2]) ram.add(box(.7, 13.3, 3.2, M(0x17191d, {metal:.6, rough:.35}), x, 6.5, 2.35, .25), box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1.8, metal:.1}), x, 6.5, 4.1, .18),
+                                      box(.76, 9, 1.4, M(0x2a2e35, {metal:.75, rough:.3}), x, 6.5, 2.4, .1));
 
+  // ---- placa video: carcasă, placă din spate, radiator cu aripioare, 3 ventilatoare dedesubt
   const Lc = 33, gpu = part("Placă video", mb); gpu.position.set(-12.2 + Lc / 2, -6.7, 7.3);
-  gpu.add(box(Lc, 6, 14, M(0x1d2026, {metal:.55, rough:.45})), box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1}), -Lc * .08, 1.6, 7.03),
-          box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -1.6, 7.03));
-  for (let i = 0; i < 3; i++) { const f = fan(4.3, "y"); f.position.set(-Lc / 2 + Lc * (i + .5) / 3, -3.1, 0); gpu.add(f); }
+  gpu.add(box(Lc, 3.6, 14, M(0x1d2026, {metal:.55, rough:.4}), 0, -1.1, 0, .6),
+          box(Lc - .4, .3, 13.8, M(0x2c3138, {metal:.8, rough:.48}), 0, 2.85, 0, .12),
+          box(Lc - 1.2, 2, 13.2, M(0x23262b, {metal:.5, rough:.5, map:fins([28, 1], "#6a717b", "#15171b")}), 0, 1.6, 0),
+          box(Lc * .72, .35, .06, M(0x7a3f18, {em:COPPER, emI:1.8}), -Lc * .08, -.3, 7.03),
+          box(Lc * .9, .4, .06, M(0x3b4049, {metal:.7}), 0, -2.2, 7.03),
+          box(.25, 6.4, 3, M(0xb6bcc3, {metal:.9, rough:.3}), -Lc / 2 - .15, 0, -5.5, .05));
+  for (let i = 0; i < 3; i++) { const f = fan(4.3, "y", false); f.position.set(-Lc / 2 + Lc * (i + .5) / 3, -3.1, 0); gpu.add(f); }
+  gpu.add(box(1.8, 1.4, .9, M(0x111316), Lc * .12, 2.6, 7.4, .1));
 
+  // ---- răcire pe lichid: pompa pe procesor, radiator de 360 sus, furtunuri împletite
   const cool = part("Cooler");
   const pump = new T.Group();
-  pump.add(new T.Mesh(new T.CylinderGeometry(3.5, 3.6, 2.6, 36).rotateX(Math.PI / 2), M(0x1a1d22, {metal:.5})));
-  const ring = new T.Mesh(new T.TorusGeometry(2.6, .22, 8, 36), M(0x7a3f18, {em:COPPER, emI:1})); ring.position.z = 1.35; pump.add(ring);
+  pump.add(cyl(3.5, 2.6, M(0x1a1d22, {metal:.6, rough:.35}), 0, 0, 0, 48), cyl(2.9, .15, M(0x0e1013, {metal:.9, rough:.08, env:2}), 0, 0, 1.33, 48));
+  const ring = new T.Mesh(new T.TorusGeometry(2.6, .22, 10, 48), M(0x7a3f18, {em:COPPER, emI:2})); ring.position.z = 1.38; pump.add(ring);
   pump.position.copy(inCase(V(-3, 7, 2.15))); cool.add(pump);
-  const rad = new T.Group(); rad.add(box(39.4, 2.7, 12, M(0x1a1d22, {metal:.5})));
-  for (const x of [-12.6, 0, 12.6]) { const f = fan(5.4, "y"); f.position.set(x, -2.4, 0); rad.add(f); }
+  const rad = new T.Group();
+  rad.add(box(36, 2.7, 12, M(0x22252b, {metal:.5, rough:.5, map:fins([60, 1])}), 0, 0, 0),
+          box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), -19.1, 0, 0, .4), box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), 19.1, 0, 0, .4));
+  for (const x of [-12.2, 0, 12.2]) { const f = fan(5.3, "y"); f.position.set(x, -2.2, 0); rad.add(f); }
   rad.position.set(2, 23.3, 1.5); cool.add(rad);
-  const pw = inCase(V(-3, 7, 3.2));
+  const pw = inCase(V(-3, 7, 3.2)), braid = M(0x111316, {rough:.62, metal:.2, map:fins([40, 1], "#26292e", "#0c0d10")});
   for (const pts of [[pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)]])
-    cool.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, .55, 8, false), M(0x111316, {rough:.8})));
+    cool.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false), braid));
 
+  // ---- sursa: carcasă mată, grilaj de ventilator dedesubt, conectori modulari în față
   const psu = part("Sursă"); psu.position.set(-15.5, -20.6, -1.5);
-  psu.add(box(15, 8.6, 16, M(0x202329, {metal:.5})), box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.25}), 1.5, .6, 8.03));
+  psu.add(box(15, 8.6, 16, M(0x1c1f24, {metal:.45, rough:.6}), 0, 0, 0, .5), box(7, 2.6, .05, M(0x8c4a1f, {em:COPPER, emI:.35}), 1.5, .6, 8.03),
+          box(10.5, .1, 10.5, M(0x0c0d10, {rough:.7, alpha:holes([5, 5])}), 0, -4.33, 0));
+  for (let i = 0; i < 3; i++) psu.add(box(.1, 1.4, 2.6, M(0x0b0c0e), 7.53, 1.8 - i * 2, -3 + i * 2));
+
+  // cabluri de la sursă la placă: nu sunt o piesă de ales, doar se estompează odată cu restul
+  const cables = new T.Group(); scene.add(cables);
+  const cable = M(0x1a1c20, {rough:.7, map:fins([60, 1], "#2a2d33", "#121417")});
+  const cab = (pts, r) => cables.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 10, false), cable));
+  cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.3, 2, 1.4)).add(V(0, -2, .6))], .6);
+  cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-10.5, 14.6, 1.4))], .38);
+  cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(V(-12.2 + Lc / 2 + Lc * .12, -4, 15)).add(V(0, 0, -.6))], .45);
+
+  // umbre: piesele opace aruncă și primesc umbră
+  scene.traverse(o => { if (o.isMesh && o !== ground && o.material.opacity >= 1) { o.castShadow = true; o.receiveShadow = true; } });
 
   // ---- flux de aer: particule care merg pe trasee, albastre la intrare, portocalii spre ieșire
   const flow = new T.Group(); flow.visible = false; scene.add(flow);
@@ -801,7 +901,7 @@ function make3D(){
   const dot = document.createElement("canvas"); dot.width = dot.height = 32;
   { const g = dot.getContext("2d"), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.5, "rgba(255,255,255,.8)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); }
   flow.add(new T.Points(fgeo, new T.PointsMaterial({size:2.3, map:new T.CanvasTexture(dot), vertexColors:true, transparent:true, depthWrite:false, sizeAttenuation:true})));
-  const COLD = new T.Color(0x3d8fe0), HOT = new T.Color(0xe8742f), tmpC = new T.Color(), tmpP = V(0, 0, 0);
+  const COLD = lin(0x3d8fe0), HOT = lin(0xe8742f), tmpC = new T.Color(), tmpP = V(0, 0, 0);
   const FLBL = [["Aer rece intră prin față", V(27, 6, 9), "rece"], ["Aer cald iese prin spate", V(-27, 19, 6), "cald"], ["și prin radiatorul de sus", V(2, 29, 4), "cald"],
                 ["Sursa ia aer de dedesubt", V(-12, -29, 6), "neutru"], ["Placa video trage aer de jos", V(6, -6, 9), "rece"]];
   const flEl = $("flbls");
@@ -811,7 +911,7 @@ function make3D(){
   { const g = hc.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.4, "rgba(255,255,255,.55)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); }
   const htex = new T.CanvasTexture(hc);
   const HOT_SPOTS = [[V(-4, -6, -2), 24, 0xe0402b, 1], [V(-13, 15, -7), 15, 0xe0402b, .9], [V(-12, 7.5, -8), 10, 0xf07a30, .9], [V(-19, 21, 0), 17, 0xf0a040, .7], [V(-15, -20, -1.5), 10, 0xf0a040, .45]];
-  const sprites = HOT_SPOTS.map(([p, sc, col, a]) => { const sp = new T.Sprite(new T.SpriteMaterial({map:htex, color:col, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending, opacity:a}));
+  const sprites = HOT_SPOTS.map(([p, sc, col, a]) => { const sp = new T.Sprite(new T.SpriteMaterial({map:htex, color:lin(col), transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending, opacity:a}));
     sp.position.copy(p); sp.scale.set(sc, sc, 1); sp.userData = {sc, a}; heat.add(sp); return sp; });
   const HLBL = [["1 · Sub placa video", V(-4, -9, 6)], ["2 · Procesorul și VRM-ul", V(-13, 19, -4)], ["3 · SSD-ul M.2", V(-4, 6, -6)], ["4 · Colțul de sus din spate", V(-19, 25, 4)]];
   flEl.insertAdjacentHTML("beforeend", HLBL.map(([t]) => `<span class="flbl cald" hidden>${esc(t)}</span>`).join(""));
@@ -842,11 +942,43 @@ function make3D(){
 
   function partOf(o){ while (o) { if (o.userData && o.userData.cat) return o.userData.cat; o = o.parent; } return null; }
   const meshes = {};
-  scene.traverse(o => {
-    if (!o.material || o === grid) return;
-    o.userData.base = {c:o.material.color.getHex(), e:o.material.emissive ? o.material.emissive.getHex() : 0, ei:o.material.emissiveIntensity || 0, op:o.material.opacity};
-    const c = partOf(o); if (c) (meshes[c] = meshes[c] || []).push(o);
-  });
+  function collect(){
+    for (const k of Object.keys(meshes)) delete meshes[k];
+    scene.traverse(o => {
+      if (!o.material || o === grid || o === ground) return;
+      if (!o.userData.base) o.userData.base = {c:o.material.color.getHex(), e:o.material.emissive ? o.material.emissive.getHex() : 0, ei:o.material.emissiveIntensity || 0, op:o.material.opacity};
+      const c = partOf(o); if (c) (meshes[c] = meshes[c] || []).push(o);
+    });
+  }
+  collect();
+
+  // ---- post-procesare: contur luminos pe piesa aleasă și contur fin pe cea de sub mouse
+  let composer = null, outSel = null, outHover = null;
+  if (FX) {
+    const rt = renderer.capabilities.isWebGL2 && T.WebGLMultisampleRenderTarget
+      ? new T.WebGLMultisampleRenderTarget(2, 2, {format:T.RGBAFormat}) : undefined;
+    if (rt) rt.samples = 4;
+    composer = new T.EffectComposer(renderer, rt);
+    composer.setPixelRatio(PR);
+    composer.addPass(new T.RenderPass(scene, camera));
+    outHover = new T.OutlinePass(new T.Vector2(2, 2), scene, camera);
+    Object.assign(outHover, {edgeStrength:3.2, edgeGlow:0, edgeThickness:1, pulsePeriod:0, enabled:false});
+    outHover.visibleEdgeColor.copy(lin(0xffffff)); outHover.hiddenEdgeColor.copy(lin(0x9aa6b3));
+    outSel = new T.OutlinePass(new T.Vector2(2, 2), scene, camera);
+    Object.assign(outSel, {edgeStrength:7, edgeGlow:.9, edgeThickness:2.4, pulsePeriod:0, enabled:false});
+    outSel.visibleEdgeColor.copy(lin(0xffa35c)); outSel.hiddenEdgeColor.copy(lin(0xff8a3d));
+    composer.addPass(outHover); composer.addPass(outSel);
+    composer.addPass(new T.ShaderPass(T.GammaCorrectionShader));
+  } else renderer.outputEncoding = T.sRGBEncoding;
+  let hoverCat = null;
+  function outline(){
+    if (!composer) return;
+    const sel = S.focus && parts[S.focus] ? S.focus : null;
+    outSel.selectedObjects = sel ? [parts[sel]] : []; outSel.enabled = !!sel;
+    const h = hoverCat && hoverCat !== sel && parts[hoverCat] ? hoverCat : null;
+    outHover.selectedObjects = h ? [parts[h]] : []; outHover.enabled = !!h;
+  }
+  function hover(cat){ if (cat === hoverCat) return; hoverCat = cat; outline(); }
 
   // ---- cameră
   const cam = {t:V(0, 0, 0), d:118, th:.6, ph:1.13}, from = {}, to = {};
@@ -874,21 +1006,26 @@ function make3D(){
     return {t:c, d:Math.max(20, size * 1.55 + 8) * (narrow() ? 1.35 : 1), th:pref[0], ph:pref[1]};
   }
 
-  // ---- culoarea notei + estompare
+  // ---- culoarea notei + estompare (restul pieselor rămân vizibile, doar mai transparente)
+  const GHOST = .34;
   function paint(){
     for (const cat of Object.keys(parts)) {
       const p = byUrl[S.ales[cat]], t = N(p);
-      const op = S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .35 : .08);
+      const op = S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .45 : cat === "Carcasă" ? .22 : GHOST);
       for (const o of meshes[cat] || []) {
         const b = o.userData.base, m = o.material;
         m.color.setHex(b.c);
         if (t) {
-          if (o.isLineSegments) m.color.setHex(TIER_HEX[t]);
-          else { m.color.lerp(new T.Color(TIER_HEX[t]), cat === "Carcasă" ? .14 : .6); m.emissive.setHex(TIER_HEX[t]); m.emissiveIntensity = cat === "Carcasă" ? Math.max(b.ei * .4, .06) : Math.max(b.ei * .4, .22); }
+          if (o.isLineSegments) m.color.copy(lin(TIER_HEX[t]));
+          else { m.color.lerp(lin(TIER_HEX[t]), cat === "Carcasă" ? .1 : .4); m.emissive.copy(lin(TIER_HEX[t])); m.emissiveIntensity = cat === "Carcasă" ? Math.max(b.ei * .4, .04) : Math.max(b.ei * .5, .12); }
         } else if (m.emissive) { m.emissive.setHex(b.e); m.emissiveIntensity = b.ei; }
         m.opacity = b.op * op; m.depthWrite = m.opacity >= 1;
+        o.castShadow = m.opacity >= 1 && b.op >= 1;
       }
     }
+    const cop = S.focus === "__aer" ? .55 : S.focus && S.focus !== "Carcasă" ? GHOST : 1;
+    cables.traverse(o => { if (o.material) { o.material.opacity = cop; o.material.depthWrite = cop >= 1; o.castShadow = cop >= 1; } });
+    outline();
   }
   // ---- click și trecere cu mouse-ul
   const ray = new T.Raycaster(), ptr = new T.Vector2();
@@ -897,7 +1034,7 @@ function make3D(){
     const r = canvas.getBoundingClientRect();
     ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ptr, camera);
-    const objs = Object.values(meshes).flat().filter(o => o.isMesh && o.material.opacity > .2);
+    const objs = Object.values(meshes).flat().filter(o => o.isMesh && o.material.opacity > .2 && o !== glass);
     const hits = ray.intersectObjects(objs, false);
     // panourile și geamul carcasei nu „fură” click-ul de la piesele din interior
     const inner = hits.find(h => partOf(h.object) !== "Carcasă");
@@ -907,12 +1044,12 @@ function make3D(){
   window.addEventListener("pointermove", e => {
     if (dragging) {
       const dx = e.clientX - px, dy = e.clientY - py; moved += Math.abs(dx) + Math.abs(dy);
-      if (moved > 5) { cam.th -= dx * .006; cam.ph = Math.max(.15, Math.min(1.5, cam.ph - dy * .006)); tw = 1; tip.hidden = true; }
+      if (moved > 5) { cam.th -= dx * .006; cam.ph = Math.max(.15, Math.min(1.5, cam.ph - dy * .006)); tw = 1; tip.hidden = true; hover(null); }
       px = e.clientX; py = e.clientY; lastInteract = performance.now(); return;
     }
     if (e.target !== canvas || e.pointerType === "touch") return;
     const h = pick(e);
-    stage.classList.toggle("hovering", !!h);
+    stage.classList.toggle("hovering", !!h); hover(h);
     if (h) {
       const r = stage.getBoundingClientRect(), p = byUrl[S.ales[h]];
       tip.hidden = false; tip.textContent = h + (p ? ` · nota ${N(p) || "?"}` : " · apasă ca să alegi");
@@ -924,22 +1061,43 @@ function make3D(){
     if (moved < 6 && e.target === canvas) { const c = pick(e); if (c) focus(c === S.focus ? null : c); else if (S.focus) focus(null); }
   });
   window.addEventListener("pointercancel", () => { dragging = false; stage.classList.remove("drag"); });
-  canvas.addEventListener("pointerleave", () => { tip.hidden = true; stage.classList.remove("hovering"); });
+  canvas.addEventListener("pointerleave", () => { tip.hidden = true; stage.classList.remove("hovering"); hover(null); });
   canvas.addEventListener("wheel", e => { e.preventDefault(); tw = 1; lastInteract = performance.now(); cam.d = Math.max(12, Math.min(240, cam.d * (1 + Math.sign(e.deltaY) * .1))); }, {passive:false});
   $("zin").addEventListener("click", () => { tw = 1; lastInteract = performance.now(); cam.d = Math.max(12, cam.d * .82); });
   $("zout").addEventListener("click", () => { tw = 1; lastInteract = performance.now(); cam.d = Math.min(240, cam.d / .82); });
 
   function theme(){
     const v = getComputedStyle(document.documentElement).getPropertyValue("--stage").trim() || "#dbe2ea";
-    renderer.setClearColor(new T.Color(v));
-    grid.material.color.set(new T.Color(v).getHSL({}).l < .3 ? 0x3a4654 : 0x9aa6b3);
+    const dark = new T.Color(v).getHSL({}).l < .3;
+    renderer.setClearColor(composer ? lin(v) : new T.Color(v));
+    grid.material.color.copy(lin(dark ? 0x3a4654 : 0x9aa6b3));
+    ground.material.opacity = dark ? .5 : .28;
   }
   theme();
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", theme);
   new MutationObserver(theme).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
-  function resize(){ const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  function resize(){
+    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (composer) composer.setSize(w, h);
+  }
   new ResizeObserver(() => { resize(); if (!dragging) camTo(focusCam(S.focus)); }).observe(canvas);
   resize(); camTo(focusCam(null), true);
+
+  // ---- modele din Blender (.glb): pune calea în MODELE și piesa desenată în cod e înlocuită
+  // Unități: 1 = 1 cm. Originea modelului = centrul piesei, cu fața spre geamul carcasei (+Z).
+  const MODELE = window.ATELIER_MODELE || {};
+  function loadModels(){
+    const list = Object.entries(MODELE).filter(([c]) => parts[c]);
+    if (!list.length) return;
+    const go = () => { const L = new T.GLTFLoader(); for (const [c, url] of list) L.load(url, gl => {
+      const g = parts[c]; while (g.children.length) g.remove(g.children[0]);
+      gl.scene.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; const m = o.material; if (m) { m.transparent = true; m.depthWrite = true; } } });
+      g.add(gl.scene); collect(); paint();
+    }, undefined, err => console.warn("Model 3D negăsit:", url, err)); };
+    if (T.GLTFLoader) go(); else { const s = document.createElement("script"); s.src = "vendor/GLTFLoader-r128.js"; s.onload = go; document.head.appendChild(s); }
+  }
+  loadModels();
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const ease = t => 1 - Math.pow(1 - t, 3);
@@ -954,6 +1112,7 @@ function make3D(){
       g.position.copy(basePos[cat]).addScaledVector(OUT[cat], u.ex);
     }
     for (const r of rotors) r.rotation.z += dt * 5;
+    if (outSel && outSel.enabled) outSel.edgeStrength = reduce ? 7 : 6 + Math.sin(now / 320) * 2.2; // pulsează ușor
     const aer = S.focus === "__aer";
     flow.visible = aer && S.aerView !== "caldura"; heat.visible = aer && S.aerView === "caldura";
     if (!aer || heat.visible) [...flEl.children].slice(0, FLBL.length).forEach(e => e.hidden = true);
@@ -967,13 +1126,13 @@ function make3D(){
     if (!S.focus && !dragging && !reduce && tw >= 1 && now - lastInteract > 6000) cam.th += dt * .12;
     camera.position.set(cam.t.x + cam.d * Math.sin(cam.ph) * Math.sin(cam.th), cam.t.y + cam.d * Math.cos(cam.ph), cam.t.z + cam.d * Math.sin(cam.ph) * Math.cos(cam.th));
     camera.lookAt(cam.t);
-    renderer.render(scene, camera);
+    if (composer) composer.render(); else renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
   return {
-    paint,
-    focus(cat){ paint(); tip.hidden = true; requestAnimationFrame(() => { resize(); camTo(focusCam(cat)); }); },
+    paint, hover,
+    focus(cat){ paint(); tip.hidden = true; hover(null); requestAnimationFrame(() => { resize(); camTo(focusCam(cat)); }); },
   };
 }
 })();
