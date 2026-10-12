@@ -182,7 +182,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
             <option value="scadere">Scădere în 24h</option>
           </select>
         </label>
-        <span class="seg" id="profil" role="group" aria-label="Notă pentru"><span class="sub">Notă pentru:</span><button data-p="gaming">Gaming</button><button data-p="creatie">Editare video și 3D</button></span>
+        <span class="seg" id="profil" role="group" aria-label="Notă pentru"><span class="sub">Notă pentru:</span><button data-p="gaming">Gaming</button><button data-p="creatie">Editare video și 3D</button><button data-p="ai">AI local</button></span>
         <label><input type="checkbox" id="stoc" checked> Doar în stoc</label>
         <span class="tiers" id="tiers" role="group" aria-label="Note afișate"></span>
         <span class="count" id="count"></span>
@@ -206,6 +206,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 </div>
 
 <script src="date.js"></script>
+<script src="note-ai.js"></script>
 <script>
 (() => {
 "use strict";
@@ -309,7 +310,7 @@ function card(p){
   const seller = p.oficial === false ? `<div class="seller warn">⚠ Vândut de ${esc(p.vanzator || "alt vânzător")}, nu de ${esc(p.magazin)}</div>`
                : p.oficial === true ? `<div class="seller sub">✓ Vândut de ${esc(p.magazin)}</div>` : "";
   const prof = (D.profile || {})[state.profil] || "";
-  const why = nota ? `<details class="why"><summary>De ce nota ${nota}${prof ? " la " + esc(prof.charAt(0).toLowerCase() + prof.slice(1)) : ""}?</summary><ul>${W(p).map(m => `<li>${esc(m)}</li>`).join("")}</ul></details>`
+  const why = nota ? `<details class="why"><summary>De ce nota ${nota}${prof ? " la " + esc(/^[A-Z]{2}/.test(prof) ? prof : prof.charAt(0).toLowerCase() + prof.slice(1)) : ""}?</summary><ul>${W(p).map(m => `<li>${esc(m)}</li>`).join("")}</ul></details>`
                      : `<details class="why"><summary>De ce fără notă?</summary><ul><li>Încă nu recunoaștem modelul ăsta, așa că nu-i dăm o notă inventată.</li></ul></details>`;
   const pic = p.imagine ? `<div class="pic"><img src="${esc(p.imagine)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>` : "";
   return `<article class="card ${p.stoc === false ? "out" : ""}" style="--t:${t}">

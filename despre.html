@@ -81,7 +81,7 @@ li{margin-bottom:4px}
 
     <section id="note">
       <h2>Cum notăm componentele</h2>
-      <p>Fiecare produs primește o notă calculată din specificațiile lui, separat pentru jocuri și pentru editare video și 3D:</p>
+      <p>Fiecare produs primește o notă calculată din specificațiile lui, separat pentru jocuri, pentru editare video și 3D și pentru AI local:</p>
       <div class="tiers">
         <div class="tier-row"><span class="tier" style="background:var(--t-S);color:#1d1503">S</span>Cea mai bună alegere pentru ce faci cu PC-ul.</div>
         <div class="tier-row"><span class="tier" style="background:var(--t-A)">A</span>Foarte bună, merge ani buni.</div>
@@ -91,6 +91,7 @@ li{margin-bottom:4px}
         <div class="tier-row"><span class="tier" style="background:var(--t-F)">E–F</span>De evitat pentru un PC nou.</div>
       </div>
       <p>Nota nu înseamnă „cel mai scump”. De exemplu, la un procesor Ryzen, memoria DDR5-6000 CL30 primește S, deși există memorie mai rapidă: peste 6000 nu mai aduce câștig în jocuri. Lângă fiecare notă scrie motivul, iar când nu recunoaștem un model, nu-i dăm o notă inventată.</p>
+      <p><b>AI local</b> înseamnă să rulezi pe PC-ul tău chat AI (modele ca Llama, Qwen, Mistral sau DeepSeek) și generare de imagini, fără internet și fără abonament. Aici contează altceva decât la jocuri: în primul rând memoria plăcii video (VRAM), pentru că modelul trebuie să încapă în ea ca să meargă repede (16 GB e minimul confortabil, 24–32 GB pentru modele mari), apoi dacă placa e NVIDIA, pentru că aproape toate programele de AI folosesc CUDA. Urmează memoria RAM (ideal 64 GB, ca să poți rula și modele mai mari decât încap pe placă) și spațiul de pe SSD (un model are 5–60 GB). Procesorul contează puțin cât timp modelul rulează pe placa video.</p>
     </section>
 
     <section id="preturi">
@@ -137,6 +138,7 @@ li{margin-bottom:4px}
   </main>
 </div>
 <script src="date.js"></script>
+<script src="note-ai.js"></script>
 <script src="comun.js"></script>
 <script>
 (() => {

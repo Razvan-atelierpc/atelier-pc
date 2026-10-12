@@ -126,7 +126,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
   <div class="controls">
     <div class="budgets" id="budgets" role="group" aria-label="Buget"></div>
     <form class="custom" id="custom"><input id="suma" inputmode="numeric" placeholder="Altă sumă" aria-label="Altă sumă, în lei"><span class="note">lei</span><button>Arată</button></form>
-    <span class="seg" id="profil" role="group" aria-label="Pentru"><span>Pentru</span><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button></span>
+    <span class="seg" id="profil" role="group" aria-label="Pentru"><span>Pentru</span><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button><button data-p="ai">AI local</button></span>
   </div>
   <div class="cols">
     <section class="col"><h2>Construit din piese</h2><div id="bill"></div></section>
@@ -135,6 +135,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
   <p class="foot">Build-ul din piese se calculează din ofertele urmărite de bot și nu combină piese incompatibile (de exemplu, procesor AMD cu placă Intel). La PC-urile gata asamblate notăm doar piesele scrise în numele produsului. Sursa și placa de bază lipsesc de obicei de acolo, așa că întreabă de ele înainte să cumperi.</p>
 </div>
 <script src="date.js"></script>
+<script src="note-ai.js"></script>
 <script src="comun.js"></script>
 <script>
 (() => {
@@ -157,7 +158,7 @@ const W = p => p && p.note && p.note[S.profil] ? p.note[S.profil].why : [];
 if (D.exemplu) $("exemplu").hidden = false;
 
 const chip = x => `<span class="chip ${x.n || "none"}" style="--t:var(--t-${x.n || "N"})">${x.n ? `<i>${x.n}</i>` : ""}${esc(x.p)}: ${esc(x.v)}</span>`;
-const PROF = {gaming:"jocuri", creatie:"editare video și 3D"};
+const PROF = {gaming:"jocuri", creatie:"editare video și 3D", ai:"AI local"};
 
 function render(){
   $("budgets").innerHTML = BUGETE.map(b => `<button data-b="${b}" aria-pressed="${S.buget === b}">${nf0.format(b)}</button>`).join("");

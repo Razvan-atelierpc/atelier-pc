@@ -89,6 +89,12 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
 .offer .pr{font-family:var(--display);font-weight:700;font-size:18px;white-space:nowrap}
 .total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
 .total strong{font-family:var(--display);font-size:26px}
+.ailist{display:grid;gap:8px;margin-top:14px}
+.aiv{display:grid;grid-template-columns:22px minmax(0,1fr);gap:2px 10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.aiv i{font-style:normal;font-weight:700;grid-row:span 2;text-align:center}
+.aiv b{font-size:14px;line-height:1.35}
+.aiv small{grid-column:2;color:var(--muted);font-size:13px}
+.aiv.ok i{color:var(--ok)} .aiv.warn i{color:var(--warn)} .aiv.bad i{color:var(--bad)} .aiv.q i{color:var(--muted)}
 .good{padding:14px;border-radius:12px;background:color-mix(in srgb,var(--ok) 10%,transparent);border:1px solid color-mix(in srgb,var(--ok) 40%,var(--line));color:var(--ok);font-weight:500}
 .jur{display:grid;gap:10px}
 .jrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(140px,.7fr) auto auto;gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
@@ -125,7 +131,7 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
       <h2 id="f-t">Piesele tale</h2>
       <p class="hint">Nu știi ce ai? În Windows: Ctrl+Shift+Esc, apoi „Performanță”. Acolo scrie procesorul, memoria și placa video.</p>
       <div class="form">
-        <span class="seg" id="profil" role="group" aria-label="Folosesc PC-ul pentru"><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button></span>
+        <span class="seg" id="profil" role="group" aria-label="Folosesc PC-ul pentru"><button data-p="gaming">Jocuri</button><button data-p="creatie">Editare și 3D</button><button data-p="ai">AI local</button></span>
         <div class="field"><label for="cpu">Procesor</label><select id="cpu"></select></div>
         <div class="field"><label for="gpu">Placă video</label><select id="gpu"></select></div>
         <div class="field"><label for="ramgb">Memorie RAM</label><div class="two">
@@ -161,6 +167,7 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
   <p class="foot">Notele folosesc aceleași reguli ca restul site-ului. Pentru modelele vechi sunt aproximative. Upgrade-urile vin din ofertele urmărite de bot; dacă o componentă nu are oferte, îți spunem ce să cauți.</p>
 </div>
 <script src="date.js"></script>
+<script src="note-ai.js"></script>
 <script src="comun.js"></script>
 <script>
 (() => {
@@ -195,6 +202,8 @@ function save(){ store.set("pcmeu", S); }
 // ---- note pentru piesele introduse (aceleași reguli ca în clasament.py)
 function noteRam(){
   const gb = +S.ramgb, d5 = S.ramtip === "DDR5";
+  if (S.profil === "ai") { let n = gb >= 128 ? "S" : gb >= 64 ? "A" : gb >= 48 ? "B" : gb >= 32 ? "C" : gb >= 16 ? "E" : "F"; if (!d5) n = shift(n, 1);
+    return [n, `${gb} GB ${S.ramtip}` + (gb >= 64 ? ", poți rula și modele mai mari decât placa video (mai lent)" : gb >= 32 ? ", ajunge dacă modelul stă pe placa video" : ", prea puțin pentru AI")]; }
   if (S.profil === "creatie") { let n = gb >= 64 ? "S" : gb >= 48 ? "A" : gb >= 32 ? "B" : gb >= 16 ? "D" : "F"; if (!d5) n = shift(n, 1);
     return [n, `${gb} GB ${S.ramtip}` + (gb >= 64 ? ", loc pentru proiecte mari" : gb >= 32 ? ", ajunge pentru editare 1080p/1440p" : ", prea puțin pentru editare")]; }
   let n = gb >= 32 ? (d5 ? "A" : "C") : gb >= 16 ? (d5 ? "C" : "D") : "F";
@@ -205,7 +214,7 @@ function noteSsd(){
   let n = base;
   const txt = {g5:"NVMe PCIe 5.0", g4:"NVMe PCIe 4.0", g3:"NVMe PCIe 3.0", sata:"SSD SATA", hdd:"HDD, jocurile se încarcă greu"}[S.ssdtip];
   if (S.ssdtip !== "hdd") {
-    if (S.profil === "creatie") n = gb >= 4000 ? shift(n, -1) : gb < 2000 ? shift(n, 1) : n;
+    if (S.profil === "creatie" || S.profil === "ai") n = gb >= 4000 ? shift(n, -1) : gb < 2000 ? shift(n, 1) : n;
     else if (gb < 1000) n = shift(n, 1);
   }
   return [n, `${txt}, ${gb >= 1000 ? gb / 1000 + " TB" : gb + " GB"}`];
@@ -232,9 +241,10 @@ function evaluate(){
   };
 }
 const TXT = {gaming:{S:"Excelent: ține ani buni, chiar și la 4K.", A:"Foarte bun pentru 1440p și chiar 4K cu DLSS/FSR.", B:"Bun pentru 1440p la setări înalte.", C:"Decent: 1080p pe setări înalte, 1440p pe medii.", D:"La limită: 1080p pe setări medii sau joase.", E:"Slab pentru jocurile din 2026.", F:"Prea slab pentru jocurile noi."},
+             ai:{S:"Excelent: rulezi local și modele mari de chat, imagini și video AI.", A:"Foarte bun pentru AI local: chat AI rapid și generare de imagini.", B:"Bun pentru AI local cu modele medii.", C:"Decent: modele mici de chat și imagini, mai încet.", D:"La limită: doar modele mici.", E:"Slab pentru AI local.", F:"Nu e potrivit pentru AI local."},
              creatie:{S:"Excelent pentru editare 4K, 3D și Unreal.", A:"Foarte bun pentru editare și 3D.", B:"Bun pentru editare 1080p/1440p.", C:"Decent pentru proiecte mici.", D:"Lent la randare.", E:"Slab pentru editare.", F:"Prea slab pentru editare."}};
-const TARGET = {gaming:{"Placă video":"C", "Procesor":"C", "RAM":"C", "SSD":"B", "Sursă":"B"}, creatie:{"Procesor":"C", "Placă video":"C", "RAM":"B", "SSD":"B", "Sursă":"B"}};
-const WEIGHT = {gaming:{"Placă video":3, "Procesor":2, "RAM":1.5, "SSD":1, "Sursă":1.2}, creatie:{"Procesor":3, "Placă video":2, "RAM":2, "SSD":1, "Sursă":1.2}};
+const TARGET = {ai:{"Placă video":"C", "RAM":"C", "SSD":"B", "Sursă":"B", "Procesor":"D"}, gaming:{"Placă video":"C", "Procesor":"C", "RAM":"C", "SSD":"B", "Sursă":"B"}, creatie:{"Procesor":"C", "Placă video":"C", "RAM":"B", "SSD":"B", "Sursă":"B"}};
+const WEIGHT = {ai:{"Placă video":4, "RAM":2, "SSD":1, "Sursă":1.2, "Procesor":1}, gaming:{"Placă video":3, "Procesor":2, "RAM":1.5, "SSD":1, "Sursă":1.2}, creatie:{"Procesor":3, "Placă video":2, "RAM":2, "SSD":1, "Sursă":1.2}};
 
 function cheapest(filter){ return P.filter(filter).sort((a, b) => a.pret_lei - b.pret_lei)[0]; }
 const okTier = (p, t) => N(p) && idx(N(p)) <= idx(t);
@@ -253,7 +263,8 @@ function suggestions(ev){
     if (c === "Placă video") {
       const o = cheapest(p => p.piesa === c && okTier(p, T[c]) && idx(N(p)) < idx(ev[c].n));
       if (o) { u.offers.push(o); gpuNeed = needW(gpuKey(o.titlu || o.nume) || ""); }
-      else u.note = "Caută o placă video cu nota cel puțin " + T[c] + ", de exemplu RTX 5070 sau RX 9060 XT 16 GB.";
+      else u.note = S.profil === "ai" ? "Pentru AI contează memoria plăcii video: caută o placă NVIDIA cu minim 16 GB, de exemplu RTX 5060 Ti 16GB sau RTX 5070 Ti."
+        : "Caută o placă video cu nota cel puțin " + T[c] + ", de exemplu RTX 5070 sau RX 9060 XT 16 GB.";
     } else if (c === "Procesor") {
       const plat = ev[c].plat;
       const same = cheapest(p => p.piesa === c && okTier(p, T[c]) && B.platforma(p) === plat && idx(N(p)) < idx(ev[c].n));
@@ -267,7 +278,7 @@ function suggestions(ev){
       }
     } else if (c === "RAM") {
       if (newPlatform) continue; // memoria DDR5 e deja în pachetul cu platformă nouă
-      const d5 = S.ramtip === "DDR5", gb = S.profil === "creatie" ? 64 : 32;
+      const d5 = S.ramtip === "DDR5", gb = S.profil === "gaming" ? 32 : 64;
       const o = cheapest(p => p.piesa === "RAM" && B.platforma(p) === (d5 ? "DDR5" : "DDR4") && gbOf(p) >= gb);
       if (o) u.offers.push(o);
       else u.note = d5 ? `Caută un kit DDR5 de ${gb} GB (2 plăcuțe).` : `Ia un kit DDR4 de ${gb} GB (2×${gb / 2} GB), 3200–3600 MHz. Nu urmărim încă oferte DDR4, dar se găsesc ieftin.`;
@@ -293,14 +304,20 @@ const tierEl = (n, cls = "") => `<span class="tier ${n || ""} ${cls}" style="--t
 const offerEl = p => `<a class="offer" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}" style="--t:var(--t-${N(p) || "N"})">${tierEl(N(p))}
   <span class="nm">${esc(p.nume)}<small>${esc(p.piesa)} · ${esc(p.magazin)}</small></span><span class="pr">${lei(p.pret_lei)}</span></a>`;
 
+function aiHtml(){
+  const a = AtelierAI.analiza({"Placă video": S.gpu, "RAM": +S.ramgb, "SSD": S.ssdtip === "hdd" ? null : +S.ssdgb / 1000});
+  const ic = {ok:"✓", warn:"!", bad:"✗", "?":"?"};
+  return `<div class="ailist" aria-label="Ce AI poți rula">${a.linii.map(l => `<div class="aiv ${l.s === "?" ? "q" : l.s}"><i>${ic[l.s]}</i><b>${esc(l.t)}</b><small>${esc(l.d)}</small></div>`).join("")}</div>`;
+}
 function render(){
   document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil));
   const ev = evaluate();
   const n = B.notaTotala(Object.fromEntries(Object.entries(ev).map(([c, v]) => [c, v])), S.profil, x => x.n);
-  $("score").innerHTML = `<div class="score">${tierEl(n, "big")}<strong>Nota ${n || "?"} pentru ${S.profil === "creatie" ? "editare și 3D" : "jocuri"}</strong><span>${esc((TXT[S.profil] || {})[n] || "")}</span></div>`;
+  $("score").innerHTML = `<div class="score">${tierEl(n, "big")}<strong>Nota ${n || "?"} pentru ${({creatie:"editare și 3D", ai:"AI local"})[S.profil] || "jocuri"}</strong><span>${esc((TXT[S.profil] || {})[n] || "")}</span></div>`
+    + (S.profil === "ai" && window.AtelierAI ? aiHtml() : "");
   $("parts").innerHTML = Object.entries(ev).map(([c, v]) => `<div class="prow">${tierEl(v.n)}<b>${esc(c)}</b><small>${esc(v.why)}</small></div>`).join("");
   const ups = suggestions(ev);
-  if (!ups.length) { $("ups").innerHTML = `<div class="good">✓ PC-ul tău face față jocurilor din 2026. Nu e nevoie de upgrade acum, deci nu cheltui degeaba.</div>`; return; }
+  if (!ups.length) { $("ups").innerHTML = `<div class="good">✓ ${({creatie:"PC-ul tău face față editării video și 3D.", ai:"PC-ul tău e potrivit pentru AI local."})[S.profil] || "PC-ul tău face față jocurilor din 2026."} Nu e nevoie de upgrade acum, deci nu cheltui degeaba.</div>`; return; }
   let total = 0;
   const html = ups.map((u, i) => {
     u.offers.forEach(o => total += o.pret_lei || 0);

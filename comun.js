@@ -8,6 +8,7 @@
   const PONDERI = {
     gaming: {"Placă video": 3, "Procesor": 2, "RAM": 1, "SSD": 1, "Placă de bază": 1, "Sursă": 1, "Cooler": .5, "Carcasă": .5},
     creatie: {"Procesor": 3, "Placă video": 2, "RAM": 2, "SSD": 1, "Placă de bază": 1, "Sursă": 1, "Cooler": .5, "Carcasă": .5},
+    ai: {"Placă video": 4, "RAM": 2, "SSD": 1, "Procesor": 1, "Placă de bază": .5, "Sursă": 1, "Cooler": .5, "Carcasă": .5},
   };
   const fold = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
