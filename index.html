@@ -189,6 +189,23 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .hub .big small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted);margin-left:6px}
 .hub h4,.rules h4{margin:6px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .uses{display:grid;gap:8px}
+.vs{display:grid;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.vs select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--fg)}
+.vs .who{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;font-size:13px}
+.vs .who > div{display:grid;gap:3px;min-width:0}
+.vs .who > div:last-child{text-align:right;justify-items:end}
+.vs .who b{font-size:13.5px;overflow-wrap:anywhere}
+.vs .who .x{align-self:center;font-family:var(--display);font-weight:700;font-size:18px;color:var(--muted)}
+.vs .verd{margin:0;font-size:14px;line-height:1.5}
+.vs .verd b{color:var(--fg)}
+.vs table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.vs th,.vs td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.vs th{text-align:left;font-weight:600;width:34%}
+.vs td{text-align:center}
+.vs td.w{font-weight:700;color:var(--fg);background:color-mix(in srgb,var(--ok,#2f9e5b) 12%,transparent);border-radius:6px}
+.vs td.w::after{content:" ✓"}
+.vs tr.d td{border-top:0;padding-top:0;text-align:left;color:var(--muted);font-size:12px}
+.vs ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:4px}
 .use{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .use.cur{border-color:var(--fg)}
 .use b{font-size:14px}
@@ -597,10 +614,86 @@ function hubHtml(p){
       <a class="go" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a></div>
     ${pwHub(p)}
     <h4>Pentru ce îl recomandăm</h4><div class="uses">${uses}</div>
+    ${vsSection(p)}
     ${p.model ? `<a class="go" style="justify-self:start" href="comunitate.html#piesa=${encodeURIComponent(p.model)}">💬 Păreri despre ${esc(p.model)} de la cei care o au →</a>` : ""}
     ${evolHtml(p)}
     ${params ? `<h4>Parametri</h4><div class="params">${params}</div>` : ""}
   </div>`;
+}
+// ---- VS: compară oferta deschisă cu alta din aceeași categorie, pe înțelesul tuturor
+const PROF_TXT = {gaming:"jocuri", creatie:"randări și editare video", ai:"AI local"};
+const shortName = p => (p.nume || "").replace(/^(placa video|procesor|sursa|memorie( ram)?|ssd|solid state drive( \(ssd\))?|placa de baza)\s*/i, "").replace(/\s*,\s*$/, "").slice(0, 60);
+function vsDefault(p){
+  const others = P.filter(x => x.piesa === p.piesa && x.url !== p.url);
+  if (!others.length) return null;
+  if (S.vsWith && byUrl[S.vsWith] && byUrl[S.vsWith].piesa === p.piesa && S.vsWith !== p.url) return byUrl[S.vsWith];
+  const ales = byUrl[S.ales[p.piesa]]; if (ales && ales.url !== p.url) return ales;
+  const r = x => N(x) ? NOTE.indexOf(N(x)) : 9;
+  return others.slice().sort((a, b) => r(a) - r(b) || (a.stoc === false) - (b.stoc === false) || a.pret_lei - b.pret_lei)[0];
+}
+function vsSection(p){
+  const b = vsDefault(p); if (!b) return "";
+  const r = x => N(x) ? NOTE.indexOf(N(x)) : 9;
+  const opts = P.filter(x => x.piesa === p.piesa && x.url !== p.url).sort((x, y) => r(x) - r(y) || x.pret_lei - y.pret_lei)
+    .map(x => `<option value="${esc(x.url)}" ${x.url === b.url ? "selected" : ""}>${esc((N(x) || "?") + " · " + shortName(x) + " · " + lei(x.pret_lei) + " · " + x.magazin)}</option>`).join("");
+  return `<h4>Compară (VS)</h4><div class="vs"><label style="font-size:13px;color:var(--muted)">Alege cu ce o compari:
+    <select data-vs="${esc(p.url)}">${opts}</select></label><div data-vsbox>${vsHtml(p, b)}</div></div>`;
+}
+function catPerf(p){ // scor de performanță din catalog (plăci video și procesoare), dacă îl știm
+  const cat = p.piesa === "Placă video" ? "gpu" : p.piesa === "Procesor" ? "cpu" : null; if (!cat || !p.model) return null;
+  const c = ((D.catalog || {})[cat] || []).find(x => x.nume === p.model); if (!c) return null;
+  return cat === "gpu" ? (S.profil === "creatie" ? c.randare : c.perf) : c.joc ?? null;
+}
+function vsHtml(a, b){
+  const prof = S.profil, pt = PROF_TXT[prof] || "jocuri", rk = n => n ? NOTE.indexOf(n) : 9;
+  const na = N(a), nb = N(b), wa = ((a.note || {})[prof] || {}).why || [], wb = ((b.note || {})[prof] || {}).why || [];
+  const A = `<b>${esc(shortName(a))}</b>`, B = `<b>${esc(shortName(b))}</b>`, nm = x => x === a ? A : B;
+  const rows = [], winA = [], winB = [];
+  const row = (label, va, vb, w, d) => { rows.push([label, va, vb, w, d]); if (w === "a") winA.push(label.toLowerCase()); if (w === "b") winB.push(label.toLowerCase()); };
+  // parametrii piesei, după nota fiecăruia
+  const names = [...new Set([...(a.specs || []), ...(b.specs || [])].map(x => x.p))];
+  for (const n of names) {
+    const sa = (a.specs || []).find(x => x.p === n) || {}, sb = (b.specs || []).find(x => x.p === n) || {};
+    let w = rk(sa.n) < rk(sb.n) ? "a" : rk(sb.n) < rk(sa.n) ? "b" : null;
+    if (!w && /consum/i.test(n)) { const ka = parseFloat(String(sa.v).replace(/[^\d.]/g, "")), kb = parseFloat(String(sb.v).replace(/[^\d.]/g, "")); if (ka && kb && ka !== kb) w = ka < kb ? "a" : "b"; }
+    if (!w && sa.v === sb.v) w = null;
+    row(n, sa.v || "–", sb.v || "–", w, (w === "b" ? sb.d : sa.d) || sb.d || "");
+  }
+  // prețul și magazinul
+  const dp = Math.round(b.pret_lei - a.pret_lei), pc = Math.round(Math.abs(dp) / Math.min(a.pret_lei, b.pret_lei) * 100);
+  row("Preț", lei(a.pret_lei), lei(b.pret_lei), dp > 0 ? "a" : dp < 0 ? "b" : null, dp ? `Diferență: ${lei(Math.abs(dp))} (${pc}%).` : "Costă la fel.");
+  const vand = x => x.oficial === false ? `alt vânzător (${x.vanzator || "marketplace"})` : x.oficial ? "magazinul" : "–";
+  if (a.oficial !== b.oficial && (a.oficial != null || b.oficial != null))
+    row("Cine vinde", vand(a), vand(b), a.oficial ? "a" : b.oficial ? "b" : null, "Când vinde chiar magazinul, returul și garanția sunt de obicei mai simple decât la un vânzător de pe marketplace.");
+  if ((a.stoc === false) !== (b.stoc === false)) row("Stoc", a.stoc === false ? "epuizat" : "în stoc", b.stoc === false ? "epuizat" : "în stoc", a.stoc === false ? "b" : "a", "");
+  const et = x => (x.eticheta || {}).tip, bun = t => t === "minim", rau = t => t === "peste" || t === "fals";
+  if (bun(et(a)) !== bun(et(b)) || rau(et(a)) !== rau(et(b)))
+    row("Prețul de acum", (a.eticheta || {}).text || "obișnuit", (b.eticheta || {}).text || "obișnuit", bun(et(a)) || rau(et(b)) ? "a" : bun(et(b)) || rau(et(a)) ? "b" : null, "Comparat cu cât a costat în ultimele 30 de zile.");
+  // concluzia
+  const out = [];
+  const same = a.model && a.model === b.model;
+  if (same) out.push(a.piesa === "Placă video"
+    ? `Amândouă sunt <b>${esc(a.model)}</b>, același cip, făcut de producători diferiți. În ${pt} diferența e de câteva procente, cel mult. Contează mai ales prețul, cât de silențioasă e răcirea, garanția și cine o vinde.`
+    : `Amândouă sunt <b>${esc(a.model)}</b>, exact același procesor. Diferă doar magazinul și varianta (cu cutie și cooler sau „tray”, fără cutie, uneori cu garanție mai scurtă).`);
+  else if (rk(na) !== rk(nb)) { const [x, y, nx, ny, wx] = rk(na) < rk(nb) ? [a, b, na, nb, wa] : [b, a, nb, na, wb];
+    out.push(`Pentru ${pt}, ${nm(x)} e mai bună: nota <b>${nx}</b> față de <b>${ny || "?"}</b>${wx.length ? ` – ${esc(wx.join("; "))}` : ""}.`); }
+  else out.push(`Pentru ${pt} au aceeași notă (<b>${na || "?"}</b>).`);
+  const fa = catPerf(a), fb = catPerf(b);
+  if (!same && fa && fb && fa !== fb) { const [x, y, fx, fy] = fa > fb ? [a, b, fa, fb] : [b, a, fb, fa];
+    out.push(`${nm(x)} e cam cu <b>${Math.round((fx / fy - 1) * 100)}%</b> mai rapidă în ${pt}. La bani: ${nm(a)} costă ${lei(Math.round(a.pret_lei / fa))} pe punct de performanță, ${nm(b)} ${lei(Math.round(b.pret_lei / fb))}.`); }
+  const better = same ? (dp > 0 ? a : dp < 0 ? b : null) : rk(na) < rk(nb) ? a : rk(nb) < rk(na) ? b : (winA.length > winB.length ? a : winB.length > winA.length ? b : null);
+  const cheaper = dp > 0 ? a : dp < 0 ? b : null;
+  if (better && cheaper === better && !same) out.push(`Pe scurt: ${nm(better)} e și mai bună, și mai ieftină – alegerea e clară.`);
+  else if (better && cheaper && !same) out.push(`Pe scurt: ${nm(better)} e mai bună, dar costă cu ${lei(Math.abs(dp))} mai mult. Merită dacă vrei maximum la ${pt}; dacă bugetul contează, ${nm(cheaper)} e alegerea mai cumpătată.`);
+  else if (same && cheaper) out.push(`Pe scurt: dacă vânzătorul și garanția sunt în regulă, ia-o pe cea mai ieftină – ${nm(cheaper)}, cu ${lei(Math.abs(dp))} mai puțin.`);
+  const lst = (w, x) => w.length ? `<li>${nm(x)} câștigă la: ${esc(w.join(", "))}.</li>` : "";
+  return `<div class="who"><div>${A}<span style="color:var(--muted)">${esc(a.magazin)} · ${lei(a.pret_lei)}</span><span class="tier ${na || ""}" style="--t:var(--t-${na || "N"})">${na || "?"}</span></div>
+      <span class="x">VS</span><div>${B}<span style="color:var(--muted)">${esc(b.magazin)} · ${lei(b.pret_lei)}</span><span class="tier ${nb || ""}" style="--t:var(--t-${nb || "N"})">${nb || "?"}</span></div></div>
+    ${out.map(t => `<p class="verd">${t}</p>`).join("")}
+    ${winA.length || winB.length ? `<ul>${lst(winA, a)}${lst(winB, b)}</ul>` : ""}
+    <table><thead><tr><th></th><td style="font-weight:600">Asta</td><td style="font-weight:600">Cealaltă</td></tr></thead><tbody>
+    ${rows.map(([l, va, vb, w, d]) => `<tr><th>${esc(l)}</th><td class="${w === "a" ? "w" : ""}">${esc(va)}</td><td class="${w === "b" ? "w" : ""}">${esc(vb)}</td></tr>${d ? `<tr class="d"><td colspan="3">${esc(d)}</td></tr>` : ""}`).join("")}
+    </tbody></table>`;
 }
 function evolHtml(p){
   const e = p.evolutie || {}, cur = p.moneda;
@@ -915,6 +1008,9 @@ function renderOffers(keepScroll){
   $("offers").scrollTop = keepScroll ? y : 0;
 }
 $("q").addEventListener("input", e => { S.q = e.target.value; renderOffers(); });
+$("offers").addEventListener("change", e => { const sel = e.target.closest("[data-vs]"); if (!sel) return;
+  S.vsWith = sel.value; const a = byUrl[sel.dataset.vs], b = byUrl[sel.value], box = $("offers").querySelector("[data-vsbox]");
+  if (a && b && box) box.innerHTML = vsHtml(a, b); });
 $("offers").addEventListener("click", e => {
   const ct = e.target.closest("[data-ct]"); if (ct) { S.carcasa = ct.dataset.ct; $("ct").innerHTML = renderCarcasa(); return; }
   const st = e.target.closest("[data-set]");
@@ -1166,7 +1262,9 @@ function make3D(){
   // fiecare piesă e un grup cu categoria ei, ca să știm pe ce s-a dat click
   const parts = {};
   const part = (cat, parent = scene) => { const g = new T.Group(); g.userData.cat = cat; parent.add(g); parts[cat] = g; return g; };
-  const caseM = new T.Matrix4().makeTranslation(-9.8, 7.25, -10.6);
+  // placa de bază e desenată la mărimea ATX reală (24 × 30 cm), dar o arătăm cu 15% mai mare ca să umple carcasa ca în poze
+  const MBS = 1.15, MBP = V(-8.3, 5.75, -10.6);
+  const caseM = new T.Matrix4().makeTranslation(MBP.x, MBP.y, MBP.z).multiply(new T.Matrix4().makeScale(MBS, MBS, MBS));
   const SX = .6, SY = 6.7; // centrul soclului pe placa de bază (coordonatele plăcii)
   const inCase = v => v.clone().applyMatrix4(caseM);
 
@@ -1199,7 +1297,7 @@ function make3D(){
   const topFans = TOP_X.map(x => { const f = fan(5.3, "y"); f.position.set(x, 23.6, 1.5); f.visible = false; cs.add(f); return f; });
 
   // ---- placa de bază (coordonatele plăcii: z iese spre geam)
-  const mb = part("Placă de bază"); mb.position.set(-9.8, 7.25, -10.6);
+  const mb = part("Placă de bază"); mb.position.copy(MBP); mb.scale.setScalar(MBS);
   const hs = M(0x3b4049, {metal:.75, rough:.32, rmap:brush}), hsDark = M(0x24282e, {metal:.7, rough:.38, rmap:brush});
   mb.add(box(24.4, 30.5, .16, M(0xffffff, {metal:.15, rough:.75, map:pcb}), 0, 0, 0, .05), box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.85, rough:.28}), SX, SY, .25, .2),
          box(11, 2.6, 2.2, hs, -4, 13, 1.2, .35), box(2.4, 9, 2.2, hs, -8.6, 6.5, 1.2, .35),
@@ -1559,7 +1657,7 @@ function make3D(){
   const radFront = {p:V(22.2, 0, 1.5), q:new T.Quaternion().setFromAxisAngle(V(0, 0, 1), -Math.PI / 2)};
   const radBottom = {p:V(2, -21.9, 1.5), q:new T.Quaternion()};
   const gpuH = {p:gpu.position.clone(), q:gpu.quaternion.clone()};
-  const gpuV = {p:V(-1, -3.5, 17.6), q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(V(0, 1, 0), V(0, 0, -1), V(-1, 0, 0)))};
+  const gpuV = {p:V(-1, -3.5, 15.4), q:new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(V(0, 1, 0), V(0, 0, -1), V(-1, 0, 0)))};
   function layout(c){
     const front = c.rad === "fata", jos = c.rad === "jos", RP = front ? radFront : jos ? radBottom : radTop;
     rad.position.copy(RP.p); rad.quaternion.copy(RP.q);

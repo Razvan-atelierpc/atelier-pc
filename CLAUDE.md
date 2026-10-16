@@ -19,7 +19,7 @@ Site: https://razvan-atelierpc.github.io/atelier-pc/
 - Linkurile de afiliere au `rel="sponsored"`; notele nu depind de comision.
 
 ## Pagini
-- `index.html` – Configurator 3D: piese, oferte, Flux de aer, Poți rula AI?, Aranjează PC-ul (+ monitoare), Consum și sursă (butonul ⚡ din bara de jos; calculul e `AtelierBuild.putere` din `comun.js`).
+- `index.html` – Configurator 3D: piese, oferte, Flux de aer, Poți rula AI?, Aranjează PC-ul (+ monitoare), Consum și sursă (butonul ⚡ din bara de jos; calculul e `AtelierBuild.putere` din `comun.js`); „Compară (VS)” în pagina unei oferte – `vsHtml()` compară parametrii, nota, prețul, vânzătorul și performanța din `catalog`. Placa de bază e afișată la 115% (`MBS`), restul pieselor de pe ea se potrivesc prin `caseM`.
 - `montaj.html` – ghid de montaj pas cu pas în 3D.
 - `reduceri.html` (cu evoluția prețului: 7/30 zile sau de la început, din `evolutie` din `date.js`), `pc-uri.html`, `pc-ul-meu.html` (cu „Compară cu altă placă video” și consumul PC-ului), `despre.html`.
 - `comunitate.html` – discuții prin Giscus (GitHub Discussions) și link de Telegram; se activează din `config.yaml` al botului (`comunitate:` → `giscus_repo`, `giscus_repo_id`, `giscus_categorie_id`, `telegram`). Fără ele arată „în curând”.
