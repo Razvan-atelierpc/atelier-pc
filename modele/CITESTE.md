@@ -9,3 +9,9 @@ Aici pui modelele .glb pentru Configurator.
    `"Placă video": "modele/placa-video.glb",`
 
 Numele pieselor: „Placă video”, „Procesor”, „Placă de bază”, „RAM”, „SSD”, „Cooler”, „Sursă”, „Carcasă”.
+
+## Ce e acum aici
+`placa-de-baza.glb`, `placa-video.glb`, `ram.glb`, `ssd.glb`, `sursa.glb` – din „Dream Computer Setup” de Daniel Cardona
+(https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49), licență CC BY 4.0.
+Modificate: fără logo-uri, culori închise, simplificate, comprimate (meshopt + WebP; decodorul e în `vendor/meshopt_decoder.js`).
+Autorul e trecut pe `despre.html#credite`. Dacă schimbi modelele, actualizează și acolo.
