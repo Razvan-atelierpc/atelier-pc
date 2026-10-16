@@ -24,4 +24,4 @@ Site: https://razvan-atelierpc.github.io/atelier-pc/
 - `reduceri.html` (cu evoluția prețului: 7/30 zile sau de la început, din `evolutie` din `date.js`), `pc-uri.html`, `pc-ul-meu.html` (cu „Compară cu altă placă video” și consumul PC-ului), `despre.html`.
 - `comunitate.html` – discuții prin Giscus (GitHub Discussions) și link de Telegram; se activează din `config.yaml` al botului (`comunitate:` → `giscus_repo`, `giscus_repo_id`, `giscus_categorie_id`, `telegram`). Fără ele arată „în curând”.
 - Modele din Blender: `.glb` în `modele/`, trecute în `window.ATELIER_MODELE` din `index.html` (vezi `modele/CITESTE.md`).
-- Placa de bază, placa video, RAM, SSD și sursa sunt din „Dream Computer Setup” (Daniel Cardona, CC BY 4.0): fără logo-uri, comprimate cu meshopt + WebP (`vendor/meshopt_decoder.js`). Creditul e în `despre.html#credite` – nu-l scoate.
+- Placa de bază, placa video, RAM, SSD și sursa sunt din „Dream Computer Setup” (Daniel Cardona, CC BY 4.0): fără logo-uri, comprimate cu meshopt + WebP (`vendor/meshopt_decoder.js`). Ventilatoarele: `modele/ventilator.glb` („computer fan”, Temoor, CC BY 4.0). Creditele sunt în `despre.html#credite` – nu le scoate.

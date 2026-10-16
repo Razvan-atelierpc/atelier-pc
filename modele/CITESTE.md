@@ -14,4 +14,6 @@ Numele pieselor: „Placă video”, „Procesor”, „Placă de bază”, „R
 `placa-de-baza.glb`, `placa-video.glb`, `ram.glb`, `ssd.glb`, `sursa.glb` – din „Dream Computer Setup” de Daniel Cardona
 (https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49), licență CC BY 4.0.
 Modificate: fără logo-uri, culori închise, simplificate, comprimate (meshopt + WebP; decodorul e în `vendor/meshopt_decoder.js`).
-Autorul e trecut pe `despre.html#credite`. Dacă schimbi modelele, actualizează și acolo.
+`ventilator.glb` – din „computer fan” de Temoor (https://sketchfab.com/3d-models/computer-fan-5360bd331c5848eeb9338b4f894e78e5), CC BY 4.0;
+rama și paletele înlocuiesc ventilatoarele desenate în cod (nu e în `ATELIER_MODELE`, se încarcă separat în `index.html`).
+Autorii sunt trecuți pe `despre.html#credite`. Dacă schimbi modelele, actualizează și acolo.
