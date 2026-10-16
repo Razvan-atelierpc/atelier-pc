@@ -104,6 +104,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .empty{padding:22px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
 .notice{border:1px dashed var(--warn);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px}
 .foot{color:var(--muted);font-size:13px;max-width:80ch}
+.note.pw.ok b{color:var(--ok)} .note.pw.bad{color:var(--bad)} .note.pw.bad b{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -115,6 +116,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
     <a href="pc-ul-meu.html">PC-ul meu</a>
     <a href="reduceri.html">Reduceri</a>
     <a href="montaj.html">Montaj 3D</a>
+    <a href="comunitate.html">Comunitate</a>
   </nav>
 </div></header>
 <div class="wrap">
@@ -160,6 +162,15 @@ if (D.exemplu) $("exemplu").hidden = false;
 const chip = x => `<span class="chip ${x.n || "none"}" style="--t:var(--t-${x.n || "N"})">${x.n ? `<i>${x.n}</i>` : ""}${esc(x.p)}: ${esc(x.v)}</span>`;
 const PROF = {gaming:"jocuri", creatie:"editare video și 3D", ai:"AI local"};
 
+function pwNote(pw){
+  if (!pw || !pw.complet) return "";
+  const cls = pw.nivel === "ok" ? "ok" : pw.nivel === "fara" || pw.nivel === "necunoscut" ? "" : "bad";
+  const txt = pw.nivel === "ok" ? `Sursa ajunge: ${pw.cap} W, cu ${pw.rezerva} W rezervă.`
+    : pw.nivel === "fara" ? `Ia o sursă de minim ${pw.rec} W.`
+    : pw.nivel === "necunoscut" ? `Verifică dacă sursa are minim ${pw.rec} W.`
+    : `Atenție: sursa de ${pw.cap} W e ${pw.nivel === "rau" ? "prea mică" : "la limită"}. La bugetul ăsta nu am găsit una mai mare; recomandat minim ${pw.rec} W.`;
+  return `<p class="note pw ${cls}">⚡ <b>Consum estimat: ~${pw.total} W.</b> ${txt}</p>`;
+}
 function render(){
   $("budgets").innerHTML = BUGETE.map(b => `<button data-b="${b}" aria-pressed="${S.buget === b}">${nf0.format(b)}</button>`).join("");
   document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil));
@@ -181,6 +192,7 @@ function render(){
         <strong>${lei(r.total)}</strong><span>nota PC-ului pentru ${PROF[S.profil]} · îți rămân ${lei(rest)} din ${lei(S.buget)}</span></div>
       ${rows}
       ${r.lipsa.length ? `<p class="note"><b>Lipsesc:</b> ${esc(r.lipsa.join(", ").toLowerCase())}. Nu urmărim încă oferte pentru ele, deci nu intră în total.</p>` : ""}
+      ${pwNote(r.putere)}
       <div class="acts"><button class="btn primary" id="open3d">Deschide-l în configuratorul 3D →</button><a class="btn" href="reduceri.html">Toate ofertele</a></div></div>`;
     $("open3d").onclick = () => {
       store.set("ales", Object.fromEntries(Object.entries(r.pick).map(([c, p]) => [c, p.url])));

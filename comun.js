@@ -72,11 +72,21 @@
         if (!up) break;
         pick[up.c] = up.q; total += up.d;
       }
+      // sursa trebuie să ajungă pentru placa video și procesorul alese
+      if (pick["Sursă"]) {
+        const pw = putere(pick);
+        if (pw.cap && pw.cap < pw.rec) {
+          const ok = opts["Sursă"].filter(q => (q.sursa_w || 0) >= pw.rec);
+          const fit = ok.filter(q => total - pick["Sursă"].pret_lei + q.pret_lei <= buget).sort((a, b) => score(b) - score(a) || a.pret_lei - b.pret_lei)[0];
+          if (fit) { total += fit.pret_lei - pick["Sursă"].pret_lei; pick["Sursă"] = fit; }
+        }
+      }
       const s = cats.reduce((a, c) => a + score(pick[c]) * (W[c] || 1), 0);
       if (!best || s > best.s) best = {pick, total, s, platforma: plat};
     }
     if (!best) return {eroare: "buget", minim: isFinite(minim) ? minim : null};
     best.nota = notaTotala(best.pick, profil, N);
+    best.putere = putere(best.pick);
     best.lipsa = ORDINE.filter(c => !toate[c]);
     return best;
   }
@@ -95,7 +105,40 @@
     return NOTE[Math.min(6, Math.max(Math.round(sum / w), worst - 1))];
   }
 
-  window.AtelierBuild = {autoBuild, notaTotala, platforma, ORDINE, NOTE, fold};
+  /* Consumul estimat al PC-ului și dacă ajunge sursa.
+     pick: {categorie: produs}; produsele au w (wați consumați) sau, sursele, sursa_w (capacitatea).
+     Pentru piesele nealese se folosesc valori tipice. Estimare la sarcină maximă. */
+  const STD = [450, 550, 650, 750, 850, 1000, 1200, 1300, 1600];
+  const FIX = {"Placă de bază": 50, "RAM": 10, "SSD": 8, "Cooler": 10, "Carcasă": 15};
+  function putere(pick) {
+    const cat = (window.ATELIER || {}).catalog || {};
+    const gpuMin = cat.sursa_gpu || {};
+    const rows = [];
+    let total = 0;
+    for (const c of ORDINE) {
+      if (c === "Sursă") continue;
+      const p = pick[c];
+      let w = p && p.w != null ? p.w : null, tipic = false;
+      if (w == null) {
+        if (c === "Placă video" || c === "Procesor") {
+          // fără placă video nu ghicim; fără procesor, dar cu placă video, socotim un procesor obișnuit
+          if (!p && (c === "Placă video" || !pick["Placă video"])) continue;
+          w = c === "Placă video" ? 250 : 125; tipic = true;
+        }
+        else { w = (FIX[c] || 0); tipic = !p; }
+      }
+      rows.push({c, w, tipic, ales: !!p});
+      total += w;
+    }
+    const g = pick["Placă video"];
+    const rec = Math.max(STD.find(s => s >= total * 1.2) || STD[STD.length - 1], g && g.model ? (gpuMin[g.model] || 0) : 0);
+    const psu = pick["Sursă"], cap = psu ? (psu.sursa_w || null) : null;
+    const nivel = !psu ? "fara" : !cap ? "necunoscut" : cap < total ? "rau" : cap < rec ? "limita" : "ok";
+    return {rows, total, rec, cap, nivel, rezerva: cap ? cap - total : null, procent: cap ? Math.round(total / cap * 100) : null,
+            complet: !!(g && pick["Procesor"])};
+  }
+
+  window.AtelierBuild = {autoBuild, notaTotala, platforma, putere, ORDINE, NOTE, fold};
 })();
 
 /* Subsolul comun al tuturor paginilor: linkuri legale și mențiunea despre afiliere. */
@@ -115,7 +158,7 @@
   const f = document.createElement("footer");
   f.className = "subsol";
   f.innerHTML = `<div class="in"><div class="row"><b>Atelier PC</b>
-      <a href="despre.html#despre">Despre</a><a href="despre.html#note">Cum notăm</a><a href="despre.html#contact">Contact</a>
+      <a href="despre.html#despre">Despre</a><a href="despre.html#note">Cum notăm</a><a href="comunitate.html">Comunitate</a><a href="despre.html#contact">Contact</a>
       <a href="despre.html#confidentialitate">Confidențialitate</a><a href="despre.html#termeni">Termeni</a></div>
     <p>Unele linkuri sunt linkuri de afiliere: dacă cumperi prin ele, putem primi un mic comision, fără niciun cost în plus pentru tine. Prețurile se actualizează automat și pot fi diferite pe site-ul magazinului.</p>
     <p>© ${new Date().getFullYear()} Atelier PC · proiect independent din România${D.generat ? " · prețuri actualizate " + D.generat.slice(8, 10) + "." + D.generat.slice(5, 7) + "." + D.generat.slice(0, 4) + ", ora " + D.generat.slice(11) : ""}</p></div>`;

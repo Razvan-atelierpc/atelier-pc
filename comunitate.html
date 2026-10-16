@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comunitate · Atelier PC</title>
+<meta name="description" content="Sugestii pentru site, păreri despre piese și ajutor la build, de la oameni care și-au făcut sau își fac un PC.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23a3521c%27/%3E%3Ctext x=%2732%27 y=%2745%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2736%27 text-anchor=%27middle%27 fill=%27white%27%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#a3521c">
+<meta property="og:site_name" content="Atelier PC">
+<meta property="og:title" content="Comunitate · Atelier PC">
+<meta property="og:description" content="Sugestii pentru site, păreri despre piese și ajutor la build.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@600;700&display=swap">
+<style>
+/* Comunitate: în stânga subiectele, în dreapta discuția aleasă (Giscus, pe GitHub Discussions); dedesubt grupul de Telegram și regulile. */
+:root{
+  --bg:#eef1f4; --surface:#fbfcfd; --surface-2:#e3e8ee; --fg:#141920; --muted:#56606c; --line:#cfd6de;
+  --accent:#a3521c; --accent-ink:#ffffff; --accent-soft:#f4e3d5;
+  --ok:#1b7a43; --warn:#94600f; --bad:#b3302a; --tg:#2481cc;
+  --display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --tg:#5fb0ec; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --surface-2:#1f252d; --fg:#e7ebf0; --muted:#9aa5b1; --line:#2a323c;
+  --accent:#e0965f; --accent-ink:#1a0f07; --accent-soft:#3a2718; --ok:#4cc583; --warn:#e5ae55; --bad:#f2786a; --tg:#5fb0ec; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+a{color:inherit}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;line-height:1}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:2px;overflow-x:auto;min-width:0}
+nav a{text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:500;color:var(--muted);white-space:nowrap}
+nav a:hover{color:var(--fg);background:var(--surface-2)}
+nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+@media (max-width:760px){.top{position:static}}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:20px}
+.hero h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,40px);line-height:1.05}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.cols{display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.card h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px;line-height:1.15}
+.hint{margin:0;font-size:13.5px;color:var(--muted)}
+.topics{display:grid;gap:6px}
+@media (max-width:860px){.topics{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+.topic{display:grid;grid-template-columns:30px minmax(0,1fr);gap:2px 10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px;cursor:pointer}
+.topic:hover{border-color:var(--accent)}
+.topic[aria-pressed="true"]{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg);background:var(--surface)}
+.topic .ic{grid-row:span 2;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:16px}
+.topic b{font-size:14px;line-height:1.25}
+.topic small{color:var(--muted);font-size:12px;line-height:1.3}
+.field{display:grid;gap:4px}
+.field label{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 10px}
+.thread-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px 14px;flex-wrap:wrap}
+.thread-head small{color:var(--muted);font-size:13px}
+.giscus,.giscus-frame{width:100%;min-height:220px}
+.soon{display:grid;gap:8px;place-items:start;padding:22px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.soon b{color:var(--fg);font-size:16px}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;white-space:nowrap}
+.btn.tg{background:var(--tg);border-color:var(--tg);color:#fff}
+.btn.tg svg{width:18px;height:18px}
+.tgcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 18px;align-items:center}
+@media (max-width:640px){.tgcard{grid-template-columns:1fr}}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:r}
+.rules li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;font-size:14px;counter-increment:r}
+.rules li::before{content:counter(r);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-weight:700}
+.rules b{font-weight:600}
+.foot{color:var(--muted);font-size:13px;max-width:80ch;margin:0}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html">Atelier <b>PC</b></a>
+  <nav aria-label="Pagini">
+    <a href="index.html">Configurator</a>
+    <a href="pc-uri.html">PC-uri pe buget</a>
+    <a href="pc-ul-meu.html">PC-ul meu</a>
+    <a href="reduceri.html">Reduceri</a>
+    <a href="montaj.html">Montaj 3D</a>
+    <a href="comunitate.html" aria-current="page">Comunitate</a>
+  </nav>
+</div></header>
+<div class="wrap">
+  <div class="hero">
+    <h1>Comunitate</h1>
+    <p>Spune-ne ce să mai adăugăm pe site, ce părere ai despre o piesă pe care o ai sau cere ajutor la PC-ul pe care vrei să-l faci. Citim tot, iar sugestiile bune ajung pe site.</p>
+  </div>
+
+  <div class="cols">
+    <section class="card" aria-labelledby="t-sub">
+      <h2 id="t-sub">Subiecte</h2>
+      <div class="topics" id="topics" role="group" aria-label="Subiecte"></div>
+      <div class="field" id="piesa-f" hidden><label for="piesa">Piesa</label><select id="piesa"></select></div>
+    </section>
+
+    <section class="card" aria-labelledby="t-thr">
+      <div class="thread-head"><h2 id="t-thr"></h2><small id="t-info"></small></div>
+      <p class="hint" id="t-desc"></p>
+      <div id="thread"></div>
+    </section>
+  </div>
+
+  <section class="card" id="tg-card" hidden aria-labelledby="t-tg">
+    <div class="tgcard">
+      <div><h2 id="t-tg">N-ai cont de GitHub? Scrie-ne pe Telegram</h2>
+        <p class="hint">Pe site, discuțiile merg prin GitHub, deci îți trebuie un cont gratuit acolo. Dacă nu vrei să-ți faci unul, intră în grupul nostru de Telegram: sugestii, întrebări și reduceri găsite de alții.</p></div>
+      <a class="btn tg" id="tg-link" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.6 19.9c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.4l-4.9-1.5c-1.1-.3-1.1-1.1.2-1.6L20.5 2.9c.9-.3 1.7.2 1.4 1.4Z"/></svg>Intră în grupul de Telegram</a>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="t-reg">
+    <h2 id="t-reg">Reguli scurte</h2>
+    <ol class="rules">
+      <li><span><b>Fii politicos.</b> Fără jigniri, atacuri la persoană sau limbaj urât.</span></li>
+      <li><span><b>Fără reclame.</b> Nu posta linkuri de afiliere proprii, coduri de referral sau anunțuri de vânzare.</span></li>
+      <li><span><b>Nu-ți posta datele personale</b> (telefon, adresă, CNP, date de card) și nici pe ale altora.</span></li>
+      <li><span><b>Spune ce ai testat tu.</b> La păreri despre piese, scrie ce PC ai și ce ai observat: temperaturi, zgomot, FPS.</span></li>
+      <li><span><b>Rămâi la subiect.</b> Mesajele care încalcă regulile se șterg, iar cine insistă e blocat.</span></li>
+    </ol>
+  </section>
+  <p class="foot">Discuțiile de pe pagina asta sunt găzduite de GitHub Discussions, prin Giscus. Când scrii, te conectezi cu contul tău GitHub, iar mesajul apare public, cu numele contului. Detalii în <a href="despre.html#confidentialitate">Confidențialitate</a>.</p>
+</div>
+<script src="date.js"></script>
+<script src="comun.js"></script>
+<script>
+(() => {
+"use strict";
+const D = window.ATELIER || {};
+const C = D.comunitate || {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CAT = D.catalog || {gpu:[], cpu:[]};
+const TOPICS = [
+  {id:"sugestii", ic:"💡", nume:"Sugestii pentru site", sub:"Ce să adăugăm sau să schimbăm", term:"Sugestii pentru Atelier PC",
+   desc:"Ce ți-ar plăcea să vezi pe Atelier PC? O pagină nouă, un magazin pe care să-l urmărim, ceva ce nu merge cum trebuie."},
+  {id:"piese", ic:"⚙", nume:"Păreri despre piese", sub:"Experiența ta cu o placă video sau un procesor", term:null,
+   desc:"Ai piesa? Spune cum se comportă la tine: temperaturi, zgomot, FPS, probleme. Scrie și ce alte piese ai în PC."},
+  {id:"build", ic:"🛠", nume:"Ajutor la build", sub:"Întreabă ce PC să-ți faci", term:"Ajutor: ce PC să-mi fac?",
+   desc:"Spune bugetul, la ce folosești PC-ul (jocuri, randări, editare) și ce piese ai deja. Comunitatea te ajută să alegi."},
+  {id:"reduceri", ic:"🏷", nume:"Reduceri găsite", sub:"O ofertă bună pe care n-o avem", term:"Reduceri găsite de comunitate",
+   desc:"Ai prins o reducere bună la o piesă? Pune linkul simplu de la magazin (fără linkuri de afiliere) și prețul."},
+];
+const PIESE = [...(CAT.gpu || []).filter(g => g.nume !== "Grafică integrată").map(g => g.nume), ...(CAT.cpu || []).map(c => c.nume)];
+
+const gata = !!(C.giscus_repo && C.giscus_repo_id && C.giscus_categorie_id);
+if (C.telegram) { $("tg-card").hidden = false; $("tg-link").href = C.telegram; }
+
+const S = {topic:"sugestii", piesa:PIESE[0] || ""};
+const h = decodeURIComponent(location.hash.slice(1));
+const mPiesa = h.match(/^piesa=(.+)$/), mSub = h.match(/^subiect=(\w+)$/);
+if (mPiesa) { S.topic = "piese"; S.piesa = mPiesa[1]; if (!PIESE.includes(S.piesa)) PIESE.unshift(S.piesa); }
+else if (mSub && TOPICS.some(t => t.id === mSub[1])) S.topic = mSub[1];
+
+$("piesa").innerHTML = `<optgroup label="Plăci video">${(CAT.gpu || []).filter(g => g.nume !== "Grafică integrată").map(g => `<option>${esc(g.nume)}</option>`).join("")}</optgroup>
+  <optgroup label="Procesoare">${(CAT.cpu || []).map(c => `<option>${esc(c.nume)}</option>`).join("")}</optgroup>`;
+if (mPiesa && ![...$("piesa").options].some(o => o.value === S.piesa)) $("piesa").insertAdjacentHTML("afterbegin", `<option>${esc(S.piesa)}</option>`);
+
+function term(){ const t = TOPICS.find(x => x.id === S.topic); return t.term || `Păreri: ${S.piesa}`; }
+function render(){
+  const t = TOPICS.find(x => x.id === S.topic);
+  $("topics").innerHTML = TOPICS.map(x => `<button class="topic" data-t="${x.id}" aria-pressed="${x.id === S.topic}"><span class="ic" aria-hidden="true">${x.ic}</span><b>${esc(x.nume)}</b><small>${esc(x.sub)}</small></button>`).join("");
+  $("piesa-f").hidden = S.topic !== "piese";
+  $("piesa").value = S.piesa;
+  $("t-thr").textContent = S.topic === "piese" ? `Păreri despre ${S.piesa}` : t.nume;
+  $("t-desc").textContent = t.desc;
+  $("t-info").textContent = gata ? "Ca să scrii, te conectezi cu GitHub" : "";
+  if (!gata) {
+    $("thread").innerHTML = `<div class="soon"><b>Discuțiile pe site se deschid în curând.</b><span>Până atunci${C.telegram ? `, scrie-ne pe <a href="${esc(C.telegram)}" target="_blank" rel="noopener">grupul de Telegram</a>` : ", folosește datele din <a href=\"despre.html#contact\">Contact</a>"}.</span></div>`;
+    return;
+  }
+  // Giscus: fiecare subiect (și fiecare piesă) are discuția lui în GitHub Discussions
+  const box = document.createElement("div"); box.className = "giscus";
+  const s = document.createElement("script");
+  s.src = "https://giscus.app/client.js"; s.async = true; s.crossOrigin = "anonymous";
+  const a = {repo:C.giscus_repo, "repo-id":C.giscus_repo_id, category:C.giscus_categorie || "Comunitate", "category-id":C.giscus_categorie_id,
+             mapping:"specific", term:term(), strict:"1", "reactions-enabled":"1", "emit-metadata":"0", "input-position":"top",
+             theme:matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light", lang:"ro", loading:"lazy"};
+  for (const [k, v] of Object.entries(a)) s.setAttribute("data-" + k, v);
+  $("thread").replaceChildren(box, s);
+}
+$("topics").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (!b) return; S.topic = b.dataset.t;
+  history.replaceState(null, "", S.topic === "piese" ? "#piesa=" + encodeURIComponent(S.piesa) : "#subiect=" + S.topic); render(); });
+$("piesa").addEventListener("change", e => { S.piesa = e.target.value; history.replaceState(null, "", "#piesa=" + encodeURIComponent(S.piesa)); render(); });
+render();
+})();
+</script>
+</body>
+</html>

@@ -187,7 +187,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .hub h3{margin:0;font-size:17px;line-height:1.3}
 .hub .big{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
 .hub .big small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted);margin-left:6px}
-.hub h4{margin:6px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hub h4,.rules h4{margin:6px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .uses{display:grid;gap:8px}
 .use{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .use.cur{border-color:var(--fg)}
@@ -203,6 +203,46 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .param .tier.none{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .param p{grid-column:1 / -1;margin:0;font-size:12.5px;color:var(--muted)}
 .spark{width:100%;height:40px;display:block}
+/* evoluția prețului */
+.evo{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.evo.dn{color:var(--ok)} .evo.up{color:var(--bad)} .evo.eq{color:var(--muted);font-weight:500}
+.evol{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.evol .spark{height:46px;padding:8px 10px 2px}
+.evrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 12px;align-items:baseline;padding:8px 12px;border-top:1px solid var(--line);font-size:13.5px}
+.evrow > span:first-child{color:var(--muted)}
+.evrow b{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+/* notele pe ambele profiluri, în fiecare rând */
+.both{display:flex;gap:10px;margin-top:3px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.both span{display:inline-flex;align-items:center;gap:4px}
+.both i{font-style:normal;display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;border-radius:5px;font-family:var(--display);font-weight:700;font-size:12px;color:var(--t-ink);background:var(--t,var(--t-N))}
+.both i.S{color:var(--t-ink-S)}
+.both .cur{color:var(--fg);font-weight:600}
+/* consum și sursă */
+.pw{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pw.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.pw.limita{color:var(--warn);border-color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
+.pw.rau{color:var(--bad);border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.pw.fara,.pw.necunoscut{color:var(--muted)}
+.pwbox{display:grid;gap:6px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:13.5px}
+.pwbox b{font-size:14px}
+.pwbox.ok{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))} .pwbox.ok b{color:var(--ok)}
+.pwbox.limita{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,var(--bg))} .pwbox.limita b{color:var(--warn)}
+.pwbox.rau{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--bg))} .pwbox.rau b{color:var(--bad)}
+.meter{position:relative;height:14px;border-radius:7px;background:var(--surface-2);overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--ok)}
+.meter.limita i{background:var(--warn)} .meter.rau i{background:var(--bad)} .meter.fara i{background:var(--muted)}
+.meter s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg);text-decoration:none}
+.pwbig{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pwbig strong{font-family:var(--display);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.pwbig span{color:var(--muted);font-size:13.5px}
+.pwrows{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pwrow{display:grid;grid-template-columns:minmax(0,1fr) 90px 56px;gap:10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:13.5px}
+.pwrow:first-child{border-top:0}
+.pwrow small{color:var(--muted);font-size:12px}
+.pwrow .bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.pwrow .bar i{display:block;height:100%;background:var(--accent)}
+.pwrow b{text-align:right;font-variant-numeric:tabular-nums}
+.tooSmall{color:var(--bad);font-weight:600}
 .hub .acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .no3d{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
 .notice{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;font-size:12.5px;color:var(--warn);background:var(--surface);border:1px dashed var(--warn);border-radius:8px;padding:4px 10px;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
@@ -332,6 +372,7 @@ details.mons summary small{font-weight:400;color:var(--muted)}
     <a href="pc-ul-meu.html">PC-ul meu</a>
     <a href="reduceri.html">Reduceri</a>
     <a href="montaj.html">Montaj 3D</a>
+    <a href="comunitate.html">Comunitate</a>
   </nav>
   <form class="gsearch" id="gs" role="search"><input id="gq" type="search" autocomplete="off" placeholder="Caută o piesă, ex: 5080" aria-label="Caută o piesă"></form>
   <span class="meta" id="meta"></span>
@@ -453,7 +494,9 @@ function renderDock(){
       <small>${p ? lei(p.pret_lei) : count ? `+ ${count} ${count === 1 ? "ofertă" : "oferte"}` : "fără oferte"}</small></button>`;
   }).join("");
   const mine = D.build && D.build.piese && D.build.piese.length;
-  $("dock").innerHTML = parts + `<div class="sum"><strong>${lei(total)}</strong><span>${n} din ${CATS.length} piese alese</span>
+  const pw = putereAcum(), arata = pw.rows.some(r => r.ales && (r.c === "Placă video" || r.c === "Procesor"));
+  const pwTxt = !arata ? "" : `<button class="pw ${pw.nivel}" id="pw" title="Consum estimat și sursa. Apasă pentru detalii.">⚡ ${pw.total} W${pw.cap ? ` / ${pw.cap} W` : ""}${pw.nivel === "rau" ? " · sursă prea mică" : pw.nivel === "limita" ? " · la limită" : pw.nivel === "fara" ? " · alege sursa" : ""}</button>`;
+  $("dock").innerHTML = parts + `<div class="sum"><strong>${lei(total)}</strong><span>${n} din ${CATS.length} piese alese</span>${pwTxt}
     <span class="mini">${mine ? `<button id="mine">Încarcă build-ul meu</button>` : ""}${n ? `<button id="clear">Golește</button>` : ""}</span></div>`;
 }
 $("dock").addEventListener("click", e => {
@@ -462,11 +505,21 @@ $("dock").addEventListener("click", e => {
     saveAles(); return;
   }
   if (e.target.id === "clear") { S.ales = {}; saveAles(); return; }
+  if (e.target.closest("#pw")) { focus(S.focus === "__putere" ? null : "__putere"); return; }
   const b = e.target.closest("[data-cat]"); if (b) focus(b.dataset.cat === S.focus ? null : b.dataset.cat);
 });
 $("dock").addEventListener("pointerover", e => { const b = e.target.closest("[data-cat]"); if (G && G.hover) G.hover(b ? b.dataset.cat : null); });
 $("dock").addEventListener("pointerleave", () => { if (G && G.hover) G.hover(null); });
 function saveAles(){ store.set("ales", S.ales); renderDock(); if (S.focus) renderOffers(true); if (G) G.paint(); }
+const alese = () => Object.fromEntries(Object.entries(S.ales).map(([c, u]) => [c, byUrl[u]]).filter(([, p]) => p));
+const putereAcum = (extra) => window.AtelierBuild.putere(Object.assign(alese(), extra || {}));
+const PW_TXT = {
+  ok: pw => `✓ Sursa ajunge: rămân ${pw.rezerva} W rezervă (folosită ~${pw.procent}%).`,
+  limita: pw => `⚠ Sursa e la limită: ${pw.cap} W pentru ~${pw.total} W. Plăcile video au vârfuri scurte peste consumul oficial și pot opri PC-ul în joc. Recomandat: minim ${pw.rec} W.`,
+  rau: pw => `✗ Sursa e prea mică: ${pw.cap} W pentru ~${pw.total} W. PC-ul se poate opri sau reporni sub sarcină. Ia una de minim ${pw.rec} W.`,
+  fara: pw => `Nu ai ales încă sursa. Pentru piesele de acum îți trebuie minim ${pw.rec} W.`,
+  necunoscut: pw => `Nu găsim câți wați are sursa aleasă în numele ei. Verifică pe site: îți trebuie minim ${pw.rec} W.`,
+};
 
 // ---------------------------------------------------------------- panou
 // pe telefon, „Notă pentru” stă în rândul de unelte de sub model, nu peste el
@@ -498,10 +551,22 @@ const thumb = p => `<span class="thumb">${p.imagine ? `<img src="${esc(p.imagine
 const fold = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 S.detail = null; S.q = "";
 
+function evoChip(p, lung){
+  const e = p.evolutie || {}, v = e.d30 != null ? e.d30 : e.start;
+  if (v == null) return "";
+  const z = e.d30 != null ? 30 : e.zile, cand = lung ? (z === 30 ? "în ultimele 30 de zile" : `de când îl urmărim (${z} ${z === 1 ? "zi" : "zile"})`) : `în ${z} ${z === 1 ? "zi" : "zile"}`;
+  if (Math.abs(v) < 1) return `<span class="evo eq">= preț stabil ${cand}</span>`;
+  return `<span class="evo ${v < 0 ? "dn" : "up"}">${v < 0 ? "▼" : "▲"} ${nf0.format(Math.abs(v))}% ${cand}</span>`;
+}
+function bothNotes(p){
+  const prof = {gaming:"Jocuri", creatie:"Randări"};
+  return `<span class="both">${Object.keys(prof).map(k => { const n = ((p.note || {})[k] || {}).n;
+    return `<span class="${k === S.profil ? "cur" : ""}">${prof[k]} <i class="${n || ""}" style="--t:var(--t-${n || "N"})">${n || "?"}</i></span>`; }).join("")}</span>`;
+}
 function rowHtml(p){
-  const t = N(p), sel = S.ales[p.piesa] === p.url;
+  const t = N(p), sel = S.ales[p.piesa] === p.url, mic = p.piesa === "Sursă" && S.recW && p.sursa_w && p.sursa_w < S.recW;
   return `<button class="row ${sel ? "sel" : ""} ${p.stoc === false ? "out" : ""}" data-open="${esc(p.url)}" style="--t:var(--t-${t || "N"})">
-    ${thumb(p)}<span><span class="nm">${esc(p.nume)}</span><span class="shop">${esc(p.magazin)}${p.stoc === false ? " · stoc epuizat" : ""}${sel ? " · <b style='color:var(--fg)'>✓ aleasă</b>" : ""}</span></span>
+    ${thumb(p)}<span><span class="nm">${esc(p.nume)}</span><span class="shop">${esc(p.magazin)}${p.stoc === false ? " · stoc epuizat" : ""}${sel ? " · <b style='color:var(--fg)'>✓ aleasă</b>" : ""}${evoChip(p) ? " · " + evoChip(p) : ""}${mic ? ` · <span class="tooSmall">prea mică pentru piesele alese</span>` : ""}</span>${bothNotes(p)}</span>
     <span class="right"><span class="pr">${p.moneda === "EUR" ? lei(p.pret_lei) : lei(p.pret)}</span><span class="tier ${t || ""}" title="${t ? "Nota " + t : "Fără notă"}">${t || "?"}</span></span></button>`;
 }
 function spark(h){
@@ -513,7 +578,7 @@ function spark(h){
     <path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><circle cx="${x(v.length - 1)}" cy="${y(v[v.length - 1])}" r="3.5" fill="var(--accent)"/></svg>`;
 }
 function hubHtml(p){
-  const sel = S.ales[p.piesa] === p.url, et = p.eticheta || {}, prof = D.profile || {gaming:"Gaming", creatie:"Editare video și 3D"};
+  const sel = S.ales[p.piesa] === p.url, et = p.eticheta || {}, prof = D.profile || {gaming:"Jocuri", creatie:"Randări și editare video"};
   const uses = Object.keys(prof).map(k => { const x = (p.note || {})[k] || {}; return `<div class="use ${k === S.profil ? "cur" : ""}" style="--t:var(--t-${x.n || "N"})">
       <span class="tier ${x.n || ""}">${x.n || "?"}</span><b>${esc(prof[k])}</b><span>${esc((x.why || []).join(" · ") || "Încă nu recunoaștem modelul.")}</span></div>`; }).join("");
   const params = (p.specs || []).map(x => `<div class="param"><b>${esc(x.p)}</b><span class="val">${esc(x.v)}</span>
@@ -522,11 +587,54 @@ function hubHtml(p){
   return `<div class="hub">
     <button class="backl" data-list>← Toate ofertele pentru ${esc(p.piesa.toLowerCase())}</button>
     <div class="top2">${thumb(p)}<div><h3>${esc(p.nume)}</h3><div class="shop" style="font-size:13px;color:var(--muted)">${esc(p.magazin)}${p.oficial === false ? ` · <span style="color:var(--warn)">vândut de ${esc(p.vanzator || "alt vânzător")}</span>` : p.oficial ? " · vândut de magazin" : ""}${p.stoc === false ? " · stoc epuizat" : ""}</div></div></div>
-    <div><div class="big">${lei(p.pret_lei)}${eur}</div>${et.text && et.tip !== "nou" ? `<div class="lab ${et.tip}" style="font-size:13.5px">${esc(et.text)}</div>` : ""}${spark(p.istoric)}</div>
+    <div><div class="big">${lei(p.pret_lei)}${eur}</div>${et.text && et.tip !== "nou" ? `<div class="lab ${et.tip}" style="font-size:13.5px">${esc(et.text)}</div>` : ""}</div>
     <div class="acts"><button class="pick" data-pick="${esc(p.url)}">${sel ? "✓ Aleasă pentru PC" : "Alege pentru PC"}</button>
       <a class="go" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a></div>
+    ${pwHub(p)}
     <h4>Pentru ce îl recomandăm</h4><div class="uses">${uses}</div>
+    ${p.model ? `<a class="go" style="justify-self:start" href="comunitate.html#piesa=${encodeURIComponent(p.model)}">💬 Păreri despre ${esc(p.model)} de la cei care o au →</a>` : ""}
+    ${evolHtml(p)}
     ${params ? `<h4>Parametri</h4><div class="params">${params}</div>` : ""}
+  </div>`;
+}
+function evolHtml(p){
+  const e = p.evolutie || {}, cur = p.moneda;
+  if (!e.zile && !(p.istoric && p.istoric.length > 1)) return `<h4>Evoluția prețului</h4><p class="none" style="padding:0;font-size:13.5px">Îl urmărim de puțin timp. Evoluția apare după câteva zile.</p>`;
+  const pct = v => v == null ? "" : Math.abs(v) < 1 ? `<span class="evo eq">la fel</span>` : `<span class="evo ${v < 0 ? "dn" : "up"}">${v < 0 ? "▼" : "▲"} ${nf2.format(Math.abs(v))}%</span>`;
+  const rows = [];
+  if (e.d7_pret != null) rows.push(["Acum 7 zile", money(e.d7_pret, cur), pct(e.d7)]);
+  if (e.d30_pret != null) rows.push(["Acum 30 de zile", money(e.d30_pret, cur), pct(e.d30)]);
+  else if (e.start_pret != null) rows.push([`Când am început să-l urmărim (acum ${e.zile} ${e.zile === 1 ? "zi" : "zile"})`, money(e.start_pret, cur), pct(e.start)]);
+  if (e.min != null && e.max != null && e.max > e.min) rows.push(["Cel mai mic / cel mai mare preț văzut", `${money(e.min, cur)} / ${money(e.max, cur)}`, ""]);
+  return `<h4>Evoluția prețului</h4><div class="evol">${spark(p.istoric)}${rows.map(r => `<div class="evrow"><span>${r[0]}</span><b>${r[1]}</b>${r[2] || "<span></span>"}</div>`).join("")}</div>`;
+}
+function pwHub(p){
+  if (!["Placă video", "Procesor", "Sursă"].includes(p.piesa)) return "";
+  const pw = putereAcum({[p.piesa]: p});
+  if (p.piesa === "Sursă") {
+    if (!p.sursa_w) return `<div class="pwbox"><span>Nu găsim câți wați are sursa asta în nume. Verifică pe site înainte s-o alegi.</span></div>`;
+    if (!pw.complet) return `<div class="pwbox"><b>${p.sursa_w} W</b><span>Alege placa video și procesorul și îți spunem dacă sursa asta ajunge.</span></div>`;
+    return `<div class="pwbox ${pw.nivel}"><b>${PW_TXT[pw.nivel](pw)}</b><span>Piesele alese trag cam ${pw.total} W la sarcină maximă (estimare).</span></div>`;
+  }
+  if (p.w == null) return "";
+  const are = alese()["Sursă"];
+  return `<div class="pwbox ${are ? pw.nivel : ""}"><span>${p.piesa === "Placă video" ? "Placa asta" : "Procesorul ăsta"} consumă până la <b style="color:var(--fg)">${p.w} W</b>. Cu ${p.piesa === "Placă video" ? "ea" : "el"}, PC-ul ar trage cam ${pw.total} W, deci îți trebuie o sursă de minim ${pw.rec} W.</span>
+    ${are ? `<b>${PW_TXT[pw.nivel](pw)}</b>` : ""}${p.piesa === "Placă video" && p.model ? `<a class="go" href="pc-ul-meu.html#compara=${encodeURIComponent(p.model)}">Compar-o cu placa video din PC-ul tău →</a>` : ""}</div>`;
+}
+function renderPutere(){
+  const pw = putereAcum();
+  $("ptitle").textContent = "Consum și sursă"; $("q").hidden = true;
+  $("pinfo").textContent = "Cât curent trage PC-ul la sarcină maximă și dacă sursa aleasă face față. Sunt estimări: în jocuri consumul e de obicei mai mic.";
+  const mx = Math.max(...pw.rows.map(r => r.w), 1), cap = pw.cap || pw.rec, fill = Math.min(100, pw.total / cap * 100), mark = Math.min(100, pw.total * 1.2 / cap * 100);
+  const psu = alese()["Sursă"];
+  $("offers").innerHTML = `<div class="rules">
+    <div class="pwbig"><strong>${pw.total} W</strong><span>${pw.cap ? `din ${pw.cap} W ai sursei · ${pw.procent}% folosit` : `consum estimat · sursă recomandată: minim ${pw.rec} W`}</span></div>
+    <div class="meter ${pw.nivel}" role="img" aria-label="Consum ${pw.total} W din ${cap} W"><i style="width:${fill}%"></i><s style="left:${mark}%" title="consum + 20% rezervă"></s></div>
+    <div class="pwbox ${pw.nivel}"><b>${PW_TXT[pw.nivel](pw)}</b>${psu ? `<span>Sursa aleasă: ${esc(psu.nume)}</span>` : ""}${pw.nivel !== "ok" ? `<button class="pick" data-gocat="Sursă" style="justify-self:start">Vezi surse de minim ${pw.rec} W</button>` : ""}</div>
+    <h4>Cât consumă fiecare piesă</h4>
+    <div class="pwrows">${pw.rows.map(r => `<div class="pwrow"><span>${esc(r.c)}${r.tipic ? `<br><small>valoare tipică, piesa nu e aleasă</small>` : ""}</span><span class="bar"><i style="width:${r.w / mx * 100}%"></i></span><b>${r.w} W</b></div>`).join("")}</div>
+    <div class="rule"><span class="k">?</span><b>De ce să lași rezervă</b><p>Plăcile video noi au vârfuri de consum de câteva milisecunde peste valoarea oficială. O sursă folosită la 50–80% le duce fără probleme, merge mai silențios și ține mai mult. Linia verticală de pe bară arată consumul plus 20% rezervă.</p></div>
+    ${pw.complet ? "" : `<div class="rule"><span class="k">!</span><b>Calculul e incomplet</b><p>Alege placa video și procesorul: ele consumă cel mai mult.</p></div>`}
   </div>`;
 }
 const fanV = (x, y) => `<g class="fan"><line x1="${x}" y1="${y - 11}" x2="${x}" y2="${y + 11}"/><circle cx="${x}" cy="${y}" r="2.6"/></g>`;
@@ -769,6 +877,7 @@ function renderAI(){
 function renderOffers(keepScroll){
   if (S.focus === "__aer") return renderAer();
   if (S.focus === "__setup") return renderSetup();
+  if (S.focus === "__putere") return renderPutere();
   if (S.focus === "__ai") {
     if (S.detail && byUrl[S.detail]) { $("q").hidden = true; $("offers").innerHTML = hubHtml(byUrl[S.detail]); $("offers").scrollTop = 0; return; }
     return renderAI();
@@ -784,12 +893,16 @@ function renderOffers(keepScroll){
   const words = fold(S.q).split(/\s+/).filter(Boolean);
   if (words.length) xs = xs.filter(p => words.every(w => fold(p.nume + " " + p.magazin).includes(w)));
   if (!xs.length) { $("offers").innerHTML = `<p class="none">Nimic pentru „${esc(S.q)}”. Încearcă alt cuvânt.</p>`; return; }
+  // la surse: câți wați trebuie pentru piesele deja alese
+  S.recW = null; let pwHint = "";
+  if (c.id === "Sursă") { const pw = putereAcum({"Sursă": undefined}); delete pw.cap;
+    if (pw.rows.some(r => r.ales && (r.c === "Placă video" || r.c === "Procesor"))) { S.recW = pw.rec; pwHint = `<div class="pwbox" style="margin-top:12px"><span>Piesele alese trag cam <b style="color:var(--fg)">${pw.total} W</b>. Alege o sursă de minim <b style="color:var(--fg)">${pw.rec} W</b>; cele mai mici sunt marcate cu roșu.</span></div>`; } }
   // un singur șir: S sus, apoi A, B, C; D–F și fără notă mai jos, după un separator
   const groups = [...NOTE, "?"].map(n => [n, xs.filter(p => (N(p) || "?") === n)]).filter(g => g[1].length);
   const strong = groups.filter(([n]) => "SABC".includes(n)), weak = groups.filter(([n]) => !"SABC".includes(n));
   const g = ([n, items], low) => `<section class="group ${low ? "low" : ""}"><div class="ghead"><span class="tier ${n === "?" ? "" : n}" style="--t:var(--t-${n === "?" ? "N" : n})">${n}</span>
-    <b>${n === "?" ? "Fără notă încă" : "Nota " + n}</b><span>${n === "?" ? "" : TIER_NAME[n] + " · "}${items.length} ${items.length === 1 ? "ofertă" : "oferte"}</span></div>${items.map(rowHtml).join("")}</section>`;
-  $("offers").innerHTML = (strong.length ? strong.map(x => g(x)).join("") : `<p class="none">Nicio ofertă cu nota S–C acum.</p>`)
+    <b>${n === "?" ? "Fără notă încă" : "Nota " + n + (S.profil === "creatie" ? " la randări" : " la jocuri")}</b><span>${n === "?" ? "" : TIER_NAME[n] + " · "}${items.length} ${items.length === 1 ? "ofertă" : "oferte"}</span></div>${items.map(rowHtml).join("")}</section>`;
+  $("offers").innerHTML = pwHint + (strong.length ? strong.map(x => g(x)).join("") : `<p class="none">Nicio ofertă cu nota S–C acum.</p>`)
     + (weak.length ? `<div class="weak">Mai jos sunt variantele mai slabe (D–F și fără notă). Derulează dacă vrei să le vezi.</div>` + weak.map(x => g(x, true)).join("") : "");
   $("offers").scrollTop = keepScroll ? y : 0;
 }
@@ -805,8 +918,13 @@ $("offers").addEventListener("click", e => {
   if (e.target.closest("[data-list]")) { S.detail = null; renderOffers(); $("offers").scrollTop = S.listY || 0; return; }
   const b = e.target.closest("[data-pick]"); if (!b) return;
   const p = byUrl[b.dataset.pick];
+  const inainte = putereAcum().nivel;
   if (S.ales[p.piesa] === p.url) delete S.ales[p.piesa]; else S.ales[p.piesa] = p.url;
   saveAles();
+  const pw = putereAcum();
+  if ((pw.nivel === "rau" || pw.nivel === "limita") && (pw.nivel !== inainte || ["Placă video", "Procesor", "Sursă"].includes(p.piesa)))
+    toast(pw.nivel === "rau" ? `Atenție: sursa de ${pw.cap} W e prea mică pentru piesele alese (~${pw.total} W). Ia una de minim ${pw.rec} W.`
+                             : `Sursa de ${pw.cap} W e la limită pentru piesele alese. Recomandat: minim ${pw.rec} W.`);
 });
 function focus(cat){
   if (cat) seen();
@@ -949,6 +1067,7 @@ function autoBuild(budget, prof){
   say(`Gata! Am ales ${cats.length} piese pentru ${prof}, în total <b>${lei(r.total)}</b> din ${lei(budget)}, nota PC-ului: <b>${r.nota || "?"}</b>. Le vezi colorate în PC și în bara de jos.
     ${window.AtelierBuild.ORDINE.filter(c => r.pick[c]).map(c => `<br>· <a href="#" data-go="${esc(c)}" onclick="return false">${esc(c)}</a>: nota ${N(r.pick[c]) || "?"}, ${lei(r.pick[c].pret_lei)}`).join("")}
     ${r.lipsa.length ? `<br><br>Nu am oferte pentru: ${esc(r.lipsa.join(", ").toLowerCase())}.` : ""}
+    ${r.putere && r.putere.complet ? `<br><br>⚡ Consum estimat: ~${r.putere.total} W${r.putere.cap ? `, sursa are ${r.putere.cap} W` : ""}. ${r.putere.nivel === "ok" ? "Sursa ajunge." : r.putere.nivel === "fara" ? `Ia o sursă de minim ${r.putere.rec} W.` : `<b>Atenție:</b> recomandat minim ${r.putere.rec} W pentru sursă; la bugetul ăsta nu am găsit una mai mare.`}` : ""}
     <br><br>Apasă pe o piesă dacă vrei s-o schimbi. Compară și cu <a href="pc-uri.html#b${Math.round(budget)}">PC-urile gata asamblate</a> la prețul ăsta.`);
 }
 
@@ -1292,6 +1411,7 @@ function make3D(){
     if (cat === "__aer") return {t:V(0, 0, 0), d:112 * (narrow() ? 1.3 : 1), th:.32, ph:1.2};
     if (cat === "__setup") return {t:V(0, 0, 0), d:118 * (narrow() ? 1.3 : 1), th:.55, ph:1.12};
     if (cat === "__ai") return {t:V(-6, 2, 0), d:88 * (narrow() ? 1.3 : 1), th:.42, ph:1.18};
+    if (!parts[cat]) return {t:V(0, -1, 0), d:118 * (narrow() ? 1.3 : 1), th:.6, ph:1.13};
     const g = parts[cat], keep = g.position.clone();
     g.position.copy(basePos[cat]).add(OUT[cat]); g.updateMatrixWorld(true);
     const bb = new T.Box3();
@@ -1307,7 +1427,7 @@ function make3D(){
   function paint(){
     for (const cat of Object.keys(parts)) {
       const p = byUrl[S.ales[cat]], t = N(p);
-      const op = S.focus === "__setup" ? (cat === "Carcasă" ? .4 : 1) : S.focus === "__ai" ? (AI_PARTS.includes(cat) ? 1 : cat === "Carcasă" ? .22 : GHOST) : S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .45 : cat === "Carcasă" ? .22 : GHOST);
+      const op = S.focus === "__setup" ? (cat === "Carcasă" ? .4 : 1) : S.focus === "__ai" ? (AI_PARTS.includes(cat) ? 1 : cat === "Carcasă" ? .22 : GHOST) : S.focus === "__aer" ? (cat === "Carcasă" ? .45 : .55) : S.focus === "__putere" ? (["Placă video", "Procesor", "Sursă"].includes(cat) ? 1 : .2) : !S.focus || S.focus === cat ? 1 : (S.focus === "Carcasă" ? .45 : cat === "Carcasă" ? .22 : GHOST);
       for (const o of meshes[cat] || []) {
         const b = o.userData.base, m = o.material;
         m.color.setHex(b.c);

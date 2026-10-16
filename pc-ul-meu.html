@@ -108,6 +108,41 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
 .tg{font-size:13.5px;color:var(--muted)}
 .tg code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--fg)}
 .foot{color:var(--muted);font-size:13px;max-width:80ch}
+/* consum */
+.pwbox{display:grid;gap:4px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:13.5px}
+.pwbox b{font-size:14px}
+.pwbox.ok b{color:var(--ok)} .pwbox.limita{border-color:var(--warn)} .pwbox.limita b{color:var(--warn)} .pwbox.rau{border-color:var(--bad)} .pwbox.rau b{color:var(--bad)}
+.meter{position:relative;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--ok)}
+.meter.limita i{background:var(--warn)} .meter.rau i{background:var(--bad)}
+/* comparația de plăci video */
+.cmpform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+@media (max-width:640px){.cmpform{grid-template-columns:1fr}}
+.verdict{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);display:grid;gap:6px}
+.verdict strong{font-family:var(--display);font-size:22px;line-height:1.15}
+.verdict.da{border-color:color-mix(in srgb,var(--ok) 50%,var(--line));background:color-mix(in srgb,var(--ok) 7%,var(--bg))} .verdict.da strong{color:var(--ok)}
+.verdict.poate{border-color:color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 7%,var(--bg))} .verdict.poate strong{color:var(--warn)}
+.verdict.nu{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:color-mix(in srgb,var(--bad) 6%,var(--bg))} .verdict.nu strong{color:var(--bad)}
+.verdict p{margin:0;font-size:14px}
+.fpsbars{display:grid;gap:8px}
+.fb{display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:13.5px}
+.fb .bar{height:18px;border-radius:5px;background:var(--surface-2);overflow:hidden;position:relative}
+.fb .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--muted)}
+.fb.nou .bar i{background:var(--accent)}
+.fb .bar s{position:absolute;top:0;bottom:0;border-left:2px dashed var(--fg);opacity:.6;text-decoration:none}
+.fb b{text-align:right;font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}
+.fb small{color:var(--muted);display:block;font-size:12px}
+.ctab{width:100%;border-collapse:collapse;font-size:14px}
+.ctab th,.ctab td{padding:9px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.ctab thead th{border-top:0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ctab td{font-variant-numeric:tabular-nums}
+.ctab td small{display:block;color:var(--muted);font-size:12px}
+.ctab .plus{color:var(--ok);font-weight:600} .ctab .minus{color:var(--bad);font-weight:600}
+.tbl{overflow-x:auto}
+.cmpnote{margin:0;font-size:12.5px;color:var(--muted)}
+#compara{scroll-margin-top:84px}
+#cmp{display:grid;gap:14px}
+@media (max-width:640px){.ctab{font-size:13px}.ctab th,.ctab td{padding:8px 5px}.ctab small.rz{display:none}.fb{grid-template-columns:96px minmax(0,1fr) 44px;gap:8px}}
 </style>
 </head>
 <body>
@@ -119,6 +154,7 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
     <a href="pc-ul-meu.html" aria-current="page">PC-ul meu</a>
     <a href="reduceri.html">Reduceri</a>
     <a href="montaj.html">Montaj 3D</a>
+    <a href="comunitate.html">Comunitate</a>
   </nav>
 </div></header>
 <div class="wrap">
@@ -149,6 +185,7 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
       <h2 id="r-t">Nota PC-ului</h2>
       <div id="score"></div>
       <div class="parts" id="parts"></div>
+      <div id="pwme"></div>
     </section>
   </div>
 
@@ -156,6 +193,17 @@ select,input[type="date"]{width:100%;border:1px solid var(--line);background:var
     <h2 id="u-t">Ce merită îmbunătățit</h2>
     <p class="hint">Îți propunem cea mai ieftină variantă care e destul de bună pentru jocurile din 2026, nu cea mai scumpă. Ordinea e după cât de mult ajută.</p>
     <div id="ups"></div>
+  </section>
+
+  <section class="card" id="compara" aria-labelledby="c-t">
+    <h2 id="c-t">Compară cu altă placă video</h2>
+    <p class="hint">Alege o placă video și vezi ce câștigi față de a ta: câte FPS ai avea, cât de repede randează, câtă memorie are, cât consumă și dacă îți ajunge sursa.</p>
+    <div class="cmpform">
+      <div class="field"><label for="gpu2">Placa video cu care compari</label><select id="gpu2"></select></div>
+      <div class="field"><label>Rezoluția monitorului</label><span class="seg" id="rez" role="group" aria-label="Rezoluție"><button data-r="1080">1080p</button><button data-r="1440">1440p</button><button data-r="2160">4K</button></span></div>
+    </div>
+    <div id="cmp"></div>
+    <p class="cmpnote">FPS estimat pentru un joc nou și solicitant, pe setări High, fără DLSS/FSR. Cifrele sunt orientative, calculate din testele publice; în jocurile ușoare (CS2, Valorant, Fortnite) ai mult mai mult. Puterea de randare e relativă (RTX 5090 = 100), după testele Blender.</p>
   </section>
 
   <section class="card" aria-labelledby="j-t">
@@ -311,6 +359,7 @@ function aiHtml(){
 }
 function render(){
   document.querySelectorAll("#profil [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === S.profil));
+  if (typeof renderCmp === "function" && $("gpu2").options.length) { renderPwMe(); renderCmp(); }
   const ev = evaluate();
   const n = B.notaTotala(Object.fromEntries(Object.entries(ev).map(([c, v]) => [c, v])), S.profil, x => x.n);
   $("score").innerHTML = `<div class="score">${tierEl(n, "big")}<strong>Nota ${n || "?"} pentru ${({creatie:"editare și 3D", ai:"AI local"})[S.profil] || "jocuri"}</strong><span>${esc((TXT[S.profil] || {})[n] || "")}</span></div>`
@@ -353,6 +402,107 @@ $("jur").addEventListener("change", e => { const k = e.target.id.replace("j-", "
 $("jur").addEventListener("click", e => { const b = e.target.closest("[data-azi]"); if (!b) return; const loc = store.get("jurnal", {});
   const t = new Date(); loc[b.dataset.azi] = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; store.set("jurnal", loc); jurnal(); });
 
+
+// ---- consum și comparația de plăci video
+const STD = [450, 550, 650, 750, 850, 1000, 1200, 1300, 1600];
+const FIX = Object.values(CAT.consum_fix || {"Placă de bază":50, "RAM":10, "SSD":8, "Cooler":10, "Carcasă":15}).reduce((a, b) => a + b, 0);
+const gpuCat = n => CAT.gpu.find(g => g.nume === n) || CAT.gpu[0];
+const cpuCat = n => CAT.cpu.find(c => c.nume === n) || CAT.cpu[0];
+function consumPc(gpu, cpu){
+  const total = (gpu.w || 0) + (cpu.w || 125) + FIX;
+  const rec = Math.max(STD.find(x => x >= total * 1.2) || 1600, (CAT.sursa_gpu || {})[gpu.nume] || 0);
+  const cap = +S.psuw, nivel = cap < total ? "rau" : cap < rec ? "limita" : "ok";
+  return {total, rec, cap, nivel, procent: Math.round(total / cap * 100)};
+}
+const BASE = {1080:240, 1440:175, 2160:100};
+const REZ = {1080:"1080p", 1440:"1440p", 2160:"4K"};
+function vramPen(g, r){
+  const v = g.vram || 0; if (!v) return 1;
+  if (v <= 6) return {1080:.85, 1440:.75, 2160:.6}[r];
+  if (v <= 8) return {1080:.97, 1440:.9, 2160:.75}[r];
+  if (v <= 12) return {1080:1, 1440:1, 2160:.93}[r];
+  return 1;
+}
+function fps(g, cpu, r){
+  const gpuF = BASE[r] * (g.perf || 1) / 100 * vramPen(g, r), cap = (cpu.joc || 50) * 2.4;
+  return {f: Math.max(1, Math.round(Math.min(gpuF, cap))), gpu: Math.round(gpuF), cap: Math.round(cap), limitat: gpuF > cap * 1.03};
+}
+const ofertaModel = name => P.filter(p => p.piesa === "Placă video" && p.model === name).sort((a, b) => a.pret_lei - b.pret_lei)[0];
+const pct = (a, b) => b ? Math.round((a / b - 1) * 100) : 0;
+const sgn = v => v > 0 ? `<span class="plus">+${v}%</span>` : v < 0 ? `<span class="minus">${v}%</span>` : "la fel";
+
+S.rez = S.rez || "1440";
+function fillGpu2(){
+  const opts = CAT.gpu.filter(g => g.nume !== "Grafică integrată").map(g => { const o = ofertaModel(g.nume);
+    return `<option value="${esc(g.nume)}">${esc(g.nume)}${o ? ` · de la ${lei(o.pret_lei)}` : ""}</option>`; });
+  $("gpu2").innerHTML = opts.join("");
+  const fromHash = decodeURIComponent((location.hash.match(/compara=([^&]+)/) || [])[1] || "");
+  const ok = n => n && CAT.gpu.some(g => g.nume === n);
+  // ordinea: linkul din configurator, alegerea ta, placa propusă la „Ce merită îmbunătățit”, apoi prima care e de 1,5 ori mai puternică
+  const sug = ((suggestions(evaluate()).find(u => u.c === "Placă video") || {}).offers || [])[0];
+  let def = ok(fromHash) ? fromHash : S.gpu2Ales && ok(S.gpu2) ? S.gpu2 : sug && ok(sug.model) ? sug.model : null;
+  if (!def) {
+    const cur = gpuCat(S.gpu);
+    const better = CAT.gpu.filter(g => (g.perf || 0) >= (cur.perf || 1) * 1.5 && ofertaModel(g.nume)).sort((a, b) => ofertaModel(a.nume).pret_lei - ofertaModel(b.nume).pret_lei)[0];
+    def = better ? better.nume : "RTX 5070";
+  }
+  $("gpu2").value = def; S.gpu2 = def;
+  if (fromHash) setTimeout(() => $("compara").scrollIntoView({behavior:"smooth", block:"start"}), 80);
+}
+function renderPwMe(){
+  const g = gpuCat(S.gpu), c = cpuCat(S.cpu), pw = consumPc(g, c);
+  const msg = pw.nivel === "ok" ? `✓ Sursa de ${pw.cap} W ajunge, cu ${pw.cap - pw.total} W rezervă.`
+    : pw.nivel === "limita" ? `⚠ Sursa de ${pw.cap} W e la limită. Recomandat: minim ${pw.rec} W.` : `✗ Sursa de ${pw.cap} W e prea mică. Îți trebuie minim ${pw.rec} W.`;
+  $("pwme").innerHTML = `<div class="pwbox ${pw.nivel}"><span>⚡ Consum estimat la sarcină maximă: <b style="color:var(--fg)">~${pw.total} W</b> (placa video ${g.w || 0} W, procesorul ${c.w || "?"} W, restul ~${FIX} W).</span>
+    <div class="meter ${pw.nivel}" role="img" aria-label="${pw.procent}% din sursă"><i style="width:${Math.min(100, pw.procent)}%"></i></div><b>${msg}</b></div>`;
+}
+function renderCmp(){
+  document.querySelectorAll("#rez [data-r]").forEach(b => b.setAttribute("aria-pressed", b.dataset.r === S.rez));
+  const cur = gpuCat(S.gpu), nou = gpuCat(S.gpu2), cpu = cpuCat(S.cpu), r = +S.rez;
+  const a = fps(cur, cpu, r), b = fps(nou, cpu, r);
+  const pwA = consumPc(cur, cpu), pwB = consumPc(nou, cpu);
+  const o = ofertaModel(nou.nume), creatie = S.profil === "creatie";
+  const g = pct(b.f, a.f), gr = pct(nou.randare || 1, cur.randare || 1);
+  const nt = x => ((x.note || {})[S.profil] || {}).n;
+  // verdict
+  let cls, titlu, txt = [];
+  const castig = creatie ? gr : g;
+  if (nou.nume === cur.nume) { cls = "nu"; titlu = "E aceeași placă video"; txt.push("Alege alt model din listă ca să vezi diferența."); }
+  else if ((nou.perf || 0) <= (cur.perf || 0) && (!creatie || (nou.randare || 0) <= (cur.randare || 0))) { cls = "nu"; titlu = "Nu merită: nu e mai puternică decât a ta"; }
+  else if (!creatie && b.limitat && g < 15) { cls = "poate"; titlu = `Procesorul tău o ține pe loc la ${REZ[r]}`;
+    txt.push(`Placa nouă ar putea da ~${b.gpu} FPS, dar ${cpu.nume} nu trece de ~${b.cap} FPS în jocurile grele. Merită doar împreună cu un procesor nou sau dacă joci la rezoluție mai mare.`); }
+  else if (castig >= 50) { cls = "da"; titlu = creatie ? `Merită: randare cam de ${(nou.randare / Math.max(1, cur.randare)).toFixed(1).replace(".", ",")} ori mai rapidă` : `Merită: cam ${g}% mai multe FPS la ${REZ[r]}`; }
+  else if (castig >= 20) { cls = "poate"; titlu = creatie ? `Câștig moderat: randare cu ~${gr}% mai rapidă` : `Câștig moderat: ~${g}% mai multe FPS la ${REZ[r]}`; }
+  else { cls = "nu"; titlu = creatie ? `Câștig mic la randare (~${gr}%)` : `Câștig mic: ~${g}% mai multe FPS`; txt.push("Probabil nu simți diferența cât costă."); }
+  if (!creatie && b.limitat && g >= 15) txt.push(`La ${REZ[r]}, ${cpu.nume} limitează pe la ~${b.cap} FPS, deci placa nouă nu e folosită la maxim.`);
+  if (pwB.nivel !== "ok") txt.push(`Sursa ta de ${S.psuw} W ${pwB.nivel === "rau" ? "e prea mică" : "e la limită"} pentru ${nou.nume}: socotește și o sursă de minim ${pwB.rec} W.`);
+  if (S.psuq === "noname" && nou.w >= 200) txt.push("Sursa ta e fără marcă: la o placă video nouă și scumpă, schimb-o.");
+  if ((nou.vram || 0) <= 8 && r >= 1440) txt.push(`${nou.nume} are doar ${nou.vram} GB memorie video: în jocurile noi la ${REZ[r]} poate sacada, pe texturi mari.`);
+  if (creatie && nou.amd) txt.push("Fiind AMD, nu are CUDA: Premiere, DaVinci, Blender și Unreal merg mai bine pe NVIDIA la aceeași putere.");
+  if (o && g > 0 && !creatie && b.f > a.f) txt.push(`La ${lei(o.pret_lei)} (${esc(o.magazin)}), plătești cam ${lei(o.pret_lei / (b.f - a.f))} pentru fiecare FPS în plus.`);
+  const mx = Math.max(a.gpu, b.gpu, a.f, b.f, 1);
+  const bar = (lbl, x, cls2) => `<div class="fb ${cls2}"><span>${esc(lbl)}<small>${x.limitat ? `limitat de procesor (placa poate ~${x.gpu})` : "limitat de placa video"}</small></span>
+    <span class="bar"><i style="width:${x.f / mx * 100}%"></i>${x.limitat ? `<s style="left:${Math.min(100, x.gpu / mx * 100)}%" title="cât ar putea placa"></s>` : ""}</span><b>${x.f}</b></div>`;
+  const allRez = g2 => Object.keys(BASE).map(k => `${REZ[k]}: ${fps(g2, cpu, +k).f}`).join(" · ");
+  const rows = [
+    ["Notă " + (creatie ? "la randări" : "la jocuri"), `${nt(cur) || "?"}`, `${nt(nou) || "?"}`, ""],
+    ["FPS estimat, " + REZ[r], `${a.f}<small class="rz">${allRez(cur)}</small>`, `${b.f}<small class="rz">${allRez(nou)}</small>`, sgn(g)],
+    ["Putere de randare", `${cur.randare ?? "?"}`, `${nou.randare ?? "?"}`, sgn(gr)],
+    ["Memorie video", `${cur.vram || 0} GB`, `${nou.vram || 0} GB`, ""],
+    ["Consum placă", `${cur.w || 0} W`, `${nou.w || 0} W`, nou.w > cur.w ? `+${nou.w - cur.w} W` : nou.w < cur.w ? `${nou.w - cur.w} W` : ""],
+    ["Sursă necesară (tot PC-ul)", `minim ${pwA.rec} W`, `minim ${pwB.rec} W`, pwB.rec > +S.psuw ? `<span class="minus">a ta: ${S.psuw} W</span>` : `<span class="plus">a ta ajunge</span>`],
+    ["Preț acum", "—", o ? `<a href="${esc(o.url)}" target="_blank" rel="noopener${o.afiliere ? " sponsored" : ""}">${lei(o.pret_lei)}</a><small>${esc(o.magazin)}</small>` : `<small>nu urmărim oferte</small>`, ""],
+  ];
+  $("cmp").innerHTML = `<div class="verdict ${cls}"><strong>${esc(titlu)}</strong>${txt.map(t => `<p>${t}</p>`).join("")}</div>
+    <div class="fpsbars">${bar("Acum: " + cur.nume, a, "")}${bar("Cu " + nou.nume, b, "nou")}</div>
+    <div class="tbl"><table class="ctab"><thead><tr><th></th><th>${esc(cur.nume)} (a ta)</th><th>${esc(nou.nume)}</th><th>Diferență</th></tr></thead>
+      <tbody>${rows.map(x => `<tr><th scope="row">${x[0]}</th><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("")}</tbody></table></div>
+    ${o ? `<a class="offer" href="${esc(o.url)}" target="_blank" rel="noopener${o.afiliere ? " sponsored" : ""}" style="--t:var(--t-${N(o) || "N"})">${tierEl(N(o))}<span class="nm">${esc(o.nume)}<small>Cea mai ieftină ${esc(nou.nume)} urmărită · ${esc(o.magazin)}</small></span><span class="pr">${lei(o.pret_lei)}</span></a>` : ""}`;
+}
+$("gpu2").addEventListener("change", e => { S.gpu2 = e.target.value; S.gpu2Ales = true; save(); renderCmp(); });
+window.addEventListener("hashchange", () => { if (/compara=/.test(location.hash)) { fillGpu2(); renderCmp(); } });
+$("rez").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if (!b) return; S.rez = b.dataset.r; save(); renderCmp(); });
+fillGpu2();
 render(); jurnal();
 })();
 </script>

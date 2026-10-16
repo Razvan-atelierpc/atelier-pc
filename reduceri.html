@@ -147,6 +147,8 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 
 .foot{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:grid;gap:6px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.evo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted)}
+.evo b{font-variant-numeric:tabular-nums} .evo .dn{color:var(--ok)} .evo .upc{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -159,6 +161,7 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
     <a href="reduceri.html#reduceri" data-tab="reduceri">Reduceri</a>
     <a href="reduceri.html#build" data-tab="build">Build-ul meu</a>
     <a href="montaj.html">Montaj 3D</a>
+    <a href="comunitate.html">Comunitate</a>
   </nav>
   <span class="meta" id="meta"></span>
 </div></header>
@@ -298,6 +301,14 @@ function spark(h){
     <path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity=".7"/>
     <circle cx="${x(v.length - 1)}" cy="${y(last)}" r="3" fill="${col}"/></svg>`;
 }
+function evo(p){
+  const e = p.evolutie || {}, parts = [];
+  const f = (v, t) => v == null ? "" : Math.abs(v) < 1 ? `<span>${t}: <b>la fel</b></span>` : `<span>${t}: <b class="${v < 0 ? "dn" : "upc"}">${v < 0 ? "▼" : "▲"} ${Math.abs(v).toFixed(0)}%</b></span>`;
+  if (e.d7 != null) parts.push(f(e.d7, "7 zile"));
+  if (e.d30 != null) parts.push(f(e.d30, "30 zile"));
+  else if (e.start != null) parts.push(f(e.start, `de la început (${e.zile} ${e.zile === 1 ? "zi" : "zile"})`));
+  return parts.length ? `<div class="evo">${parts.join("")}</div>` : "";
+}
 function card(p){
   const nota = N(p), n = nota || "?", t = nota ? `var(--t-${nota})` : "var(--t-N)";
   const et = p.eticheta || {}, cls = et.tip === "sub" ? "sub-p" : et.tip;
@@ -321,7 +332,7 @@ function card(p){
       <h2 class="name" title="${esc(p.titlu || p.nume)}">${esc(p.nume)}</h2>
       <div class="price"><strong>${money(p.pret, p.moneda)}</strong>${change}</div>${eur}
       ${et.text ? `<span class="label ${cls}">${esc(et.text)}</span>` : ""}
-      ${spark(p.istoric)}${seller}${why}
+      ${spark(p.istoric)}${evo(p)}${seller}${why}
     </div>
     <a class="cta" href="${esc(p.url)}" target="_blank" rel="noopener${p.afiliere ? " sponsored" : ""}">Vezi oferta pe ${esc(p.magazin)} →</a>
   </article>`;
