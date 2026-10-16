@@ -96,6 +96,16 @@ button{font:inherit;color:inherit}
 .btn{border-radius:8px;padding:9px 16px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn:disabled{opacity:.4;cursor:default}
+.ghid{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px 16px;display:grid;gap:10px;margin-bottom:12px}
+.ghid h2{margin:0;font-family:var(--display);font-weight:700;font-size:20px}
+.ghid ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:pas}
+.ghid li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;font-size:14.5px;line-height:1.45;counter-increment:pas}
+.ghid li::before{content:counter(pas);display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-weight:700;font-size:13px}
+.ghid kbd{font:inherit;font-weight:700;padding:0 6px;border-radius:5px;background:var(--accent-soft);color:var(--fg);white-space:nowrap}
+.help{position:absolute;left:10px;top:10px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;font-weight:600;cursor:pointer;font-size:13px}
+@keyframes atentie{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 0%,transparent)}}
+.btn.primary.pulse{animation:atentie 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.btn.primary.pulse{animation:none}}
 .nav .spacer{flex:1}
 
 /* piese */
@@ -160,7 +170,18 @@ button{font:inherit;color:inherit}
 
   <main class="layout">
     <section class="bench" aria-label="Montaj 3D">
+      <div class="ghid" id="ghid" hidden role="note" aria-labelledby="g-title">
+        <h2 id="g-title">Cum folosești ghidul</h2>
+        <ol>
+          <li><span>Apasă <kbd>Înainte →</kbd> (butonul portocaliu de sub imagine) ca să treci la pasul următor. <kbd>← Înapoi</kbd> te întoarce, iar <kbd>↻ Reia</kbd> arată din nou animația.</span></li>
+          <li><span>Trage cu mouse-ul (sau cu degetul) pe imagine ca să rotești PC-ul. Cu <kbd>+</kbd> și <kbd>−</kbd> îl apropii sau îl depărtezi.</span></li>
+          <li><span>La fiecare pas, piesa care se montează are contur portocaliu, iar etichetele îți arată exact unde intră.</span></li>
+          <li><span>La <b>Piesele tale</b> (în dreapta, pe telefon mai jos): <kbd>Alternative</kbd> ca să schimbi o piesă, <kbd>Arată în 3D</kbd> ca să vezi unde se pune.</span></li>
+        </ol>
+        <div><button class="btn primary" id="ghid-ok">Am înțeles, să începem</button></div>
+      </div>
       <div class="stage" id="stage">
+        <button class="help" id="help" type="button">? Cum folosesc</button>
         <canvas id="cv" aria-label="Model 3D al PC-ului"></canvas>
         <div class="labels" id="labels"></div>
         <span class="hint">Trage ca să rotești</span>
@@ -197,6 +218,8 @@ button{font:inherit;color:inherit}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="vendor/three-extra-r128.js"></script>
+<script src="vendor/GLTFLoader-r128.js"></script>
+<script src="vendor/meshopt_decoder.js"></script>
 <script>
 (() => {
 "use strict";
@@ -447,6 +470,13 @@ function renderStep(){
 }
 $("bar").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
 $("prev").addEventListener("click", () => go(step - 1));
+// ghidul de la început: apare la prima vizită și se poate redeschide din „? Cum folosesc”
+const ghidVazut = (() => { try { return localStorage.getItem("atelier-montaj-ghid") === "1"; } catch (e) { return false; } })();
+const ghidInchide = () => { $("ghid").hidden = true; try { localStorage.setItem("atelier-montaj-ghid", "1"); } catch (e) {} };
+$("ghid").hidden = ghidVazut; if (!ghidVazut) $("next").classList.add("pulse");
+$("ghid-ok").addEventListener("click", () => { ghidInchide(); $("next").focus(); });
+$("help").addEventListener("click", () => { $("ghid").hidden = false; $("ghid").scrollIntoView({behavior:"smooth", block:"nearest"}); });
+$("next").addEventListener("click", () => { $("next").classList.remove("pulse"); if (!$("ghid").hidden) ghidInchide(); });
 $("next").addEventListener("click", () => go(step + 1));
 $("replay").addEventListener("click", () => go(step, true));
 document.addEventListener("keydown", e => {
@@ -514,21 +544,23 @@ function make3D(){
   const fins = (rep, light = "#4a515b", dark = "#121418") => ctex(64, 8, (g, w, h) => { g.fillStyle = dark; g.fillRect(0, 0, w, h); g.fillStyle = light; for (let x = 0; x < w; x += 8) g.fillRect(x, 0, 3, h); }, rep);
   const rotors = [];
   const finsTex = (rep, a, b) => { const t = fins(rep, a, b); t.rotation = Math.PI / 2; return t; };
+  const fans = [], GLB = {}; let FANGEO = null; // modelele reale se încarcă după ce scena e gata
   function fan(r, axis, frame = true){ // axis: "x" | "y" | "z"
-    const g = new T.Group();
-    g.add(new T.Mesh(new T.TorusGeometry(r, .3, 12, 48), M(0x7a3f18, {em:COPPER, emI:1.6, metal:.2, rough:.5})));
+    const g = new T.Group(), ring = new T.Mesh(new T.TorusGeometry(r, .3, 12, 48), M(0x7a3f18, {em:COPPER, emI:1.6, metal:.2, rough:.5}));
+    g.add(ring); g.userData.fan = {r, ring};
     if (frame) { // ramă pătrată cu colțuri rotunjite și gaură rotundă
       const s = r + .9, k = 1.2, sh = new T.Shape();
       sh.moveTo(-s + k, -s); sh.lineTo(s - k, -s); sh.quadraticCurveTo(s, -s, s, -s + k); sh.lineTo(s, s - k); sh.quadraticCurveTo(s, s, s - k, s);
       sh.lineTo(-s + k, s); sh.quadraticCurveTo(-s, s, -s, s - k); sh.lineTo(-s, -s + k); sh.quadraticCurveTo(-s, -s, -s + k, -s);
       const hole = new T.Path(); hole.absarc(0, 0, r - .05, 0, Math.PI * 2, true); sh.holes.push(hole);
       const fr = new T.Mesh(new T.ExtrudeGeometry(sh, {depth:1.4, bevelEnabled:false, curveSegments:24}), M(0x16181c, {metal:.2, rough:.7}));
-      fr.position.z = -.7; g.add(fr);
+      fr.position.z = -.7; g.add(fr); g.userData.fan.fr = fr; fans.push(g);
     }
     const rotor = new T.Group();
     rotor.add(cyl(r * .3, 1, M(0x1d2026, {metal:.3, rough:.45})), cyl(r * .18, .1, M(0x8c4a1f, {em:COPPER, emI:.5}), 0, 0, .52));
     for (let i = 0; i < 9; i++) { const b = box(r * .66, r * .26, .08, M(0x23262c, {rough:.45, op:.96})); b.position.x = r * .6; b.rotation.x = .55; b.rotation.z = .25; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 9; rotor.add(h); }
-    g.add(rotor); rotors.push(rotor);
+    g.add(rotor); rotors.push(rotor); g.userData.fan.rotor = rotor;
+    if (frame && FANGEO) skinFan(g);
     if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
     return g;
   }
@@ -548,22 +580,24 @@ function make3D(){
   for (const y of [13, 0, -13]) { const f = fan(5.6, "x"); f.position.set(22.6, y, 0); caseG.add(f); }
   const rearFan = fan(5.6, "x"); rearFan.position.set(-22.6, 15, 0); caseG.add(rearFan);
   // cutia plăcii de bază (masa de lucru)
-  scene.add(box(28, 5, 34, M(0x2b3440, {metal:.1, rough:.9}), 45, -23.1, 4, .3));
+  scene.add(box(32, 5, 39, M(0x2b3440, {metal:.1, rough:.9}), 45, -23.1, 4, .3));
   scene.add(box(10, .05, 8, M(0xb34a2a, {metal:0, rough:.9}), 45, -20.55, 16));
 
   // poziții placă de bază
   const tableQ = new T.Quaternion().setFromAxisAngle(V(1, 0, 0), -Math.PI / 2), tableP = V(45, -20.45, 4);
-  const caseQ = new T.Quaternion(), caseP = V(-9.8, 7.25, -10.6);
-  const tableM = new T.Matrix4().compose(tableP, tableQ, V(1, 1, 1)), caseM = new T.Matrix4().compose(caseP, caseQ, V(1, 1, 1));
+  // placa: 15% mai mare decât ATX real, ca în Configurator; SX/SY = soclul, GY = slotul PCIe de sus (pe placa din model)
+  const MBS = 1.15, SX = .6, SY = 6.7, GY = -4.2, RAMX = [6.16, 7.15, 8.12, 9.07], M2 = V(-.96, -.9, 0);
+  const caseQ = new T.Quaternion(), caseP = V(-8.3, 5.75, -10.6), SC = V(MBS, MBS, MBS);
+  const tableM = new T.Matrix4().compose(tableP, tableQ, SC), caseM = new T.Matrix4().compose(caseP, caseQ, SC);
   const inTable = v => v.clone().applyMatrix4(tableM), inCase = v => v.clone().applyMatrix4(caseM);
 
-  const boardG = new T.Group(); scene.add(boardG);
+  const boardG = new T.Group(); boardG.scale.setScalar(MBS); scene.add(boardG);
   const HL = new Map(); // pas -> obiecte evidențiate
   const hl = (s, ...objs) => { if (!HL.has(s)) HL.set(s, []); HL.get(s).push(...objs); };
   const pcbMat = M(0x1a1e24, {metal:.2, rough:.75});
   const pcb = box(24.4, 30.5, .16, pcbMat, 0, 0, 0, .05); pcb.userData.hs = .3; boardG.add(pcb); hl(0, pcb); hl(4, pcb);
   const metal = M(0x4a5059, {metal:.7, rough:.35});
-  const socket = box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.85, rough:.28}), -3, 7, .25, .2); boardG.add(socket); hl(1, socket);
+  const socket = box(5.4, 5.4, .35, M(0x9aa1aa, {metal:.85, rough:.28}), SX, SY, .25, .2); boardG.add(socket); hl(1, socket);
   boardG.add(box(.25, 5, .25, metal, -6, 7, .45));
   const hsM = M(0x3b4049, {metal:.75, rough:.32}), hsDark = M(0x24282e, {metal:.7, rough:.38});
   boardG.add(box(11, 2.6, 2.2, hsM, -4, 13, 1.2, .35), box(2.4, 9, 2.2, hsM, -8.6, 6.5, 1.2, .35));
@@ -572,12 +606,13 @@ function make3D(){
   for (let i = 0; i < 6; i++) boardG.add(box(.25, 2.4, .3, hsDark, -8.2 + i * 1.5, 13, 2.45));
   for (let i = 0; i < 6; i++) boardG.add(cyl(.32, .7, M(0x2a2d33, {metal:.7, rough:.3}), -7 + i * 1.2, 10.9, .45, 12));
   boardG.add(cyl(.9, .2, M(0xb9bec5, {metal:.9, rough:.25}), 8.5, -3, .2, 20));
-  const conn24 = box(1.2, 5.2, 1.3, M(0x111316), 11.3, 2, .7), eps = box(2.2, 1, 1.2, M(0x111316), -10.5, 14.6, .7);
+  const conn24 = box(1.1, 5.4, 1.9, M(0x111316), 11.5, 5.1, .95), eps = box(1.9, 1, 1.8, M(0x111316), -6.5, 14.8, .9);
   boardG.add(conn24, eps); hl(8, conn24, eps);
-  const pcie = box(8.9, .8, 1.1, M(0x9aa1aa, {metal:.8, rough:.3}), -7.05, -3.5, .6); boardG.add(pcie); hl(7, pcie);
-  boardG.add(box(8.9, .8, 1.1, M(0x22262c), -7.05, -8.5, .6));
-  const m2slot = box(8.2, 2.4, .1, M(0x2b3038, {metal:.3, rough:.6}), -2, .5, .13); boardG.add(m2slot); hl(2, m2slot);
-  boardG.add(box(.6, 2.4, .5, M(0x111316), -6.2, .5, .3));
+  const pcie = box(8.9, 1, 1.3, M(0x9aa1aa, {metal:.8, rough:.3}), -3.4, -2.9, .7); boardG.add(pcie); hl(7, pcie);
+  boardG.add(box(8.9, 1, 1.3, M(0x22262c), -3.4, -9.15, .7));
+  const m2slot = box(7.9, 2.4, .1, M(0x2b3038, {metal:.3, rough:.6}), M2.x, M2.y, .13); boardG.add(m2slot); hl(2, m2slot);
+  boardG.add(box(.6, 2.4, .5, M(0x111316), M2.x - 4.2, M2.y, .3));
+  const boardDeco = boardG.children.slice(); // ce se înlocuiește cu modelul real
 
   const psu = new T.Group();
   const psuBody = box(15, 8.6, 16, M(0x1c1f24, {metal:.45, rough:.6}), 0, 0, 0, .5); psu.add(psuBody);
@@ -591,6 +626,54 @@ function make3D(){
   addItem(psu, 5, V(0, 0, 26));
 
   let L = {}; // puncte pentru etichete, în coordonatele plăcii
+  // ---- modele 3D reale (aceleași ca în Configurator; autorii sunt pe pagina Despre)
+  const ghost = () => { const m = new T.MeshStandardMaterial({transparent:true, opacity:0, depthWrite:false}); m.userData.base = {em:0, emI:0}; return m; }; // invizibil, doar pentru contur
+  function deq(geo){ // modelele sunt comprimate în numere întregi; le trecem în zecimale
+    for (const k of Object.keys(geo.attributes)) {
+      const a = geo.attributes[k], arr = a.isInterleavedBufferAttribute ? a.data.array : a.array;
+      if (arr instanceof Float32Array && !a.isInterleavedBufferAttribute) continue;
+      const n = a.count, s = a.itemSize, f = new Float32Array(n * s), get = [a.getX, a.getY, a.getZ, a.getW];
+      const d = !a.normalized ? 1 : arr instanceof Int8Array ? 127 : arr instanceof Uint8Array ? 255 : arr instanceof Int16Array ? 32767 : arr instanceof Uint16Array ? 65535 : 1;
+      for (let i = 0; i < n; i++) for (let j = 0; j < s; j++) { const v = get[j].call(a, i) / d; f[i * s + j] = a.normalized ? Math.max(v, -1) : v; }
+      geo.setAttribute(k, new T.BufferAttribute(f, s));
+    }
+    if (!geo.attributes.normal) geo.computeVertexNormals();
+    geo.computeBoundingBox(); geo.computeBoundingSphere();
+  }
+  function skinFan(g){ // rama și paletele din model în locul celor desenate; inelul de lumină rămâne
+    const f = g.userData.fan, k = 2 * (f.r + .9);
+    g.remove(f.fr); while (f.rotor.children.length) f.rotor.remove(f.rotor.children[0]);
+    const frM = M(0x16181c, {metal:.25, rough:.62}); frM.flatShading = true;
+    const blM = M(0x1d2025, {metal:.15, rough:.5});
+    for (const gg of FANGEO.rama) { const m = new T.Mesh(gg, frM); m.scale.setScalar(k); m.castShadow = m.receiveShadow = true; g.add(m); }
+    for (const gg of FANGEO.rotor) { const m = new T.Mesh(gg, blM); m.scale.setScalar(k); m.castShadow = true; f.rotor.add(m); }
+    f.ring.geometry.dispose(); f.ring.geometry = new T.TorusGeometry(.47 * k, .22, 10, 56); f.ring.position.z = .104 * k + .12;
+  }
+  function loadModels(){
+    if (!T.GLTFLoader) return;
+    const L = new T.GLTFLoader(); if (window.MeshoptDecoder) L.setMeshoptDecoder(window.MeshoptDecoder);
+    const files = {board:"placa-de-baza", gpu:"placa-video", ram:"ram-modul", ssd:"ssd", psu:"sursa", fan:"ventilator"};
+    Promise.all(Object.entries(files).map(([k, f]) => new Promise(res => L.load(`modele/${f}.glb`, gl => {
+      gl.scene.traverse(o => { if (o.isMesh) { deq(o.geometry); o.castShadow = o.receiveShadow = true; const m = o.material; m.envMapIntensity = m.clearcoat > 0 ? .9 : .6;
+        if (/RGB/.test(m.name)) { m.emissive.copy(lin(COPPER)); m.emissiveIntensity = 1.2; m.color.copy(lin(COPPER)).multiplyScalar(.45); } } }); // dungile RGB: cupru, ca restul luminilor
+      GLB[k] = gl.scene; res();
+    }, undefined, err => { console.warn("Model 3D negăsit:", f, err); res(); })))).then(() => {
+      if (GLB.fan) { FANGEO = {};
+        GLB.fan.traverse(o => { if (o.isMesh) { o.updateWorldMatrix(true, false); let p = o; while (p && !["rotor", "rama"].includes(p.name)) p = p.parent;
+          if (p) (FANGEO[p.name] = FANGEO[p.name] || []).push(o.geometry.clone().applyMatrix4(o.matrixWorld)); } });
+        if (FANGEO.rotor && FANGEO.rama) fans.slice().forEach(skinFan); else FANGEO = null; }
+      if (GLB.board) { // placa reală; cutiile desenate rămân invizibile, doar ca să arate conturul locului (soclu, M.2, PCIe, conectori)
+        const keep = [pcb, socket, conn24, eps, pcie, m2slot];
+        for (const o of boardDeco) if (!keep.includes(o)) boardG.remove(o);
+        for (const o of keep) o.material = ghost();
+        const b = GLB.board.clone(); b.userData.static = true; boardG.add(b);
+        for (const s of [0, 4]) HL.set(s, (HL.get(s) || []).filter(o => o !== pcb).concat(b));
+      }
+      if (GLB.psu) { psu.children.slice().forEach(o => { if (o !== psuBody) psu.remove(o); }); psuBody.material = ghost();
+        const m = GLB.psu.clone(); m.userData.static = true; psu.add(m); HL.set(5, (HL.get(5) || []).filter(o => o !== psuBody).concat(m)); }
+      buildDynamic();
+    });
+  }
   function buildDynamic(){
     for (const o of dyn) o.parent && o.parent.remove(o);
     items = items.filter(i => !dyn.includes(i.obj)); dyn = [];
@@ -599,37 +682,39 @@ function make3D(){
     const D = (obj, s, dir, parent) => { dyn.push(obj); return addItem(obj, s, dir, parent || boardG); };
     const DH = (s, ...o) => hl(s, ...o);
     // sloturi RAM
-    const xs = p.board.slots === 2 ? [3.6, 4.7] : [3.5, 4.4, 5.3, 6.2];
+    const xs = p.board.slots === 2 ? [RAMX[1], RAMX[3]] : RAMX;
     const names = p.board.slots === 2 ? ["A1","B1"] : ["A1","A2","B1","B2"];
     const usedIdx = p.board.slots === 2 ? [0,1] : p.ram.sticks === 4 ? [0,1,2,3] : [1,3];
     L.ram = [];
     xs.forEach((x, i) => {
       const used = usedIdx.includes(i);
-      const sl = box(.62, 13.3, .7, M(used ? 0x3a4048 : 0x23272d, {rough:.6}), x, 6.5, .4, .1); boardG.add(sl); dyn.push(sl);
-      for (const yy of [13.4, -.4]) { const lt = box(.7, .8, 1, M(0x3a3f47), x, yy, .6); boardG.add(lt); dyn.push(lt); }
+      const sl = box(.62, 13.3, .7, GLB.board ? ghost() : M(used ? 0x3a4048 : 0x23272d, {rough:.6}), x, 6.8, .4, .1); boardG.add(sl); dyn.push(sl);
+      if (!GLB.board) for (const yy of [13.7, -.1]) { const lt = box(.7, .8, 1, M(0x3a3f47), x, yy, .6); boardG.add(lt); dyn.push(lt); }
       if (used) DH(3, sl);
-      L.ram.push({t:names[i], v:V(x, 13.9, used ? 4.6 : 1.2), hot:used});
+      L.ram.push({t:names[i], v:V(x, 14.2, used ? 5.2 : 1.4), hot:used});
     });
     // procesor
     const cpuG = new T.Group();
     const ihs = box(4, 4, .35, M(0xbfc4cb, {metal:.9, rough:.22}), 0, 0, 0, .25); cpuG.add(ihs);
     const tri = new T.Mesh(new T.ShapeGeometry(new T.Shape([new T.Vector2(0,0), new T.Vector2(.8,0), new T.Vector2(0,.8)])), M(0xd9a41c, {metal:.8, rough:.3, em:0x5a3f00, emI:.4}));
     tri.position.set(-1.85, -1.85, .18); cpuG.add(tri);
-    cpuG.position.set(-3, 7, .6); D(cpuG, 1, V(0, 0, 7)); DH(1, ihs);
+    cpuG.position.set(SX, SY, .6); D(cpuG, 1, V(0, 0, 7)); DH(1, ihs);
     // SSD
     if (p.ssd.gen === 5 || p.ssd.gen === 4) {
       const g = new T.Group();
       const b = box(8, 2.2, .16, M(0x15181c, {metal:.3, rough:.5})); g.add(b);
       g.add(box(2, 1.6, .1, M(0x3b4049, {metal:.6}), -1.5, 0, .12), box(2.2, 1.6, .1, M(0x3b4049, {metal:.6}), 1.4, 0, .12));
       g.add(box(1.2, .6, .02, M(0x8c4a1f, {em:COPPER, emI:.2}), 3.2, .5, .17));
-      g.position.set(-2, .5, .3); D(g, 2, V(0, 0, 5)); DH(2, b);
+      if (GLB.ssd) { g.children.forEach(o => o.visible = false); const m = GLB.ssd.clone(); m.position.set(-2 - M2.x, .5 - M2.y, 0); g.add(m); }
+      g.position.set(M2.x, M2.y, .3); D(g, 2, V(0, 0, 5)); DH(2, GLB.ssd ? g : b);
     }
     // RAM
     if (p.ram.type === p.board.ram) usedIdx.forEach(i => {
       const g = new T.Group();
       const body = box(.7, 13.3, 3.2, M(0x17191d, {metal:.6, rough:.35}), 0, 0, 0, .25); g.add(body);
       g.add(box(.74, 13, .45, M(0x8c4a1f, {em:COPPER, emI:1.8, metal:.1, rough:.4}), 0, 0, 1.75, .18), box(.76, 9, 1.4, M(0x2a2e35, {metal:.75, rough:.3}), 0, 0, .05, .1));
-      g.position.set(xs[i], 6.5, .75 + 1.6); D(g, 3, V(0, 0, 7)); DH(3, body);
+      if (GLB.ram) { g.children.forEach(o => o.visible = false); g.add(GLB.ram.clone()); }
+      g.position.set(xs[i], 6.8, 2.72); D(g, 3, V(0, 0, 7)); DH(3, GLB.ram ? g : body);
     });
     // cooler
     const c = p.cooler;
@@ -638,18 +723,18 @@ function make3D(){
       const pc = cyl(3.5, 2.6, M(0x1a1d22, {metal:.6, rough:.35}), 0, 0, 0, 48);
       const top = new T.Mesh(new T.TorusGeometry(2.6, .22, 10, 48), M(0x7a3f18, {em:COPPER, emI:2}));
       top.position.z = 1.38; pump.add(pc, top, cyl(2.9, .15, M(0x0e1013, {metal:.9, rough:.08, env:2}), 0, 0, 1.33, 48));
-      pump.position.set(-3, 7, 2.15); D(pump, 6, V(0, 0, 8)); DH(6, pc);
+      pump.position.set(SX, SY, 2.15); D(pump, 6, V(0, 0, 8)); DH(6, pc);
       const rad = new T.Group();
       const core = box(36, 2.7, 12, M(0x22252b, {metal:.5, rough:.5, map:fins([60, 1])})); rad.add(core);
       rad.add(box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), -19.1, 0, 0, .4), box(2.2, 3, 12.4, M(0x15181c, {metal:.55, rough:.45}), 19.1, 0, 0, .4));
       for (const x of [-12.2, 0, 12.2]) { const f = fan(5.3, "y"); f.position.set(x, -2.2, 0); rad.add(f); }
       core.userData.hs = .4; rad.position.set(2, 23.3, 1.5); D(rad, 6, V(0, 12, 0), scene); DH(6, core);
-      const pw = inCase(V(-3, 7, 3.2)), pts1 = [pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], pts2 = [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)];
+      const pw = inCase(V(SX, SY, 3.2)), pts1 = [pw.clone().add(V(-1.2, 1, 0)), V(-16, 14, 2), V(-17, 21, 0)], pts2 = [pw.clone().add(V(1.2, 1, 0)), V(-14, 16, 4), V(-15, 21, 3.5)];
       for (const pts of [pts1, pts2]) {
         const tube = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false), M(0x111316, {rough:.62, metal:.2, map:fins([40, 1], "#26292e", "#0c0d10")}));
         D(tube, 6, V(0, 0, 0), scene); DH(6, tube);
       }
-      L.cool = V(-3, 7, 4);
+      L.cool = V(SX, SY, 4);
     } else {
       const H = c.h / 10, g = new T.Group();
       if (c.type === "air") {
@@ -662,8 +747,8 @@ function make3D(){
         const sink = box(9, 9, H * .6, M(c.id === "wraith" ? 0x22252b : 0x9da4ac, {metal:.6, rough:.4})); sink.position.z = H * .3; g.add(sink);
         const f = fan(4, "z"); f.position.z = H * .6 + .3; g.add(f); DH(6, sink);
       }
-      g.position.set(-3, 7, .75); D(g, 6, V(0, 0, 10));
-      L.cool = V(-3, 7, H + 1.5);
+      g.position.set(SX, SY, .75); D(g, 6, V(0, 0, 10));
+      L.cool = V(SX, SY, H + 1.5);
     }
     // placa video
     if (p.gpu.len) {
@@ -677,20 +762,24 @@ function make3D(){
       const n = Lc > 27 ? 3 : 2, r = Math.min(4.3, Lc / (n * 2.35));
       for (let i = 0; i < n; i++) { const f = fan(r, "y", false); f.position.set(-Lc / 2 + Lc * (i + .5) / n, -3.1, 0); g.add(f); }
       const pc = box(1.8, 1.4, .9, M(0x111316), Lc * .12, 2.6, 7.4, .1); g.add(pc);
-      shroud.userData.hs = .35; g.position.set(-12.2 + Lc / 2, -6.7, 7.3); D(g, 7, V(0, 0, 11)); DH(7, shroud);
-      L.gpuConn = V(-12.2 + Lc / 2 + Lc * .12, -4.1, 15); L.gpuMid = V(-12.2 + Lc / 2, -6.7, 14.5);
+      if (GLB.gpu) { // modelul are 29,9 cm; îl întindem la lungimea plăcii alese, cu suportul metalic în dreptul spatelui carcasei
+        g.children.forEach(o => { if (o !== pc) o.visible = false; }); pc.visible = false;
+        const kx = Lc / 29.9, m = GLB.gpu.clone(); m.scale.x = kx; m.position.x = -Lc / 2 + 16.5 * kx; g.add(m); }
+      shroud.userData.hs = .35; g.position.set(-12.2 + Lc / 2, GY, 7.6); D(g, 7, V(0, 0, 11)); DH(7, GLB.gpu ? g : shroud);
+      L.gpuConn = V(-12.2 + Lc / 2 + Lc * .12, GY + 2.6, 15.2); L.gpuMid = V(-12.2 + Lc / 2, GY, 14.8);
       DH(8, pc);
     } else { L.gpuConn = null; L.gpuMid = null; }
     // cabluri
     const cab = (pts, r) => { const m = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 48, r, 8, false), M(0x1a1c20, {rough:.7, map:fins([60, 1], "#2a2d33", "#121417")})); D(m, 8, V(0, 0, 0), scene); DH(8, m); };
-    cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.3, 2, 1.4)).add(V(0, -2, .6))], .6);
-    cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-10.5, 14.6, 1.4))], .38);
+    cab([V(-9, -16.3, 3), V(4, -15, 6), V(13, -8, 0), inCase(V(11.5, 3, 1.6)).add(V(0, -2, .6))], .6);
+    cab([V(-20, -16.3, -5), V(-22.6, -6, -8.8), V(-22.6, 18, -8.8), inCase(V(-6.5, 14.8, 1.6))], .38);
     if (L.gpuConn) cab([V(-6, -16.3, 7), V(2, -15, 10), inCase(L.gpuConn).add(V(0, 0, -.6))], .45);
     for (const o of dyn) o.traverse(x => { if (x.material) x.userData.dyn = true; });
     scene.traverse(o => { if (o.isMesh && o !== ground) { const op = o.material.opacity >= 1; o.castShadow = op; o.receiveShadow = op; } });
   }
   [pcb, socket, conn24, eps, pcie, m2slot, psuBody].forEach(o => o.userData.static = true);
   buildDynamic();
+  loadModels();
 
   // ---- post-procesare: contur luminos pe piesa de la pasul curent
   let composer = null, outSel = null;
@@ -714,12 +803,12 @@ function make3D(){
     const k = (t, d, th, ph) => ({t, d:d * (isNarrow() ? 1.28 : 1), th, ph});
     switch (i) {
       case 0: return k(V(45, -20.4, 4), 62, .25, .85);
-      case 1: return k(inTable(V(-3, 7, .5)), 26, .2, .55);
-      case 2: return k(inTable(V(-2, .5, .5)), 25, .1, .5);
-      case 3: return k(inTable(V(4.8, 6.5, 2)), 30, .05, .48);
+      case 1: return k(inTable(V(SX, SY, .5)), 28, .2, .55);
+      case 2: return k(inTable(V(M2.x, M2.y, .5)), 27, .1, .5);
+      case 3: return k(inTable(V(8.1, 6.8, 2)), 34, .05, .48);
       case 4: return k(V(12, -6, 2), 118, .5, 1.12);
       case 5: return k(V(-15.5, -20, -1.5), 56, .35, 1.25);
-      case 6: return p.cooler.type === "aio" ? k(V(-2, 12, 0), 82, .35, 1.12) : k(inCase(V(-3, 7, 4)), 48, .32, 1.2);
+      case 6: return p.cooler.type === "aio" ? k(V(-2, 12, 0), 82, .35, 1.12) : k(inCase(V(SX, SY, 4)), 50, .32, 1.2);
       case 7: return p.gpu.len ? k(inCase(L.gpuMid), 68, .3, 1.28) : k(V(-6, 2, 0), 80, .3, 1.2);
       case 8: return k(V(-3, -3, 0), 98, .42, 1.25);
       default: return k(V(0, 0, 0), 122, .6, 1.2);
@@ -740,14 +829,14 @@ function make3D(){
   function buildLabels(){
     const p = P(build), B = (t, v, hot = true) => ({t, v, sp:"b", hot}), W = (t, v, hot = true) => ({t, v, sp:"w", hot});
     const s = {
-      1:[B(p.board.socket, V(-3, 7, 1.6)), B("▲ triunghiul auriu", V(-4.6, 5.2, 1.2), false)],
-      2:[B("M.2_1", V(-2, .5, 1.3))],
+      1:[B(p.board.socket, V(SX, SY, 1.6)), B("▲ triunghiul auriu", V(SX - 1.6, SY - 1.8, 1.2), false)],
+      2:[B("M.2_1", V(M2.x, M2.y, 1.3))],
       3:L.ram.map(r => B(r.t, r.v, r.hot)),
       4:[B("porturile din spate", V(-11, 12.5, 3.5), false)],
       5:[W("sursa", V(-15.5, -16, -1.5))],
       6:[B(p.cooler.type === "aio" ? "pompa → AIO_PUMP" : "→ CPU_FAN", L.cool)],
-      7:p.gpu.len ? [B("PCIe x16 de sus", V(-7, -3.5, 1.6), false), B(p.gpu.s, L.gpuMid)] : [],
-      8:[B("24 de pini", V(11.3, 4.7, 1.4)), B("EPS 8 pini", V(-10.5, 15.2, 1.4))].concat(L.gpuConn ? [B("12V-2x6", L.gpuConn)] : []),
+      7:p.gpu.len ? [B("PCIe x16 de sus", V(-3.4, -2.9, 1.8), false), B(p.gpu.s, L.gpuMid)] : [],
+      8:[B("24 de pini", V(11.5, 8, 2)), B("EPS 8 pini", V(-6.5, 15.4, 2))].concat(L.gpuConn ? [B("12V-2x6", L.gpuConn)] : []),
     }[cur] || [];
     labelsEl.innerHTML = s.map(l => `<span class="lbl ${l.hot ? "hot" : "dim"}">${esc(l.t)}</span>`).join("");
     lbls = s.map((l, i) => ({...l, el:labelsEl.children[i]}));
@@ -808,7 +897,8 @@ function make3D(){
     const pulse = .45 + .35 * Math.sin(now / 260);
     scene.traverse(o => { if (o.isMesh && o.material && o.material.userData.base && o.material.userData.hot) { const b = o.material.userData.base; o.material.emissive.setHex(b.em); o.material.emissiveIntensity = b.emI; o.material.userData.hot = false; } });
     const hot = [];
-    for (const o of HL.get(cur) || []) { if (!o.visible && !o.parent?.visible) continue; hot.push(o); o.material.emissive.setHex(COPPER_L); o.material.emissiveIntensity = pulse * (o.userData.hs ?? .7) * (outSel ? .15 : 1); o.material.userData.hot = true; }
+    for (const o of HL.get(cur) || []) { if (!o.visible && !o.parent?.visible) continue; hot.push(o);
+      if (o.material && o.material.userData.base) { o.material.emissive.setHex(COPPER_L); o.material.emissiveIntensity = pulse * (o.userData.hs ?? .7) * (outSel ? .15 : 1); o.material.userData.hot = true; } }
     if (outSel) { outSel.selectedObjects = hot; outSel.enabled = hot.length > 0; outSel.edgeStrength = reduce ? 7 : 6 + Math.sin(now / 320) * 2.2; }
     for (const r of rotors) r.rotation.z += dt * 5;
     // cameră
