@@ -861,15 +861,15 @@ function renderAer(){
     <div id="ct">${renderCarcasa()}</div></div>`;
 }
 // ---------------------------------------------------------------- aranjare liberă + monitoare
-const SETUP_DEF = {carcasa:"negru", rgb:"cupru", rad:"sus", radDir:"out", front:3, frontDir:"in", rear:true, rearDir:"out", top:0, topDir:"out", gpu:"orizontal", psu:"jos"};
+const SETUP_DEF = {carcasa:"negru", rgb:"cupru", rad:"sus", radDir:"out", front:3, frontDir:"in", rear:true, rearDir:"out", top:0, topDir:"out", bottom:2, bottomDir:"in", gpu:"orizontal", psu:"jos"};
 S.setup = Object.assign({}, SETUP_DEF, store.get("setup", {}));
 S.mon = Object.assign({on:false, list:[{rez:"1440p", hz:"165", con:"dp", la:"gpu"}]}, store.get("monitoare", {}));
 function evalSetup(c){
   const out = [], add = (s, t, d) => out.push({s, t, d});
-  const Rd = c.rad, fr = Rd === "fata" ? 0 : c.front, tp = Rd === "sus" ? 0 : c.top;
+  const Rd = c.rad, fr = Rd === "fata" ? 0 : c.front, tp = Rd === "sus" ? 0 : c.top, bt = Rd === "jos" ? 0 : (c.bottom || 0);
   let nIn = 0, nOut = 0; const cnt = (n, dir) => { if (dir === "in") nIn += n; else nOut += n; };
-  cnt(fr, c.frontDir); cnt(tp, c.topDir); cnt(3, c.radDir); if (c.rear) cnt(1, c.rearDir);
-  const radIn = c.radDir === "in", lowIn = (fr && c.frontDir === "in" ? fr : 0) + ((Rd === "fata" || Rd === "jos") && radIn ? 3 : 0);
+  cnt(fr, c.frontDir); cnt(tp, c.topDir); cnt(bt, c.bottomDir); cnt(3, c.radDir); if (c.rear) cnt(1, c.rearDir);
+  const radIn = c.radDir === "in", lowIn = (fr && c.frontDir === "in" ? fr : 0) + (bt && c.bottomDir === "in" ? bt : 0) + ((Rd === "fata" || Rd === "jos") && radIn ? 3 : 0);
   // estimare de temperaturi față de aranjarea ideală (3 în față bagă aer, radiator sus + spate scot)
   let g = 0, cp = 0;
   if (!nIn) { g += 14; cp += 10; }
@@ -882,6 +882,8 @@ function evalSetup(c){
   if (c.rear && c.rearDir === "in") { cp += 5; g += 1; }
   if (c.gpu === "vertical") g += 6;
   if (c.psu === "sus" && Rd !== "jos") g += 1;
+  if (bt && c.bottomDir === "in") g -= bt; // aer rece trimis direct în placa video
+  if (bt && c.bottomDir === "out") g += 2;
   const tl = d => d <= 0 ? (d < 0 ? `~${-d}°C mai rece` : "răcire foarte bună") : `~${d}°C mai cald`;
   add(g <= 3 ? "ok" : g <= 9 ? "warn" : "bad", `Placa video: ${tl(g)}`, g <= 0 ? "Primește aer rece din plin." : "Față de aranjarea ideală (3 ventilatoare în față care bagă aer, radiator sus și ventilator în spate care scot). Estimare, la sarcină maximă în jocuri.");
   add(cp <= 3 ? "ok" : cp <= 9 ? "warn" : "bad", `Procesorul: ${tl(cp)}`, cp <= 0 ? "Radiatorul lui primește aer bun." : "Față de aranjarea ideală. Estimare, la sarcină maximă.");
@@ -894,6 +896,8 @@ function evalSetup(c){
   if (nIn && !lowIn) add("warn", "Placa video nu primește aer rece", "Aerul rece intră doar prin sus sau prin spate și iese înainte să ajungă jos, la placa video. Pune ventilatoare în față, jos, care să bage aer.");
   if (c.rear && c.rearDir === "in") add("bad", "Ventilatorul din spate bagă aer", "Merge contra curentului: aerul cald de la procesor se întoarce în carcasă. În spate, ventilatorul scoate aer.");
   if (fr && c.frontDir === "out") add("warn", "Ventilatoarele din față scot aer", "Fața e făcută pentru intrare și are filtru. Așa, placa video nu mai primește aer rece.");
+  if (bt && c.bottomDir === "in") add("ok", `${bt === 1 ? "Ventilatorul de jos bagă" : "Ventilatoarele de jos bagă"} aer`, "Trag aer rece de sub carcasă și îl suflă direct în placa video, lângă sursă. Lasă 1–2 cm sub carcasă (picioarele ajung) și curăță filtrul de jos des.");
+  if (bt && c.bottomDir === "out") add("warn", "Ventilatoarele de jos scot aer", "Împing aerul în jos, contra aerului cald care urcă singur, și suflă praf spre podea. Jos, ventilatoarele bagă aer.");
   if (tp && c.topDir === "in") add("warn", "Ventilatoarele de sus bagă aer", "Aerul cald urcă singur; dacă îl împingi înapoi în jos, lupți cu el. Sus, ventilatoarele scot aer.");
   if (Rd === "sus" && radIn) add("warn", "Radiatorul de sus bagă aer", "Trage aer din cameră, dar îl încălzește prin radiator și îl suflă peste placa video. Sus, radiatorul scoate aer.");
   if (Rd === "sus" && !radIn) add("ok", "Radiatorul sus, scoțând aer", "Cea mai folosită variantă: aerul cald din carcasă iese direct prin radiator.");
@@ -960,6 +964,7 @@ function renderSetup(){
     <div class="sgrp"><b>Răcirea pe lichid (radiatorul)</b>${seg("rad", [["sus","Sus"],["fata","În față"],["jos","Jos"]])}${seg("radDir", [["out","Scoate aer"],["in","Bagă aer"]])}</div>
     <div class="sgrp"><b>Ventilatoare în față</b>${front ? `<small>În față e radiatorul.</small>` : seg("front", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("frontDir", [["in","Bagă aer"],["out","Scoate aer"]])}</div>
     <div class="sgrp"><b>Ventilatoare sus</b>${c.rad !== "sus" ? seg("top", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("topDir", [["out","Scoate aer"],["in","Bagă aer"]]) : `<small>Sus e radiatorul.</small>`}</div>
+    <div class="sgrp"><b>Ventilatoare jos, lângă sursă</b>${c.rad !== "jos" ? seg("bottom", [[0,"0"],[1,"1"],[2,"2"]]) + seg("bottomDir", [["in","Bagă aer"],["out","Scoate aer"]]) : `<small>Jos e radiatorul.</small>`}</div>
     <div class="sgrp"><b>Ventilator în spate</b>${seg("rear", [[true,"Da"],[false,"Nu"]])}${c.rear ? seg("rearDir", [["out","Scoate aer"],["in","Bagă aer"]]) : ""}</div>
     <div class="sgrp"><b>Placa video</b>${seg("gpu", [["orizontal","Orizontală"],["vertical","Verticală"]])}</div>
     <div class="sgrp"><b>Sursa</b>${c.rad === "jos" ? `<small>Cu radiatorul jos, sursa stă în spatele plăcii de bază.</small>` : seg("psu", [["jos","Ventilatorul în jos"],["sus","Ventilatorul în sus"]])}</div>
@@ -1322,6 +1327,8 @@ function make3D(){
   const rf = fan(5.6, "x"); rf.position.set(-22.6, 15, 0); cs.add(rf);
   const TOP_X = [-10.2, 2, 14.2];
   const topFans = TOP_X.map(x => { const f = fan(5.3, "y"); f.position.set(x, 23.6, 1.5); f.visible = false; cs.add(f); return f; });
+  const BOT_X = [-.5, 12.5]; // pe podea, între sursă și față, sub placa video
+  const botFans = BOT_X.map(x => { const f = fan(5.3, "y"); f.position.set(x, -23.5, 1.5); f.visible = false; cs.add(f); return f; });
 
   // ---- placa de bază (coordonatele plăcii: z iese spre geam)
   const mb = part("Placă de bază"); mb.position.copy(MBP); mb.scale.setScalar(MBS);
@@ -1451,6 +1458,7 @@ function make3D(){
     if (R === "sus") [-10.2, 2, 14.2].forEach(x => slot(c.radDir, V(x, 33, 1.5), V(x, 17, 1.5), "sus", true));
     else TOP_X.slice(0, c.top).forEach(x => slot(c.topDir, V(x, 33, 1.5), V(x, 18, 1.5), "sus"));
     if (R === "jos") [-10.2, 2, 14.2].forEach(x => slot(c.radDir, V(x, -34, 1.5), V(x, -16, 1.5), "jos", true));
+    else BOT_X.slice(0, c.bottom || 0).forEach(x => slot(c.bottomDir, V(x, -34, 1.5), V(x, -17, 1.5), "jos"));
     if (c.rear) slot(c.rearDir, V(-33, 15, 0), V(-18, 15, 0), "spate");
     // un singur „râu” pe fiecare latură: mai gros cu cât sunt mai multe ventilatoare
     const group = arr => Object.values(arr.reduce((m, x) => { (m[x.kind] = m[x.kind] || {kind:x.kind, viaRad:x.viaRad, n:0, a:V(0, 0, 0), b:V(0, 0, 0)}); const g = m[x.kind]; g.n++; g.a.add(x.a); g.b.add(x.b); return m; }, {}))
@@ -1691,6 +1699,7 @@ function make3D(){
     TUBES[c.rad in TUBES ? c.rad : "sus"].forEach((pts, i) => { tubes[i].geometry.dispose(); tubes[i].geometry = new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, .55, 12, false); });
     frontFans.forEach((f, i) => f.visible = !front && i < c.front);
     topFans.forEach((f, i) => f.visible = c.rad !== "sus" && i < c.top);
+    botFans.forEach((f, i) => f.visible = c.rad !== "jos" && i < (c.bottom || 0));
     psu.visible = !jos; // cu radiator jos, sursa stă în spatele plăcii de bază (carcasă cu două camere)
     rf.visible = !!c.rear;
     const vert = c.gpu === "vertical";
@@ -1721,6 +1730,7 @@ function make3D(){
     if (c.rad !== "sus") TOP_X.slice(0, c.top).forEach(x => io(V(x, 28, 1.5), V(0, -1, 0), c.topDir));
     else [-10.2, 2, 14.2].forEach(x => io(V(x, 28, 1.5), V(0, -1, 0), c.radDir));
     if (jos) [-10.2, 2, 14.2].forEach(x => io(V(x, -29.5, 1.5), V(0, 1, 0), c.radDir));
+    else BOT_X.slice(0, c.bottom || 0).forEach(x => io(V(x, -29.5, 1.5), V(0, 1, 0), c.bottomDir));
     if (c.rear) io(V(-27, 15, 0), V(1, 0, 0), c.rearDir);
     if (!jos) { if (c.psu === "sus") io(V(-15.5, -13.5, -1.5), V(0, -1, 0), "in"); else io(V(-15.5, -29, -1.5), V(0, 1, 0), "in");
       io(V(-27, -20.6, -1.5), V(1, 0, 0), "out"); }
