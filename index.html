@@ -349,7 +349,7 @@ details.mons summary small{font-weight:400;color:var(--muted)}
 .ghid form button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:9px;padding:0 14px;font-weight:600;cursor:pointer}
 @media (max-width:760px){
   .stools{position:static;display:grid;gap:8px;padding:10px 16px 0;justify-items:stretch}
-  .stools .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+  .stools .chips{display:flex;flex-wrap:wrap;gap:8px}
   .stools .chips::-webkit-scrollbar{display:none}
   .stools .aer-btn{flex:none;box-shadow:none;padding:6px 12px 6px 9px;font-size:13.5px}
   .stools .seg{display:flex;width:100%}
@@ -458,10 +458,10 @@ const TIER_NAME = {S:"cele mai bune", A:"foarte bune", B:"bune", C:"decente", D:
 const CATS = [
   {id:"Placă video", info:"Desenează imaginea în jocuri și accelerează randarea și editarea. Pentru jocuri, e cea mai importantă piesă."},
   {id:"Procesor", info:"Creierul PC-ului. Pentru jocuri contează 3D V-Cache (modelele X3D), iar pentru editare video și Unreal, numărul de nuclee."},
+  {id:"Cooler", info:"Răcește procesorul și ține PC-ul silențios. Un cooler bun pe aer sau o răcire pe lichid de 360 mm ajung pentru orice procesor."},
   {id:"Placă de bază", info:"Leagă toate piesele. Trebuie să aibă același socket ca procesorul (AM5 pentru Ryzen 7000/9000) și sloturi DDR5."},
   {id:"RAM", info:"Memoria de lucru. Pentru jocuri: 32 GB DDR5-6000 CL30. Pentru editare video și Unreal: 64 GB."},
   {id:"SSD", info:"Aici stau Windows-ul, jocurile și proiectele. Alege NVMe PCIe 4.0 sau 5.0, de cel puțin 2 TB."},
-  {id:"Cooler", info:"Răcește procesorul și ține PC-ul silențios. Un cooler bun pe aer sau o răcire pe lichid de 360 mm ajung pentru orice procesor."},
   {id:"Sursă", info:"Alimentează tot PC-ul. Contează calitatea mai mult decât wații de pe etichetă: alege o serie testată, de 850–1000 W pentru plăci video puternice."},
   {id:"Carcasă", info:"Ține totul împreună. Contează fluxul de aer și să încapă placa video și coolerul."},
 ];
@@ -736,7 +736,7 @@ function renderAer(){
     <div id="ct">${renderCarcasa()}</div></div>`;
 }
 // ---------------------------------------------------------------- aranjare liberă + monitoare
-const SETUP_DEF = {rad:"sus", radDir:"out", front:3, frontDir:"in", rear:true, rearDir:"out", top:0, topDir:"out", gpu:"orizontal", psu:"jos"};
+const SETUP_DEF = {carcasa:"negru", rgb:"cupru", rad:"sus", radDir:"out", front:3, frontDir:"in", rear:true, rearDir:"out", top:0, topDir:"out", gpu:"orizontal", psu:"jos"};
 S.setup = Object.assign({}, SETUP_DEF, store.get("setup", {}));
 S.mon = Object.assign({on:false, list:[{rez:"1440p", hz:"165", con:"dp", la:"gpu"}]}, store.get("monitoare", {}));
 function evalSetup(c){
@@ -818,10 +818,12 @@ function setupLines(list){
   const ic = {ok:"✓", warn:"!", bad:"✗", q:"?"};
   return list.map(l => `<div class="aiv ${l.s}"><i>${ic[l.s]}</i><b>${esc(l.t)}</b><small>${esc(l.d)}</small></div>`).join("");
 }
+const RGB = {cupru:0xd27a3c, alb:0xf1f1ee, albastru:0x2f7bff, rosu:0xff3b30, mov:0xa452ff, verde:0x2fd06a, oprit:null};
+const RGB_OPT = [["cupru","Cupru"],["alb","Alb"],["albastru","Albastru"],["rosu","Roșu"],["mov","Mov"],["verde","Verde"],["oprit","Fără lumini"]];
 function seg(key, opts, dis){ return `<div class="ctypes" role="group">${opts.map(([v, t]) => `<button data-set="${key}:${v}" aria-pressed="${String(S.setup[key]) === String(v)}" ${dis ? "disabled" : ""}>${esc(t)}</button>`).join("")}</div>`; }
 function renderSetup(){
   $("ptitle").textContent = "Aranjează PC-ul"; $("q").hidden = true;
-  $("pinfo").textContent = "Pune radiatorul, ventilatoarele, placa video și sursa cum vrei. Dungile cu săgeți arată cum curge aerul: albastre când e rece, portocalii după ce s-a încălzit, roșii când nu are pe unde ieși, gri când intră cu praf prin fante.";
+  $("pinfo").textContent = "Alege cum arată PC-ul (culoarea carcasei și a luminilor) și pune radiatorul, ventilatoarele, placa video și sursa cum vrei. Dungile cu săgeți arată cum curge aerul: albastre când e rece, portocalii după ce s-a încălzit, roșii când nu are pe unde ieși, gri când intră cu praf prin fante.";
   const c = S.setup, front = c.rad === "fata", L = evalSetup(c);
   const bad = L.filter(x => x.s === "bad").length, warn = L.filter(x => x.s === "warn").length;
   const sel = (i, k, opts) => `<select class="monsel" data-mon="${i}:${k}" aria-label="${k}">${opts.map(([v, t]) => `<option value="${v}" ${S.mon.list[i][k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
@@ -829,6 +831,7 @@ function renderSetup(){
       ${sel(i, "rez", Object.entries(MON_REZ).map(([k, v]) => [k, v[0]]))}${sel(i, "hz", [["60","60 Hz"],["75","75 Hz"],["144","144 Hz"],["165","165 Hz"],["240","240 Hz"],["360","360 Hz"]])}
       ${sel(i, "con", [["dp","DisplayPort"],["hdmi","HDMI"]])}${sel(i, "la", [["gpu","la placa video"],["mb","la placa de bază"]])}</div>`).join("");
   $("offers").innerHTML = `<div class="aiverd ${bad ? "bad" : warn ? "warn" : "ok"}"><b>${bad ? `${bad} ${bad === 1 ? "problemă" : "probleme"} de rezolvat` : warn ? "Merge, cu câteva atenționări" : "Aranjare foarte bună"}</b><span>${warn && bad ? `și ${warn} ${warn === 1 ? "atenționare" : "atenționări"}` : "Se schimbă pe loc când muți ceva."}</span></div>
+    <div class="sgrp"><b>Cum arată</b><small>Culoarea carcasei și a luminilor. Nu schimbă răcirea, doar aspectul.</small>${seg("carcasa", [["negru","Carcasă neagră"],["alb","Carcasă albă"]])}${seg("rgb", RGB_OPT)}</div>
     <div class="sgrp"><b>Răcirea pe lichid (radiatorul)</b>${seg("rad", [["sus","Sus"],["fata","În față"],["jos","Jos"]])}${seg("radDir", [["out","Scoate aer"],["in","Bagă aer"]])}</div>
     <div class="sgrp"><b>Ventilatoare în față</b>${front ? `<small>În față e radiatorul.</small>` : seg("front", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("frontDir", [["in","Bagă aer"],["out","Scoate aer"]])}</div>
     <div class="sgrp"><b>Ventilatoare sus</b>${c.rad !== "sus" ? seg("top", [[0,"0"],[1,"1"],[2,"2"],[3,"3"]]) + seg("topDir", [["out","Scoate aer"],["in","Bagă aer"]]) : `<small>Sus e radiatorul.</small>`}</div>
@@ -1091,14 +1094,17 @@ function make3D(){
   Object.assign(d1.shadow.camera, {left:-60, right:60, top:60, bottom:-60, near:20, far:260}); scene.add(d1);
   const d2 = new T.DirectionalLight(lin(0xffe0c2), .45); d2.position.set(-70, 20, -30); scene.add(d2);
   const glow = new T.PointLight(lin(0xe08a4a), FX ? .55 : .5, 40, 2); glow.position.set(2, 4, 2); scene.add(glow);
-  const COPPER = 0xd27a3c, rotors = [];
+  const COPPER = 0xd27a3c, rotors = [], accents = [], caseMats = [];
   const M = (color, o = {}) => {
     const m = new T.MeshStandardMaterial({color:lin(color), metalness:o.metal ?? .4, roughness:o.rough ?? .55, emissive:lin(o.em ?? 0),
       emissiveIntensity:o.emI ?? 0, transparent:true, opacity:o.op ?? 1, depthWrite:(o.op ?? 1) >= 1, envMapIntensity:o.env ?? .55});
     if (o.map) m.map = o.map; if (o.alpha) { m.alphaMap = o.alpha; m.alphaTest = .04; }
     if (o.side) m.side = o.side;
+    if (o.em === COPPER) { m.userData.emI = m.emissiveIntensity; m.userData.base = color; accents.push(m); }
     return m;
   };
+  // material de carcasă: are și o variantă albă (culoarea se alege la „Cum arată”)
+  const CM = (dark, light, o) => { const m = M(dark, o); caseMats.push([m, dark, light]); return m; };
   const RB = !!T.RoundedBoxGeometry;
   const geo = (w, h, d, r) => RB && r ? new T.RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.01, h / 2.01, d / 2.01)) : new T.BoxGeometry(w, h, d);
   const box = (w, h, d, m, x = 0, y = 0, z = 0, r = 0) => { const b = new T.Mesh(geo(w, h, d, r), m); b.position.set(x, y, z); return b; };
@@ -1118,12 +1124,12 @@ function make3D(){
       sh.moveTo(-s + k, -s); sh.lineTo(s - k, -s); sh.quadraticCurveTo(s, -s, s, -s + k); sh.lineTo(s, s - k); sh.quadraticCurveTo(s, s, s - k, s);
       sh.lineTo(-s + k, s); sh.quadraticCurveTo(-s, s, -s, s - k); sh.lineTo(-s, -s + k); sh.quadraticCurveTo(-s, -s, -s + k, -s);
       const hole = new T.Path(); hole.absarc(0, 0, r - .05, 0, Math.PI * 2, true); sh.holes.push(hole);
-      const fr = new T.Mesh(new T.ExtrudeGeometry(sh, {depth:1.4, bevelEnabled:false, curveSegments:24}), M(0x16181c, {metal:.2, rough:.7}));
+      const fr = new T.Mesh(new T.ExtrudeGeometry(sh, {depth:1.4, bevelEnabled:false, curveSegments:24}), CM(0x16181c, 0xe9ebee, {metal:.2, rough:.7}));
       fr.position.z = -.7; g.add(fr);
     }
     const rotor = new T.Group();
     rotor.add(cyl(r * .3, 1, M(0x1d2026, {metal:.3, rough:.45})), cyl(r * .18, .1, M(0x8c4a1f, {em:COPPER, emI:.5}), 0, 0, .52));
-    for (let i = 0; i < 9; i++) { const b = box(r * .66, r * .26, .08, M(0x23262c, {rough:.45, op:.96})); b.position.x = r * .6; b.rotation.x = .55; b.rotation.z = .25; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 9; rotor.add(h); }
+    for (let i = 0; i < 9; i++) { const b = box(r * .66, r * .26, .08, CM(0x23262c, 0xf3f4f6, {rough:.45, op:.96})); b.position.x = r * .6; b.rotation.x = .55; b.rotation.z = .25; const h = new T.Group(); h.add(b); h.rotation.z = i * Math.PI * 2 / 9; rotor.add(h); }
     g.add(rotor); rotors.push(rotor);
     if (axis === "x") g.rotation.y = Math.PI / 2; else if (axis === "y") g.rotation.x = Math.PI / 2;
     return g;
@@ -1140,13 +1146,13 @@ function make3D(){
 
   // ---- carcasa: spate și laterală din tablă, față și sus din plasă perforată, geam fumuriu
   const cs = part("Carcasă");
-  const steel = M(0x17191d, {metal:.6, rough:.42});
-  cs.add(box(48, 50, .4, steel, 0, 0, -11.7, .15), box(48.8, .5, 23.8, M(0x1b1e23, {metal:.6, rough:.45, alpha:holes([24, 12]), side:T.DoubleSide}), 0, -25.15, 0, .2),
-         box(48.8, .5, 23.8, M(0x1b1e23, {metal:.55, rough:.5, alpha:holes([24, 12]), side:T.DoubleSide}), 0, 25.15, 0, .2),
-         box(.5, 50, 23, M(0x15181c, {metal:.6, rough:.45}), -24.15, 0, 0, .15),
-         box(.5, 50.8, 23.8, M(0x1b1e23, {metal:.5, rough:.55, alpha:holes([12, 25]), side:T.DoubleSide}), 24.15, 0, 0, .2));
+  const steel = CM(0x17191d, 0xe3e5e8, {metal:.6, rough:.42});
+  cs.add(box(48, 50, .4, steel, 0, 0, -11.7, .15), box(48.8, .5, 23.8, CM(0x1b1e23, 0xdfe2e6, {metal:.6, rough:.45, alpha:holes([24, 12]), side:T.DoubleSide}), 0, -25.15, 0, .2),
+         box(48.8, .5, 23.8, CM(0x1b1e23, 0xdfe2e6, {metal:.55, rough:.5, alpha:holes([24, 12]), side:T.DoubleSide}), 0, 25.15, 0, .2),
+         box(.5, 50, 23, CM(0x15181c, 0xe1e3e6, {metal:.6, rough:.45}), -24.15, 0, 0, .15),
+         box(.5, 50.8, 23.8, CM(0x1b1e23, 0xdfe2e6, {metal:.5, rough:.55, alpha:holes([12, 25]), side:T.DoubleSide}), 24.15, 0, 0, .2));
   const glass = box(47.6, 49.6, .2, M(0x10151b, {op:.16, metal:.1, rough:.05, env:1.4}), 0, 0, 11.9); cs.add(glass);
-  const trim = M(0x0f1114, {metal:.5, rough:.5});
+  const trim = CM(0x0f1114, 0xd6d9dd, {metal:.5, rough:.5});
   cs.add(box(48.8, .6, .5, trim, 0, 25.1, 11.85), box(48.8, .6, .5, trim, 0, -25.1, 11.85), box(.6, 50.8, .5, trim, -24.1, 0, 11.85), box(.6, 50.8, .5, trim, 24.1, 0, 11.85));
   for (const [x, z] of [[-20, -8], [-20, 8], [20, -8], [20, 8]]) cs.add(box(5, .8, 3, M(0x0d0f12, {rough:.8}), x, -25.8, z, .3));
   cs.add(box(.2, 2.2, 6, M(0x30353d, {metal:.7, rough:.35}), 24.45, 21, 6, .1), cyl(.55, .2, M(0x9aa1aa, {metal:.8, rough:.3}), 24.55, 21, 2).rotateY(Math.PI / 2));
@@ -1528,6 +1534,19 @@ function make3D(){
     gpu.quaternion.copy(vert ? gpuV.q : gpuH.q); basePos["Placă video"] = (vert ? gpuV.p : gpuH.p).clone();
     gpu.position.copy(basePos["Placă video"]);
     psu.rotation.z = c.psu === "sus" ? Math.PI : 0;
+    // aspect: carcasa neagră/albă și culoarea luminilor
+    const alb = c.carcasa === "alb";
+    for (const [m, dark, light] of caseMats) m.color.copy(lin(alb ? light : dark));
+    const rgb = RGB[c.rgb] === undefined ? COPPER : RGB[c.rgb];
+    for (const m of accents) {
+      if (rgb == null) { m.emissiveIntensity = 0; m.color.copy(lin(alb ? 0xcfd2d6 : 0x2a2d33)); }
+      else { m.emissive.copy(lin(rgb)); m.emissiveIntensity = m.userData.emI; m.color.copy(lin(rgb).multiplyScalar(.45)); }
+    }
+    glow.color.copy(lin(rgb == null ? 0xffffff : rgb)); glow.intensity = rgb == null ? 0 : (FX ? .55 : .5);
+    // „paint” pornește de la culorile salvate ale fiecărei piese: le actualizăm, ca nota să se vadă peste noul aspect
+    const changed = new Set([...caseMats.map(x => x[0]), ...accents]);
+    scene.traverse(o => { if (o.material && changed.has(o.material) && o.userData.base)
+      Object.assign(o.userData.base, {c:o.material.color.getHex(), e:o.material.emissive.getHex(), ei:o.material.emissiveIntensity}); });
     // cablul plăcii video urmează conectorul
     gpu.updateMatrixWorld(true); const end = gpuPlug.getWorldPosition(V(0, 0, 0));
     gpuCable.geometry.dispose(); gpuCable.geometry = new T.TubeGeometry(new T.CatmullRomCurve3([V(-6, -16.3, 7), vert ? V(4, -18, 10) : V(2, -15, 10), end.add(V(0, 0, -.6))]), 48, .45, 10, false);
