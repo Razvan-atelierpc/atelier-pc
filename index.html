@@ -189,23 +189,41 @@ nav a[aria-current="page"]{color:var(--fg);background:var(--surface);box-shadow:
 .hub .big small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted);margin-left:6px}
 .hub h4,.rules h4{margin:6px 0 0;font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .uses{display:grid;gap:8px}
-.vs{display:grid;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.vs{--va:var(--info);--vb:var(--accent);display:grid;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--va) 9%,var(--bg)),var(--bg) 45%,color-mix(in srgb,var(--vb) 10%,var(--bg)))}
 .vs select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--fg)}
-.vs .who{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;font-size:13px}
-.vs .who > div{display:grid;gap:3px;min-width:0}
-.vs .who > div:last-child{text-align:right;justify-items:end}
-.vs .who b{font-size:13.5px;overflow-wrap:anywhere}
-.vs .who .x{align-self:center;font-family:var(--display);font-weight:700;font-size:18px;color:var(--muted)}
-.vs .verd{margin:0;font-size:14px;line-height:1.5}
-.vs .verd b{color:var(--fg)}
-.vs table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-.vs th,.vs td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
-.vs th{text-align:left;font-weight:600;width:34%}
-.vs td{text-align:center}
-.vs td.w{font-weight:700;color:var(--fg);background:color-mix(in srgb,var(--ok,#2f9e5b) 12%,transparent);border-radius:6px}
-.vs td.w::after{content:" ✓"}
+.vs-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:stretch}
+.vs-card{position:relative;display:grid;justify-items:center;align-content:start;gap:5px;text-align:center;padding:12px 8px 10px;border-radius:12px;background:var(--surface);border:2px solid color-mix(in srgb,var(--c) 45%,var(--line));min-width:0}
+.vs-card.a{--c:var(--va)} .vs-card.b{--c:var(--vb)}
+.vs-card.win{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent)}
+.vs-card .thumb{width:84px;height:84px;border-radius:10px}
+.vs-card .thumb svg{width:48px;height:48px}
+.vs-card .who2{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:700}
+.vs-card .nm2{font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.vs-card .meta{font-size:12px;color:var(--muted)}
+.vs-card .pr2{font-family:var(--display);font-weight:700;font-size:18px}
+.vs-card .crown{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--c);color:#fff}
+.vs-badge{align-self:center;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font-family:var(--display);font-weight:800;font-size:17px;color:#fff;background:linear-gradient(135deg,var(--va),var(--vb));box-shadow:0 4px 12px rgb(0 0 0 / .2)}
+.vs-score{display:grid;gap:4px}
+.vs-score .bar{display:flex;height:22px;border-radius:999px;overflow:hidden;font-size:12px;font-weight:700;color:#fff}
+.vs-score .bar span{display:grid;place-items:center;min-width:26px}
+.vs-score .bar .sa{background:var(--va)} .vs-score .bar .sb{background:var(--vb)} .vs-score .bar .st{background:var(--muted)}
+.vs-score small{font-size:12px;color:var(--muted);text-align:center}
+.vs-verd{display:grid;gap:8px;padding:11px 12px;border-radius:10px;background:var(--surface);border-left:4px solid var(--c,var(--accent))}
+.vs-verd p{margin:0;font-size:14px;line-height:1.5}
+.vs-wins{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13.5px}
+.vs-wins li{display:grid;grid-template-columns:12px minmax(0,1fr);gap:8px;align-items:baseline}
+.vs-wins li::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
+.vs-wins li.a{--c:var(--va)} .vs-wins li.b{--c:var(--vb)}
+.vs table{width:100%;border-collapse:separate;border-spacing:0 2px;font-size:13px;table-layout:fixed}
+.vs th,.vs td{padding:7px 5px;vertical-align:top;overflow-wrap:anywhere}
+.vs tbody th{text-align:left;font-weight:600;width:32%;border-top:1px solid var(--line)}
+.vs tbody td{text-align:center;border-top:1px solid var(--line)}
+.vs thead td{text-align:center;font-weight:700;font-size:12px;padding-bottom:6px}
+.vs thead td.a{color:var(--va);border-bottom:3px solid var(--va)} .vs thead td.b{color:var(--vb);border-bottom:3px solid var(--vb)}
+.vs td.wa,.vs td.wb{font-weight:700;color:#fff;border-radius:7px}
+.vs td.wa{background:var(--va)} .vs td.wb{background:var(--vb)}
+.vs td.wa::after,.vs td.wb::after{content:" ✓"}
 .vs tr.d td{border-top:0;padding-top:0;text-align:left;color:var(--muted);font-size:12px}
-.vs ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:4px}
 .use{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .use.cur{border-color:var(--fg)}
 .use b{font-size:14px}
@@ -647,7 +665,7 @@ function catPerf(p){ // scor de performanță din catalog (plăci video și proc
 function vsHtml(a, b){
   const prof = S.profil, pt = PROF_TXT[prof] || "jocuri", rk = n => n ? NOTE.indexOf(n) : 9;
   const na = N(a), nb = N(b), wa = ((a.note || {})[prof] || {}).why || [], wb = ((b.note || {})[prof] || {}).why || [];
-  const A = `<b>${esc(shortName(a))}</b>`, B = `<b>${esc(shortName(b))}</b>`, nm = x => x === a ? A : B;
+  const A = `<b style="color:var(--va)">asta</b>`, B = `<b style="color:var(--vb)">cealaltă</b>`, nm = x => x === a ? A : B; // numele complete sunt pe carduri, cu poză
   const rows = [], winA = [], winB = [];
   const row = (label, va, vb, w, d) => { rows.push([label, va, vb, w, d]); if (w === "a") winA.push(label.toLowerCase()); if (w === "b") winB.push(label.toLowerCase()); };
   // parametrii piesei, după nota fiecăruia
@@ -680,19 +698,28 @@ function vsHtml(a, b){
   else out.push(`Pentru ${pt} au aceeași notă (<b>${na || "?"}</b>).`);
   const fa = catPerf(a), fb = catPerf(b);
   if (!same && fa && fb && fa !== fb) { const [x, y, fx, fy] = fa > fb ? [a, b, fa, fb] : [b, a, fb, fa];
-    out.push(`${nm(x)} e cam cu <b>${Math.round((fx / fy - 1) * 100)}%</b> mai rapidă în ${pt}. La bani: ${nm(a)} costă ${lei(Math.round(a.pret_lei / fa))} pe punct de performanță, ${nm(b)} ${lei(Math.round(b.pret_lei / fb))}.`); }
+    out.push(`${x === a ? "Asta" : "Cealaltă"} e cam cu <b>${Math.round((fx / fy - 1) * 100)}%</b> mai rapidă în ${pt}. La bani: ${nm(a)} costă ${lei(Math.round(a.pret_lei / fa))} pe punct de performanță, ${nm(b)} ${lei(Math.round(b.pret_lei / fb))}.`); }
   const better = same ? (dp > 0 ? a : dp < 0 ? b : null) : rk(na) < rk(nb) ? a : rk(nb) < rk(na) ? b : (winA.length > winB.length ? a : winB.length > winA.length ? b : null);
   const cheaper = dp > 0 ? a : dp < 0 ? b : null;
   if (better && cheaper === better && !same) out.push(`Pe scurt: ${nm(better)} e și mai bună, și mai ieftină – alegerea e clară.`);
   else if (better && cheaper && !same) out.push(`Pe scurt: ${nm(better)} e mai bună, dar costă cu ${lei(Math.abs(dp))} mai mult. Merită dacă vrei maximum la ${pt}; dacă bugetul contează, ${nm(cheaper)} e alegerea mai cumpătată.`);
   else if (same && cheaper) out.push(`Pe scurt: dacă vânzătorul și garanția sunt în regulă, ia-o pe cea mai ieftină – ${nm(cheaper)}, cu ${lei(Math.abs(dp))} mai puțin.`);
-  const lst = (w, x) => w.length ? `<li>${nm(x)} câștigă la: ${esc(w.join(", "))}.</li>` : "";
-  return `<div class="who"><div>${A}<span style="color:var(--muted)">${esc(a.magazin)} · ${lei(a.pret_lei)}</span><span class="tier ${na || ""}" style="--t:var(--t-${na || "N"})">${na || "?"}</span></div>
-      <span class="x">VS</span><div>${B}<span style="color:var(--muted)">${esc(b.magazin)} · ${lei(b.pret_lei)}</span><span class="tier ${nb || ""}" style="--t:var(--t-${nb || "N"})">${nb || "?"}</span></div></div>
-    ${out.map(t => `<p class="verd">${t}</p>`).join("")}
-    ${winA.length || winB.length ? `<ul>${lst(winA, a)}${lst(winB, b)}</ul>` : ""}
-    <table><thead><tr><th></th><td style="font-weight:600">Asta</td><td style="font-weight:600">Cealaltă</td></tr></thead><tbody>
-    ${rows.map(([l, va, vb, w, d]) => `<tr><th>${esc(l)}</th><td class="${w === "a" ? "w" : ""}">${esc(va)}</td><td class="${w === "b" ? "w" : ""}">${esc(vb)}</td></tr>${d ? `<tr class="d"><td colspan="3">${esc(d)}</td></tr>` : ""}`).join("")}
+  const champ = better ? (better === a ? "a" : "b") : null;
+  const card = (x, k, n) => `<div class="vs-card ${k} ${champ === k ? "win" : ""}">${champ === k ? `<span class="crown">🏆 ${same ? "Mai bună la bani" : "Câștigă"}</span>` : ""}
+      <span class="who2">${k === "a" ? "Asta" : "Cealaltă"}</span>${thumb(x)}<b class="nm2">${esc(shortName(x))}</b>
+      <span class="meta">${esc(x.magazin)}${x.stoc === false ? " · stoc epuizat" : ""}</span><span class="pr2">${lei(x.pret_lei)}</span>
+      <span class="tier ${n || ""}" style="--t:var(--t-${n || "N"})" title="Nota pentru ${pt}">${n || "?"}</span></div>`;
+  const nA = winA.length, nB = winB.length, nT = rows.length - nA - nB;
+  const bar = `<div class="vs-score"><div class="bar" role="img" aria-label="Asta câștigă la ${nA} criterii, cealaltă la ${nB}, egal la ${nT}">
+      ${nA ? `<span class="sa" style="flex:${nA}">${nA}</span>` : ""}${nT ? `<span class="st" style="flex:${nT}">${nT}</span>` : ""}${nB ? `<span class="sb" style="flex:${nB}">${nB}</span>` : ""}</div>
+      <small>Câte criterii câștigă fiecare (gri = la egalitate)</small></div>`;
+  const lst = (w, k) => w.length ? `<li class="${k}"><span><b>${k === "a" ? "Asta" : "Cealaltă"}</b> câștigă la: ${esc(w.join(", "))}.</span></li>` : "";
+  return `<div class="vs-head">${card(a, "a", na)}<span class="vs-badge">VS</span>${card(b, "b", nb)}</div>
+    ${bar}
+    <div class="vs-verd" style="--c:${champ === "a" ? "var(--va)" : champ === "b" ? "var(--vb)" : "var(--muted)"}">${out.map(t => `<p>${t}</p>`).join("")}</div>
+    ${nA || nB ? `<ul class="vs-wins">${lst(winA, "a")}${lst(winB, "b")}</ul>` : ""}
+    <table><thead><tr><td></td><td class="a">Asta</td><td class="b">Cealaltă</td></tr></thead><tbody>
+    ${rows.map(([l, va, vb, w, d]) => `<tr><th>${esc(l)}</th><td class="${w === "a" ? "wa" : ""}">${esc(va)}</td><td class="${w === "b" ? "wb" : ""}">${esc(vb)}</td></tr>${d ? `<tr class="d"><td colspan="3">${esc(d)}</td></tr>` : ""}`).join("")}
     </tbody></table>`;
 }
 function evolHtml(p){
