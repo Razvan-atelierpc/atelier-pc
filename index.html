@@ -1050,7 +1050,7 @@ $("offers").addEventListener("click", e => {
   if (e.target.closest("[data-setreset]")) { S.setup = {...SETUP_DEF}; saveSetup(); return; }
   const gc = e.target.closest("[data-gocat]"); if (gc) { focus(gc.dataset.gocat); return; }
   const av = e.target.closest("[data-av]"); if (av) { S.aerView = av.dataset.av; renderAer(); $("offers").scrollTop = 0; return; }
-  const o = e.target.closest("[data-open]"); if (o) { S.listY = $("offers").scrollTop; S.detail = o.dataset.open; renderOffers(); return; }
+  const o = e.target.closest("[data-open]"); if (o) { if (S.tur) { S.tur = false; $("toast").hidden = true; } S.listY = $("offers").scrollTop; S.detail = o.dataset.open; renderOffers(); return; }
   if (e.target.closest("[data-list]")) { S.detail = null; renderOffers(); $("offers").scrollTop = S.listY || 0; return; }
   const b = e.target.closest("[data-pick]"); if (!b) return;
   const p = byUrl[b.dataset.pick];
@@ -1066,6 +1066,7 @@ function focus(cat){
   if (cat) seen();
   if (cat !== S.focus) { S.detail = null; S.q = ""; $("q").value = ""; }
   S.focus = cat;
+  if (S.tur) { if (cat && ART[cat]) tourHint(cat); else if (!cat) { S.tur = false; $("toast").hidden = true; } }
   $("panel").hidden = !cat; $("app").classList.toggle("open", !!cat);
   $("back").hidden = !cat; $("intro").hidden = !!cat;
   if (cat) renderOffers();
@@ -1127,13 +1128,17 @@ $("gs").addEventListener("submit", e => {
   else { S.q = q; $("q").value = q; renderOffers(); }
   $("gq").blur();
 });
-$("w-show").addEventListener("click", () => {
-  seen(); focus("Placă video");
-  toast(window.matchMedia("(max-width:760px)").matches ? "Asta e placa video. Mai jos vezi ofertele, de la S la F. Apasă pe una ca să vezi detaliile."
-    : "Asta e placa video. În panou vezi ofertele, de la S la F. Apasă pe una ca să vezi detaliile.");
-});
+// turul „Arată-mi”: la fiecare piesă apăsată, mesajul spune ce e și ce poți face cu ea
+const ART = {"Placă video":"placa video", "Procesor":"procesorul", "Cooler":"coolerul", "Placă de bază":"placa de bază", "RAM":"memoria RAM", "SSD":"SSD-ul", "Sursă":"sursa", "Carcasă":"carcasa"};
+function tourHint(cat){
+  const n = P.filter(p => p.piesa === cat).length, unde = window.matchMedia("(max-width:760px)").matches ? "Mai jos" : "În panou";
+  toast(`Asta e ${ART[cat] || cat.toLowerCase()}. ` + (n
+    ? `${unde} vezi ${n === 1 ? "oferta" : `cele ${n}${n % 100 >= 20 || n % 100 === 0 ? " de" : ""} oferte`}, de la S (cele mai bune) la F. Apasă pe una ca să vezi detaliile și s-o compari cu alta (VS). Poți apăsa orice piesă, din model sau din bară.`
+    : `Încă nu urmărim oferte pentru această piesă. Apasă altă piesă, din model sau din bara de jos.`), 12000);
+}
+$("w-show").addEventListener("click", () => { S.tur = true; seen(); focus("Placă video"); });
 let toastT = 0;
-function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 7000); }
+function toast(t, ms = 7000){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, ms); }
 
 // ---------------------------------------------------------------- ghid
 const CAT_WORDS = [["Placă video", /plac[aă] video|placa grafica|\bgpu\b|\brtx\b|\bradeon\b|\brx ?\d/], ["Procesor", /procesor|\bcpu\b|ryzen|intel|\bcore\b/],
